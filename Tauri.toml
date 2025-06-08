@@ -1,0 +1,39 @@
+[package]
+product-name = "SimplyPluralToAnyUpdater"
+version = "0.1.0" # From old package.version
+
+[build]
+before-dev-command = ""
+before-build-command = ""
+dev-path = "src/gui/index.html"
+
+
+dist-dir = "target/gui"
+
+[app]
+identifier = "com.example.simplypluraltoanyupdater"
+
+  [app.security]
+  # csp = null from JSON. Omitting it here means Tauri will use its default CSP.
+  # If you need a specific CSP, define it here e.g. csp = "default-src 'self'"
+
+  [app.allowlist]
+    [app.allowlist.event]
+    listen = true
+    emit = true
+    [app.allowlist.window]
+    all = true
+
+  [[app.windows]]
+  label = "main"
+  title = "Application Logs"
+  width = 800
+  height = 600
+  fullscreen = false
+  resizable = true
+  visible = true
+
+[bundle]
+active = true
+targets = "all"
+

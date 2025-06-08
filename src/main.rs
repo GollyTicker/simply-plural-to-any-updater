@@ -79,7 +79,7 @@ fn main() -> Result<()> {
     } else {
         let (log_tx, mut log_rx) = mpsc::channel::<String>(100); // Channel for log messages
 
-        tauri::Builder::default()
+        tauri::Builder::new()
             .setup(move |app| {
                 let app_handle = app.handle();
                 let core_logic_log_tx = log_tx.clone();
@@ -101,15 +101,16 @@ fn main() -> Result<()> {
                 // Spawn the log message forwarder to Tauri frontend
                 tauri::async_runtime::spawn(async move {
                     while let Some(message) = log_rx.recv().await {
-                        app_handle.emit_all("log-message", &message).unwrap_or_else(|e| {
+                        // In Tauri v2, emit (to all windows) is used instead of emit_all.
+                        // Passing `message` (String) directly, which will be moved.
+                        app_handle.emit("log-message", message).unwrap_or_else(|e| {
                             std::eprintln!("Failed to emit log to frontend: {}", e);
                         });
                     }
                 });
                 Ok(())
             })
-            .run(tauri::generate_context!())
-            .expect("error while running tauri application");
+            .run(tauri::generate_context!()).context("Error while running Tauri application")?;
     }
     Ok(())
 }
