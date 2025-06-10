@@ -7,110 +7,90 @@ mod vrchat;
 mod vrchat_auth;
 mod vrchat_status;
 mod webserver;
+mod gui;
 
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
-// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use anyhow::Result;
+use clap::Parser;
+use tokio::runtime;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitEx};
 
-use anyhow::{Context, Result};
-use tokio::sync::mpsc;
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Cli {
+    /// Run without the graphical user interface
+    #[clap(long, env = "NO_GUI", action = clap::ArgAction::StoreTrue)]
+    no_gui: bool,
+}
 
-// Helper macro for logging to console and optionally to GUI
-macro_rules! app_log {
-    ($log_sender:expr, $($arg:tt)*) => {
-        let msg = format!($($arg)*);
-        eprintln!("{}", msg); // Always print to console
-        if let Some(sender) = $log_sender {
-            let sender = sender.clone();
-            // Spawn a task to send the message without blocking the current flow
-            tokio::spawn(async move {
-                if sender.send(msg).await.is_err() {
-                    // If sending to GUI fails, print an error to the actual stderr.
-                    // Avoid using app_log! here to prevent potential recursion.
-                    std::eprintln!("Failed to send log message to GUI channel.");
-                }
-            });
-        }
+async fn run_app_logic() -> Result<()> {
+    tracing::info!("Starting Simply Plural to Any Updater ...");
+
+    let config = config::setup_and_load_config().await?;
+
+    if config.serve_api {
+        tracing::info!("Running in Webserver mode.");
+        webserver::run_server(&config).await
+    } else {
+        tracing::info!("Running in VRChat Updater mode.");
+        vrchat::run_updater_loop(&config).await
     }
 }
 
-async fn run_app_logic(log_sender_option: Option<mpsc::Sender<String>>) -> Result<()> {
-    app_log!(&log_sender_option, "Starting Simply Plural to Any Updater...");
+/// Sets up and runs the Tauri application.
+fn run_tauri_application() -> Result<()> {
+    tracing::info!("GUI mode selected. Initializing Tauri application...");
 
-    let config = match config::setup_and_load_config().await {
-        Ok(c) => c,
-        Err(e) => {
-            let err_msg = format!("Failed to load config: {:?}", e);
-            app_log!(&log_sender_option, "{}", err_msg);
-            return Err(e.context(err_msg));
-        }
-    };
+    tauri::Builder::default()
+        .setup(move |app| {
+            let app_handle = app.handle().clone();
 
-    if config.serve_api {
-        app_log!(&log_sender_option, "Running in Webserver mode.");
-        if let Err(e) = webserver::run_server(&config).await {
-            let err_msg = format!("Webserver error: {:?}", e);
-            app_log!(&log_sender_option, "{}", err_msg);
-            return Err(e.context(err_msg));
-        }
-    } else {
-        app_log!(&log_sender_option, "Running in VRChat Updater mode.");
-        if let Err(e) = vrchat::run_updater_loop(&config).await {
-            let err_msg = format!("VRChat updater error: {:?}", e);
-            app_log!(&log_sender_option, "{}", err_msg);
-            return Err(e.context(err_msg));
-        }
-    }
-    app_log!(&log_sender_option, "Application logic completed successfully.");
-    Ok(())
+            // Initialize tracing for GUI mode: console + Tauri events
+            let tauri_log_layer = gui::tauri_log_layer::TauriLogLayer::new(app_handle.clone());
+            tracing_subscriber::registry()
+                .with(
+                    tracing_subscriber::fmt::layer()
+                        .with_writer(std::io::stderr) // Log to console
+                        .with_ansi(true), // ANSI for console
+                )
+                .with(tauri_log_layer) // Log to Tauri frontend
+                .with(tracing_subscriber::filter::LevelFilter::INFO) // Set desired log level
+                .init(); // Set as global default subscriber
+
+            tracing::info!("Tauri application setup complete. Spawning core logic...");
+
+            // Spawn the core application logic
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = run_app_logic().await {
+                    tracing::error!("Core application error: {:?}", e);
+                } else {
+                    tracing::info!("Core application finished successfully.");
+                }
+            });
+
+            Ok(())
+        })
+        .run(tauri::generate_context!()) // generate_context! should work with Tauri.toml in v2
+        .map_err(anyhow::Error::from)
 }
 
 fn main() -> Result<()> {
-    let args: Vec<String> = std::env::args().collect();
-    let no_gui_arg = args.contains(&"--no-gui".to_string());
-    let no_gui_env = std::env::var("NO_GUI").map_or(false, |val| val.eq_ignore_ascii_case("true"));
-    let no_gui = no_gui_arg || no_gui_env;
+    let cli_args = Cli::parse();
 
-    if no_gui {
-        eprintln!("Running in NO_GUI mode.");
-        let rt = tokio::runtime::Runtime::new()?;
-        rt.block_on(async {
-            run_app_logic(None).await // Pass None for the log_sender
-        })?;
+    if cli_args.no_gui {
+        no_gui_mode_tracing_setup();
+        tracing::info!("No-GUI mode selected. Running in console.");
+        runtime::Runtime::new()
+            .unwrap()
+            .block_on(run_app_logic())
     } else {
-        let (log_tx, mut log_rx) = mpsc::channel::<String>(100); // Channel for log messages
-
-        tauri::Builder::new()
-            .setup(move |app| {
-                let app_handle = app.handle();
-                let core_logic_log_tx = log_tx.clone();
-
-                // Spawn the core application logic
-                tauri::async_runtime::spawn(async move {
-                    if let Err(e) = run_app_logic(Some(core_logic_log_tx.clone())).await {
-                        let final_error_msg = format!("Core application exited with error: {:?}", e);
-                        eprintln!("{}", final_error_msg); // Log to console
-                        // Attempt to send this final status to GUI as well
-                        let _ = core_logic_log_tx.send(final_error_msg).await;
-                    } else {
-                        let success_msg = "Core application logic finished.".to_string();
-                        eprintln!("{}", success_msg);
-                        let _ = core_logic_log_tx.send(success_msg).await;
-                    }
-                });
-
-                // Spawn the log message forwarder to Tauri frontend
-                tauri::async_runtime::spawn(async move {
-                    while let Some(message) = log_rx.recv().await {
-                        // In Tauri v2, emit (to all windows) is used instead of emit_all.
-                        // Passing `message` (String) directly, which will be moved.
-                        app_handle.emit("log-message", message).unwrap_or_else(|e| {
-                            std::eprintln!("Failed to emit log to frontend: {}", e);
-                        });
-                    }
-                });
-                Ok(())
-            })
-            .run(tauri::generate_context!()).context("Error while running Tauri application")?;
+        eprintln!("Start in GUI mode...");
+        run_tauri_application()
     }
-    Ok(())
+}
+
+fn no_gui_mode_tracing_setup() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .with_ansi(true)
+        .init();
 }
