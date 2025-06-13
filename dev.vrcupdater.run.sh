@@ -3,7 +3,7 @@
 set -euo pipefail
 
 echo "Build..."
-cargo build --release
+./cargo-build.sh
 echo "Done."
 
 echo "Run:"

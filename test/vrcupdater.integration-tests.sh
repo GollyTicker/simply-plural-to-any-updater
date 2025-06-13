@@ -94,7 +94,7 @@ check_updater_failure_and_loop_continues() {
 
 
 start_vrc_updater() {
-    cargo build --release
+    ./cargo-build.sh
 
     rm -rf vrcupdater.env || true
 
