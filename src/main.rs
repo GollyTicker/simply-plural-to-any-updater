@@ -7,18 +7,17 @@ mod vrchat;
 mod vrchat_auth;
 mod vrchat_status;
 mod webserver;
-mod gui;
 
 use anyhow::Result;
 use clap::Parser;
 use tokio::runtime;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitEx};
+use tracing_subscriber::{self};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
     /// Run without the graphical user interface
-    #[clap(long, env = "NO_GUI", action = clap::ArgAction::StoreTrue)]
+    #[clap(long, env = "NO_GUI", action = clap::ArgAction::SetTrue)]
     no_gui: bool,
 }
 
@@ -41,20 +40,9 @@ fn run_tauri_application() -> Result<()> {
     tracing::info!("GUI mode selected. Initializing Tauri application...");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_log::Builder::new().build())
         .setup(move |app| {
             let app_handle = app.handle().clone();
-
-            // Initialize tracing for GUI mode: console + Tauri events
-            let tauri_log_layer = gui::tauri_log_layer::TauriLogLayer::new(app_handle.clone());
-            tracing_subscriber::registry()
-                .with(
-                    tracing_subscriber::fmt::layer()
-                        .with_writer(std::io::stderr) // Log to console
-                        .with_ansi(true), // ANSI for console
-                )
-                .with(tauri_log_layer) // Log to Tauri frontend
-                .with(tracing_subscriber::filter::LevelFilter::INFO) // Set desired log level
-                .init(); // Set as global default subscriber
 
             tracing::info!("Tauri application setup complete. Spawning core logic...");
 

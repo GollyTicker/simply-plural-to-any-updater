@@ -20,7 +20,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1.0"
 html-escape = "0.2.13"
 tauri = { version = "2", features = ["tray-icon", "config-toml", "protocol-asset"] }
-
+log = "0.4"
 clap = { version = "4.0", features = ["derive", "env"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "registry"] }
+tauri-plugin-log = "2.4.0"

@@ -70,7 +70,7 @@ check_vrc_status_string_equals() {
 
 
 start_vrc_updater() {
-    cargo build --release
+    ./cargo-build.sh
 
     rm -rf vrcupdater.env || true
 
