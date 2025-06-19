@@ -1,6 +1,10 @@
 use crate::{config::Config, simply_plural};
 
-use encoding_rs::ISO_8859_15;
+use encoding_rs::{Encoding, EUC_JP, ISO_2022_JP, ISO_8859_15, SHIFT_JIS, WINDOWS_1258};
+
+fn vrchat_supported_encodings() -> Vec<&'static Encoding> {
+    vec![ISO_2022_JP, ISO_8859_15, EUC_JP, SHIFT_JIS, WINDOWS_1258]
+}
 
 const VRCHAT_MAX_ALLOWED_STATUS_LENGTH: usize = 23;
 
@@ -110,18 +114,8 @@ fn clean_name_for_vrchat_status(dirty_name: &str) -> String {
     let mut iso_filtered_name = String::new();
 
     for ch in dirty_name.chars() {
-        // Convert char utf-8 str
-        let ch_string = ch.to_string();
-
-        // convert utf-8 str to the limited encoding and check if the character is supported.
-        let mut char_cleaned_buffer = [0u8; 20];
-        let (_, _, _, is_unsupported_character) = ISO_8859_15.new_encoder().encode_from_utf8(
-            &ch_string.as_str(),
-            &mut char_cleaned_buffer,
-            true,
-        );
-
-        if !is_unsupported_character {
+        println!("supported? {} -> {}", ch, is_supported_character(ch));
+        if is_supported_character(ch) {
             iso_filtered_name.push(ch);
         }
     }
@@ -131,6 +125,27 @@ fn clean_name_for_vrchat_status(dirty_name: &str) -> String {
         .split_whitespace()
         .collect::<Vec<&str>>()
         .join(" ")
+}
+
+fn is_supported_character(ch: char) -> bool {
+    vrchat_supported_encodings()
+        .iter()
+        .any(|enc| encoding_supports_char(enc, ch))
+}
+
+fn encoding_supports_char(encoding: &'static Encoding, ch: char) -> bool {
+    // Convert char utf-8 str
+    let ch_string = ch.to_string();
+
+    // convert utf-8 str to the limited encoding and check if the character is supported.
+    let mut char_cleaned_buffer = [0u8; 20];
+
+    let is_unsupported_character = encoding
+        .new_encoder()
+        .encode_from_utf8(&ch_string.as_str(), &mut char_cleaned_buffer, true)
+        .3;
+
+    !is_unsupported_character
 }
 
 #[cfg(test)]
@@ -271,8 +286,8 @@ mod tests {
     #[test]
     fn test_clean_name_for_vrchat_encoding_and_whitespace() {
         assert_eq!(
-            clean_name_for_vrchat_status("ValidName123!€ Špecial Chars Ž"),
-            "ValidName123!€ Špecial Chars Ž",
+            clean_name_for_vrchat_status("ValidName123!€š mō Špecial Chars Ž"),
+            "ValidName123!€š mō Špecial Chars Ž",
             "Should keep all valid ISO_8859_15 characters"
         );
 
