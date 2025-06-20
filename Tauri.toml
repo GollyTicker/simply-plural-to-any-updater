@@ -1,7 +1,7 @@
 identifier = "com.example.simplypluraltoanyupdater"
 
 [build]
-frontendDist = "target"
+frontendDist = "src/gui"
 
 [app.security]
 #csp = null from JSON. Omitting it here means Tauri will use its default CSP.
