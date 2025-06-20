@@ -39,6 +39,8 @@ async fn run_app_logic() -> Result<()> {
 fn run_tauri_application() -> Result<()> {
     tracing::info!("GUI mode selected. Initializing Tauri application...");
 
+    let tauri_ctx = tauri::generate_context!();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
         .setup(move |app| {
@@ -57,7 +59,7 @@ fn run_tauri_application() -> Result<()> {
 
             Ok(())
         })
-        .run(tauri::generate_context!()) // generate_context! should work with Tauri.toml in v2
+        .run(tauri_ctx) // generate_context! should work with Tauri.toml in v2
         .map_err(anyhow::Error::from)
 }
 
@@ -67,9 +69,7 @@ fn main() -> Result<()> {
     if cli_args.no_gui {
         no_gui_mode_tracing_setup();
         tracing::info!("No-GUI mode selected. Running in console.");
-        runtime::Runtime::new()
-            .unwrap()
-            .block_on(run_app_logic())
+        runtime::Runtime::new().unwrap().block_on(run_app_logic())
     } else {
         eprintln!("Start in GUI mode...");
         run_tauri_application()

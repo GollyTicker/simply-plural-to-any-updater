@@ -41,6 +41,8 @@ something readable in VRChat.
 
 ## For Developers
 
+Follow [these steps to install tauri](https://tauri.app/start/prerequisites/) for the rust GUI for local development.
+
 The environment variables are documented in `defaults.env` and `vrcupdater.sample.env`.
 
 All functionality is implemented using Rust and various libraries.

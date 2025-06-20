@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-rustfmt --edition 2021 src/**
+rustfmt --edition 2021 src/**.rs
