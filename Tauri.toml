@@ -1,15 +1,15 @@
 identifier = "com.example.simplypluraltoanyupdater"
 
 [build]
-frontendDist = "src/gui"
+frontendDist = "target"
 
 [app.security]
 #csp = null from JSON. Omitting it here means Tauri will use its default CSP.
 #If you need a specific CSP, define it here e.g. csp = "default-src 'self'"
 capabilities = [
- "event-listen",
- "event-emit",
- "window-all"
+#  "event-listen",
+#  "event-emit",
+#  "window-all"
 ]
 
 #Window definitions are now a map, with the label as the key.
