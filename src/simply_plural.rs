@@ -47,6 +47,13 @@ async fn enrich_fronter_ids_with_member_info(
 ) -> Result<Vec<MemberContent>> {
     let all_members = simply_plural_http_get_members(config, system_id).await?;
 
+    let all_custom_fronts = simply_plural_http_get_custom_fronts(config, system_id).await?;
+
+    eprintln!("custom fronts: {all_custom_fronts:?}");
+    // todo. continue here
+    // todo. return both kinds of results
+    // todo. add test where custom front is used alone as well as with others
+
     let fronters: Vec<String> = front_entries
         .iter()
         .map(|e| e.content.member.clone())
@@ -124,6 +131,28 @@ async fn simply_plural_http_get_members(
     Ok(result)
 }
 
+async fn simply_plural_http_get_custom_fronts(
+    config: &Config,
+    system_id: &String,
+) -> Result<Vec<CustomFront>> {
+    eprintln!("Fetching all Custom Fronts from SimplyPlural...");
+    let custom_fronts_url = format!(
+        "{}/customFronts/{}",
+        &config.simply_plural_base_url, system_id
+    );
+    let result = config
+        .client
+        .get(&custom_fronts_url)
+        .header("Authorization", &config.simply_plural_token)
+        .send()
+        .await?
+        .error_for_status()?
+        .json()
+        .await?;
+
+    Ok(result)
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct FrontEntry {
     pub content: FrontEntryContent,
@@ -131,8 +160,52 @@ pub struct FrontEntry {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct FrontEntryContent {
-    pub member: String, // member ID
+    pub member: String, // member ID or custom front ID
     pub uid: String,    // System ID
+}
+
+/*
+[
+    {
+        "exists": true,
+        "id": "688d41c8aa2e477e53000000",
+        "content": {
+            "name": "Cstm First",
+            "desc": "",
+            "avatarUrl": "",
+            "preventTrusted": true,
+            "private": true,
+            "supportDescMarkdown": true,
+            "preventsFrontNotifs": false,
+            "color": "#aa5b43",
+            "uid": "8cb797f91533438f8507bcebf14febd18dc605852521d117f21358f6d950480c",
+            "lastOperationTime": 1754087910796,
+            "buckets": [],
+            "avatarUuid": "",
+            "frame": {
+                "bgShape": "empty",
+                "bgClip": "none",
+                "bgStartColor": "#aa5b43",
+                "bgEndColor": "#aa5b43"
+            }
+        }
+    }
+]
+*/
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct CustomFront {
+    pub content: CustomFrontContent,
+    pub id: String, // custom front id
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct CustomFrontContent {
+    pub name: String,
+
+    #[serde(rename = "avatarUrl")]
+    #[serde(default)]
+    pub avatar_url: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]

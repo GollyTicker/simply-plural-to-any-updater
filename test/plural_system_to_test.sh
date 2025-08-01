@@ -5,6 +5,7 @@ export BORGNEN_ID="683f23f49aa189caf3000000"
 export CLENNTRO_ID="683f24009aa18acaf3000000"
 export DAENSSA_ID="683f24179aa18bcaf3000000"
 export TEST_MEMBER_ID="683f243e9aa18ccaf3000000"
+export CUSTOM_FRONT_1_ID="688d41c8aa2e477e53000000"
 
 
 set_system_fronts_set() {
