@@ -6,7 +6,7 @@ const VRCHAT_MAX_ALLOWED_STATUS_LENGTH: usize = 23;
 
 pub(crate) fn format_fronts_for_vrchat_status(
     config: &Config,
-    fronts: Vec<simply_plural::MemberContent>,
+    fronts: Vec<simply_plural::Fronter>,
 ) -> String {
     let cleaned_fronter_names = clean_fronter_names(fronts, &config.vrchat_updater_no_fronts);
     eprintln!(
@@ -24,7 +24,7 @@ pub(crate) fn format_fronts_for_vrchat_status(
 }
 
 fn clean_fronter_names(
-    fronts: Vec<simply_plural::MemberContent>,
+    fronts: Vec<simply_plural::Fronter>,
     name_if_no_fronters: &String,
 ) -> Vec<String> {
     if fronts.is_empty() {
@@ -32,7 +32,7 @@ fn clean_fronter_names(
     } else {
         fronts
             .iter()
-            .map(|m| clean_name_for_vrchat_status(&m.preferred_vrchat_status_name()))
+            .map(|f| clean_name_for_vrchat_status(&f.preferred_vrchat_status_name()))
             .collect()
     }
 }
@@ -137,7 +137,7 @@ fn clean_name_for_vrchat_status(dirty_name: &str) -> String {
 mod tests {
     use super::*;
     use crate::config::Config;
-    use crate::simply_plural::MemberContent;
+    use crate::simply_plural::Fronter;
 
     fn mock_config_for_format_tests(
         prefix: &str,
@@ -152,17 +152,16 @@ mod tests {
     }
 
     // Helper function to create mock MemberContent
-    fn mock_member_content(name: &str, vrchat_status_name: &str) -> MemberContent {
-        let info_as_json = if vrchat_status_name.is_empty() {
-            "{}".to_string()
-        } else {
-            format!("{{\"0\":\"{}\"}}", vrchat_status_name)
-        };
-        MemberContent {
+    fn mock_member_content(name: &str, vrchat_status_name: &str) -> Fronter {
+        Fronter {
+            id: String::new(),
             name: name.to_string(),
             avatar_url: String::new(),
-            vrcsn_field_id: Some("0".to_string()),
-            info: serde_json::from_str(&info_as_json).unwrap(),
+            vrchat_status_name: if vrchat_status_name.is_empty() {
+                None
+            } else {
+                Some(vrchat_status_name.to_owned())
+            },
         }
     }
 

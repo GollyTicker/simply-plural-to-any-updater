@@ -5,6 +5,7 @@ export BORGNEN_ID="683f23f49aa189caf3000000"
 export CLENNTRO_ID="683f24009aa18acaf3000000"
 export DAENSSA_ID="683f24179aa18bcaf3000000"
 export TEST_MEMBER_ID="683f243e9aa18ccaf3000000"
+export CUSTOM_FRONT_1_ID="688d41c8aa2e477e53000000"
 
 
 set_system_fronts_set() {
@@ -16,6 +17,7 @@ set_system_fronts_set() {
         set_to_front "$ANNALEA_ID"
         set_to_front "$BORGNEN_ID"
         set_to_front "$DAENSSA_ID"
+        set_to_front "$CUSTOM_FRONT_1_ID"
     elif [[ "$SET" == "B" ]]; then
         set_to_front "$TEST_MEMBER_ID"
     else
@@ -25,7 +27,7 @@ set_system_fronts_set() {
 
 
 set_to_front() {
-    MEMBER_ID="$1"
+    FRONTER_ID="$1"
     FRONT_ID="$(openssl rand -hex 12)" # produces valid 24 hexdec digits
     curl --silent --fail-with-body -L "https://api.apparyllis.com/v1/frontHistory/$FRONT_ID" \
         -H 'Content-Type: application/json' \
@@ -35,9 +37,10 @@ set_to_front() {
             \"custom\": false,
             \"live\": true,
             \"startTime\": 0,
-            \"member\": \"$MEMBER_ID\"
+            \"member\": \"$FRONTER_ID\"
         }" > /dev/null
-    echo "Set member $MEMBER_ID to front (id: $FRONT_ID)."
+    echo "Set member $FRONTER_ID to front (id: $FRONT_ID)."
+    rate_limiting_delay
 }
 
 
@@ -68,4 +71,8 @@ clear_all_fronts() {
                 "custom": false
             }'
     done <<< "$FRONTER_IDS"
+}
+
+rate_limiting_delay() {
+    sleep 0.5
 }

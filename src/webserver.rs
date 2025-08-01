@@ -27,7 +27,7 @@ async fn rest_get_fronting(
     Ok(RawHtml(html))
 }
 
-fn generate_html(config: &Config, fronts: Vec<simply_plural::MemberContent>) -> String {
+fn generate_html(config: &Config, fronts: Vec<simply_plural::Fronter>) -> String {
     let fronts_formatted = fronts
         .into_iter()
         .map(|m| -> String {

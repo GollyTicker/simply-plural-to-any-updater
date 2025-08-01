@@ -38,7 +38,8 @@ check_system_fronts_set() {
         grep '<div><img src="https://example.com/a" /><p>Annalea 💖 A.</p></div>' <<< "$HTML"
         grep '<div><img src="https://example.com/b" /><p>Borgnen 👍 B.</p></div>' <<< "$HTML"
         grep '<div><img src="" /><p>Daenssa 📶 D.</p></div>' <<< "$HTML"
-        [[ "$( grep '<div>' <<< "$HTML" | wc -l )" == "3" ]]
+        grep '<div><img src="" /><p>Cstm First</p></div>' <<< "$HTML"
+        [[ "$( grep '<div>' <<< "$HTML" | wc -l )" == "4" ]]
     elif [[ "$SET" == "B" ]]; then
         grep '<title>SP-Updater-Test - Fronting Status</title>' <<< "$HTML"
         grep '<div><img src="" /><p>tešt ▶️ t.</p></div>' <<< "$HTML"
