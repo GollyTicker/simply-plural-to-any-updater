@@ -20,13 +20,12 @@ pub async fn create_user(db_pool: &PgPool, username: &str, password_hash: &str) 
 }
 
 pub async fn get_user(db_pool: &PgPool, username: &str) -> Result<User> {
-    // let user = sqlx::query_as!(
-    //     User,
-    //     "SELECT id, username, password_hash FROM users WHERE username = $1",
-    //     username
-    // )
-    // .fetch_one(db_pool)
-    // .await?;
-    // Ok(user)
-    todo!()
+    let user = sqlx::query_as!(
+        User,
+        "SELECT id, username, password_hash FROM users WHERE username = $1",
+        username
+    )
+    .fetch_one(db_pool)
+    .await?;
+    Ok(user)
 }
