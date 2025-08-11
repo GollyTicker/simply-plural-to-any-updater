@@ -5,6 +5,7 @@ use crate::simply_plural;
 use crate::updater::UpdaterState;
 use crate::CliArgs;
 use anyhow::{anyhow, Result};
+use argon2::PasswordHash;
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2, PasswordVerifier,
@@ -41,7 +42,7 @@ pub async fn run_server(cli_args: CliArgs, config: Config, db_pool: PgPool) -> R
 }
 
 #[get("/updaters/state")]
-fn get_updaters_state() -> Json<Vec<UpdaterState>> {
+const fn get_updaters_state() -> Json<Vec<UpdaterState>> {
     // TODO: Return real updater state
     Json(vec![])
 }
@@ -154,16 +155,18 @@ async fn login(
     let user = database::get_user(db_pool, &credentials.username)
         .await
         .map_err(response::Debug)?;
-    let is_valid = Argon2::default()
-        .verify_password(credentials.password.as_bytes(), &user.password_hash)
-        .is_ok();
 
-    if is_valid {
-        let token = jwt::create_token(user.id, &config.jwt_secret)?;
-        Ok(Json(token))
-    } else {
-        Err(response::Debug(anyhow!("Invalid credentials")))
-    }
+    PasswordHash::new(&user.password_hash)
+        .map_err(|e| anyhow::anyhow!(e))
+        .and_then(|pwh| {
+            Argon2::default()
+                .verify_password(credentials.password.as_bytes(), &pwh)
+                .map_err(|e| anyhow::anyhow!(e))?;
+            // todo. get jwt secret from db
+            let token = jwt::create_token(user.id, "")?;
+            Ok(Json(token))
+        })
+        .map_err(|_| response::Debug(anyhow!("Invalid credentials")))
 }
 
 #[get("/config")]
@@ -172,9 +175,14 @@ async fn get_config(
     token: Result<jwt::Claims>,
 ) -> Result<Json<config_store::LocalJsonConfigV2>, response::Debug<anyhow::Error>> {
     let claims = token.map_err(response::Debug)?;
-    let config = config_store::load_config(db_pool, claims.user_id)
-        .await
-        .map_err(response::Debug)?;
+
+    // use db_pool and claims.sub instead and get user specific config
+    let config = config_store::read_local_config_file(&CliArgs {
+        config: String::new(),
+        database_url: String::new(),
+    })
+    .map_err(response::Debug)?;
+
     Ok(Json(config))
 }
 
@@ -185,7 +193,13 @@ async fn set_config(
     config: Json<config_store::LocalJsonConfigV2>,
 ) -> Result<(), response::Debug<anyhow::Error>> {
     let claims = token.map_err(response::Debug)?;
-    config_store::save_config(db_pool, claims.user_id, &config)
-        .await
-        .map_err(response::Debug)
+    // use this: db_pool, claims.sub
+    config_store::write_local_config_file(
+        &config.into_inner(),
+        &CliArgs {
+            config: String::new(),
+            database_url: String::new(),
+        },
+    )
+    .map_err(response::Debug)
 }

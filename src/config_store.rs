@@ -82,15 +82,6 @@ pub fn write_local_config_file(local_config: &LocalJsonConfigV2, cli_args: &CliA
     Ok(())
 }
 
-/// The bool is true, if a new config was created.
-pub fn initialise_if_not_exists(cli_args: &CliArgs) -> Result<bool> {
-    let fresh_config = !check_local_config_file_exists(cli_args)?;
-    if fresh_config {
-        write_local_config_file(&LocalJsonConfigV2::default(), cli_args)?;
-    }
-    Ok(fresh_config)
-}
-
 pub fn store_vrchat_cookie(cookie_str: &str, cli_args: &CliArgs) -> Result<()> {
     let mut local_config = read_local_config_file(cli_args)?;
     local_config.vrchat_cookie = Some(cookie_str.to_owned());

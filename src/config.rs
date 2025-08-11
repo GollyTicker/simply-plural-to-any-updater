@@ -30,9 +30,6 @@ pub struct Config {
 pub fn setup_and_load_config(cli_args: &CliArgs) -> Result<Config> {
     eprintln!("Loading config ...");
 
-    // This will run the Updater specific setup if not in webserver mode.
-    initialize_environment_for_updater(cli_args)?;
-
     let local_config_with_defaults = config_store::read_local_config_file(cli_args)?
         .with_option_defaults(config_store::default_config());
 
@@ -42,16 +39,13 @@ pub fn setup_and_load_config(cli_args: &CliArgs) -> Result<Config> {
         .timeout(request_timeout)
         .build()?;
 
-    let platform_updater_mode = !cli_args.webserver;
-    let enable_discord =
-        platform_updater_mode && config_value!(local_config_with_defaults, enable_discord)?;
-    let enable_vrchat =
-        platform_updater_mode && config_value!(local_config_with_defaults, enable_vrchat)?;
+    let enable_discord = config_value!(local_config_with_defaults, enable_discord)?;
+    let enable_vrchat = config_value!(local_config_with_defaults, enable_vrchat)?;
 
     let config = Config {
         client,
         wait_seconds: config_value!(local_config_with_defaults, wait_seconds)?,
-        system_name: config_value_if!(cli_args.webserver, local_config_with_defaults, system_name)?,
+        system_name: config_value!(local_config_with_defaults, system_name)?,
         simply_plural_token: config_value!(local_config_with_defaults, simply_plural_token)?,
         simply_plural_base_url: config_value!(local_config_with_defaults, simply_plural_base_url)?,
         enable_discord,
@@ -95,18 +89,4 @@ pub fn setup_and_load_config(cli_args: &CliArgs) -> Result<Config> {
     }
 
     Ok(config)
-}
-
-/// Sets up environment variables based on remote and local files for Updater mode.
-pub fn initialize_environment_for_updater(cli_args: &CliArgs) -> Result<()> {
-    if cli_args.webserver {
-        eprintln!("In webserver mode: Skipping Updater specific environment setup.");
-        return Ok(());
-    }
-    eprintln!("Running Updater specific environment setup...");
-
-    let _is_fresh_config = config_store::initialise_if_not_exists(cli_args)?;
-
-    eprintln!("Updater environment setup complete.");
-    Ok(())
 }
