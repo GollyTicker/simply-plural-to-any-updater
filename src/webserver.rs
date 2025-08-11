@@ -1,19 +1,49 @@
 use crate::config::Config;
+use crate::config_store;
+use crate::database;
 use crate::simply_plural;
+use crate::updater::UpdaterState;
+use crate::CliArgs;
 use anyhow::{anyhow, Result};
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
+    Argon2, PasswordVerifier,
+};
 use rocket::{
     response::{self, content::RawHtml},
+    serde::json::Json,
     State,
 };
+use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
 
-pub async fn run_server(config: Config) -> Result<()> {
+use crate::jwt;
+
+#[derive(Serialize, Deserialize)]
+pub struct UserCredentials {
+    username: String,
+    password: String,
+}
+
+pub async fn run_server(cli_args: CliArgs, config: Config, db_pool: PgPool) -> Result<()> {
     rocket::build()
         .manage(config)
+        .manage(cli_args)
+        .manage(db_pool)
         .mount("/", routes![rest_get_fronting])
+        .mount("/api", routes![get_updaters_state])
+        .mount("/api/auth", routes![register, login])
+        .mount("/api/config", routes![get_config, set_config])
         .launch()
         .await
         .map_err(|e| anyhow!(e))
-        .map(|_| ())
+        .map(|_| (()))
+}
+
+#[get("/updaters/state")]
+fn get_updaters_state() -> Json<Vec<UpdaterState>> {
+    // TODO: Return real updater state
+    Json(vec![])
 }
 
 #[get("/fronting")]
@@ -99,4 +129,63 @@ fn generate_html(config: &Config, fronts: Vec<simply_plural::Fronter>) -> String
         html_escape::encode_text(&config.system_name),
         fronts_formatted
     )
+}
+#[post("/register", data = "<credentials>")]
+async fn register(
+    db_pool: &State<PgPool>,
+    credentials: Json<UserCredentials>,
+) -> Result<(), response::Debug<anyhow::Error>> {
+    let salt = SaltString::generate(&mut OsRng);
+    let hashed_password = Argon2::default()
+        .hash_password(credentials.password.as_bytes(), &salt)
+        .map_err(|e| response::Debug(anyhow!(e)))?
+        .to_string();
+    database::create_user(db_pool, &credentials.username, &hashed_password)
+        .await
+        .map_err(response::Debug)
+}
+
+#[post("/login", data = "<credentials>")]
+async fn login(
+    db_pool: &State<PgPool>,
+    config: &State<Config>,
+    credentials: Json<UserCredentials>,
+) -> Result<Json<String>, response::Debug<anyhow::Error>> {
+    let user = database::get_user(db_pool, &credentials.username)
+        .await
+        .map_err(response::Debug)?;
+    let is_valid = Argon2::default()
+        .verify_password(credentials.password.as_bytes(), &user.password_hash)
+        .is_ok();
+
+    if is_valid {
+        let token = jwt::create_token(user.id, &config.jwt_secret)?;
+        Ok(Json(token))
+    } else {
+        Err(response::Debug(anyhow!("Invalid credentials")))
+    }
+}
+
+#[get("/config")]
+async fn get_config(
+    db_pool: &State<PgPool>,
+    token: Result<jwt::Claims>,
+) -> Result<Json<config_store::LocalJsonConfigV2>, response::Debug<anyhow::Error>> {
+    let claims = token.map_err(response::Debug)?;
+    let config = config_store::load_config(db_pool, claims.user_id)
+        .await
+        .map_err(response::Debug)?;
+    Ok(Json(config))
+}
+
+#[post("/config", data = "<config>")]
+async fn set_config(
+    db_pool: &State<PgPool>,
+    token: Result<jwt::Claims>,
+    config: Json<config_store::LocalJsonConfigV2>,
+) -> Result<(), response::Debug<anyhow::Error>> {
+    let claims = token.map_err(response::Debug)?;
+    config_store::save_config(db_pool, claims.user_id, &config)
+        .await
+        .map_err(response::Debug)
 }

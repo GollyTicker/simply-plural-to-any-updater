@@ -4,17 +4,16 @@
 #[macro_use]
 extern crate rocket;
 
-use std::sync::{Arc, Mutex};
-
 use anyhow::Result;
 use clap::Parser;
-use tokio::runtime;
+use sqlx::postgres::PgPoolOptions;
 
 mod config;
 mod config_store;
+mod database;
 mod discord;
 mod fronting_status;
-mod gui;
+mod jwt;
 mod macros;
 mod simply_plural;
 mod updater;
@@ -23,23 +22,19 @@ mod vrchat;
 mod vrchat_auth;
 mod webserver;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let cli_args = CliArgs::parse();
 
     let config = config::setup_and_load_config(&cli_args)?;
 
-    let updater_state = Arc::new(Mutex::new(updater_loop::initial_updaters_state()));
+    let db_pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&cli_args.database_url)
+        .await?;
 
-    if cli_args.webserver {
-        eprintln!("Running in Webserver mode ...");
-        run_async_blocking!(webserver::run_server(config))?;
-    } else if cli_args.no_gui {
-        eprintln!("Running SP2Any Updater in console mode ...");
-        run_async_blocking!(updater_loop::run_loop(&config, updater_state));
-    } else {
-        eprintln!("Starting SP2Any Updater in GUI mode ...");
-        gui::run_tauri_gui(&cli_args, updater_state)?;
-    }
+    eprintln!("Running in Webserver mode ...");
+    webserver::run_server(cli_args, config, db_pool).await?;
 
     Ok(())
 }
@@ -47,15 +42,11 @@ fn main() -> Result<()> {
 #[derive(Parser, Debug, Clone, Default)]
 #[clap(author, version, about, long_about = None)]
 pub struct CliArgs {
-    /// Run without the graphical user interface
-    #[arg(short, long, action = clap::ArgAction::SetTrue)]
-    pub no_gui: bool,
-
-    // Run in webserver mode. Implies no_gui.
-    #[arg(short, long, action = clap::ArgAction::SetTrue)]
-    pub webserver: bool,
-
     // Path to local json config file, if not default
     #[arg(short, long, default_value_t = String::new())]
     pub config: String,
+
+    // Database URL
+    #[arg(long, default_value_t = String::from("postgres://postgres:postgres@localhost/sp2any"))]
+    pub database_url: String,
 }
