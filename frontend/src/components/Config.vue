@@ -17,7 +17,9 @@ defineProps<{
 }>()
 
 import { ref, onMounted } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
+function invoke(_1: string, _2: any = undefined) {
+  return "todo. fetch";
+}
 
 const config = ref({});
 

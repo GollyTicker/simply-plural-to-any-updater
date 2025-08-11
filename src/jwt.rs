@@ -1,4 +1,3 @@
-
 use anyhow::Result;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};

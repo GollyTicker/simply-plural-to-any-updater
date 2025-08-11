@@ -52,7 +52,6 @@ runs:
       if: ${{ inputs.SKIP_TESTS }} == 'false'
       run: |
         ./release/cargo-build.sh
-        ./dev/tauri-build.sh
 
     - name: Unit tests
       shell: bash

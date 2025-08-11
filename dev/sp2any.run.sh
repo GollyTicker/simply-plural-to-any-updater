@@ -2,4 +2,6 @@
 
 set -euo pipefail
 
-./dev/tauri-dev.sh --config dev/sp2any.json
+./release/cargo-build.sh
+
+./target/release/sp2any --config dev/sp2any.json

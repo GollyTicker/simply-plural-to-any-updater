@@ -33,7 +33,6 @@ async fn main() -> Result<()> {
         .connect(&cli_args.database_url)
         .await?;
 
-    eprintln!("Running in Webserver mode ...");
     webserver::run_server(cli_args, config, db_pool).await?;
 
     Ok(())

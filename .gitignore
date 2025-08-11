@@ -9,6 +9,3 @@ sp2any.json
 
 # Log files
 *.log
-
-# tauri
-gen/schemas/

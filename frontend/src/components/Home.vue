@@ -11,7 +11,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, type Ref } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
+function invoke(_1: string, _2: any = undefined) {
+  return "todo. fetch";
+}
 
 // todo. keep in sync with backend
 type UpdaterState = {updater: string, status: any};
@@ -22,7 +24,7 @@ let refreshViewIntervalTimer: any = null;
 
 const fetchUpdatersState = async () => {
   try {
-    updaters.value = await invoke('get_updaters_state');
+    updaters.value = <any>await invoke('get_updaters_state');
     console.log("get_updaters_state: ", updaters.value);
   } catch (e) {
     console.error(e);

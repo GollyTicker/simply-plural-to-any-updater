@@ -65,11 +65,7 @@ There are a few breaking changes in how to run this program:
 
 ## For Developers
 
-Follow [these steps to install tauri](https://tauri.app/start/prerequisites/) for the rust GUI for local development.
-
-Build without tauri: `./release/cargo-build.sh`
-Build with tauri: `./dev/tauri-build.sh`
-Build with tauri with live server and hot replacement: `./dev/tauri-dev.sh`
+Build: `./release/cargo-build.sh`
 
 Lint and Format: `./release/lint.sh`
 
@@ -117,4 +113,3 @@ The strategy is to make your Rust code the single source of truth for any data s
 
 * Rename 'VRChat Status Name' field to 'SP2Any Simple Name' field
 * Ask on Reddit and various discord servers for what features the users want
-* Use tauri-spectra to have typesafe communication between tauri typescript and rust.
