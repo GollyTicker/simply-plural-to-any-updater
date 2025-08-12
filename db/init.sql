@@ -26,7 +26,6 @@ how to access:
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    username VARCHAR(127) NOT NULL UNIQUE,
     email VARCHAR(127) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -48,4 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
     enc__vrchat_username bytea,
     enc__vrchat_password bytea,
     enc__vrchat_cookie bytea
+
+    /* constraints to check manually before inserting into db:
+    whenever a platform is enabled, the corresponding fields must be not null.*/
 );

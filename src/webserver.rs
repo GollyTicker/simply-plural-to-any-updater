@@ -1,30 +1,20 @@
+use crate::auth;
 use crate::config::Config;
 use crate::config_store;
 use crate::database;
+use crate::model::ApplicationJwtSecret;
+use crate::model::JwtString;
+use crate::model::UserLoginCredentials;
 use crate::simply_plural;
 use crate::updater::UpdaterState;
 use crate::CliArgs;
 use anyhow::{anyhow, Result};
-use argon2::PasswordHash;
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
-    Argon2, PasswordVerifier,
-};
 use rocket::{
     response::{self, content::RawHtml},
     serde::json::Json,
     State,
 };
-use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
-
-use crate::jwt;
-
-#[derive(Serialize, Deserialize)]
-pub struct UserCredentials {
-    username: String,
-    password: String,
-}
 
 pub async fn run_server(cli_args: CliArgs, config: Config, db_pool: PgPool) -> Result<()> {
     rocket::build()
@@ -134,14 +124,11 @@ fn generate_html(config: &Config, fronts: Vec<simply_plural::Fronter>) -> String
 #[post("/register", data = "<credentials>")]
 async fn register(
     db_pool: &State<PgPool>,
-    credentials: Json<UserCredentials>,
+    credentials: Json<UserLoginCredentials>,
 ) -> Result<(), response::Debug<anyhow::Error>> {
-    let salt = SaltString::generate(&mut OsRng);
-    let hashed_password = Argon2::default()
-        .hash_password(credentials.password.as_bytes(), &salt)
-        .map_err(|e| response::Debug(anyhow!(e)))?
-        .to_string();
-    database::create_user(db_pool, &credentials.username, &hashed_password)
+    let pwh = auth::create_password_hash(credentials.password.clone())?;
+
+    database::create_user(db_pool, credentials.email.clone(), pwh)
         .await
         .map_err(response::Debug)
 }
@@ -150,29 +137,27 @@ async fn register(
 async fn login(
     db_pool: &State<PgPool>,
     config: &State<Config>,
-    credentials: Json<UserCredentials>,
-) -> Result<Json<String>, response::Debug<anyhow::Error>> {
-    let user = database::get_user(db_pool, &credentials.username)
+    credentials: Json<UserLoginCredentials>,
+) -> Result<Json<JwtString>, response::Debug<anyhow::Error>> {
+    let db_user = database::get_user(db_pool, credentials.email.clone())
         .await
         .map_err(response::Debug)?;
 
-    PasswordHash::new(&user.password_hash)
-        .map_err(|e| anyhow::anyhow!(e))
-        .and_then(|pwh| {
-            Argon2::default()
-                .verify_password(credentials.password.as_bytes(), &pwh)
-                .map_err(|e| anyhow::anyhow!(e))?;
-            // todo. get jwt secret from db
-            let token = jwt::create_token(user.id, "")?;
-            Ok(Json(token))
-        })
-        .map_err(|_| response::Debug(anyhow!("Invalid credentials")))
+    let jwt_secret = ApplicationJwtSecret {
+        inner: String::from("todo-get-this-secret-from-env-during-startup"),
+    };
+
+    let jwt_string =
+        auth::verify_password_and_create_token(credentials.password.clone(), db_user, jwt_secret)?;
+
+    Ok(Json(jwt_string))
 }
+// todo. how can we enable users to reset their password? Do I really have to do this all manually here???
 
 #[get("/config")]
 async fn get_config(
     db_pool: &State<PgPool>,
-    token: Result<jwt::Claims>,
+    token: Result<JwtString>,
 ) -> Result<Json<config_store::LocalJsonConfigV2>, response::Debug<anyhow::Error>> {
     let claims = token.map_err(response::Debug)?;
 
@@ -189,7 +174,7 @@ async fn get_config(
 #[post("/config", data = "<config>")]
 async fn set_config(
     db_pool: &State<PgPool>,
-    token: Result<jwt::Claims>,
+    token: Result<JwtString>,
     config: Json<config_store::LocalJsonConfigV2>,
 ) -> Result<(), response::Debug<anyhow::Error>> {
     let claims = token.map_err(response::Debug)?;

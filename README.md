@@ -65,6 +65,10 @@ There are a few breaking changes in how to run this program:
 
 ## For Developers
 
+Prerequisites:
+* Rust toolchain (ideally via rustup)
+* `cargo install sqlx-cli`
+
 Build: `./release/cargo-build.sh`
 
 Lint and Format: `./release/lint.sh`

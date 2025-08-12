@@ -8,13 +8,14 @@ use anyhow::Result;
 use clap::Parser;
 use sqlx::postgres::PgPoolOptions;
 
+mod auth;
 mod config;
 mod config_store;
 mod database;
 mod discord;
 mod fronting_status;
-mod jwt;
 mod macros;
+mod model;
 mod simply_plural;
 mod updater;
 mod updater_loop;
