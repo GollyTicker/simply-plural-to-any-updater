@@ -19,8 +19,6 @@ rm -v .sqlx/*.json || true
 
 cargo sqlx prepare
 
-# todo. maybe run tests here with db?
-
 ./docker/stop-test-db.sh
 
 unset DATABASE_URL
