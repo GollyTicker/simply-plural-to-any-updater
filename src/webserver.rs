@@ -21,10 +21,17 @@ pub async fn run_server(cli_args: CliArgs, config: Config, db_pool: PgPool) -> R
         .manage(config)
         .manage(cli_args)
         .manage(db_pool)
-        .mount("/", routes![rest_get_fronting])
-        .mount("/api", routes![get_updaters_state])
-        .mount("/api/auth", routes![register, login])
-        .mount("/api/config", routes![get_config, set_config])
+        .mount(
+            "/api",
+            routes![
+                rest_get_fronting,
+                get_updaters_state,
+                register,
+                login,
+                get_config,
+                set_config
+            ],
+        )
         .launch()
         .await
         .map_err(|e| anyhow!(e))
@@ -121,7 +128,8 @@ fn generate_html(config: &Config, fronts: Vec<simply_plural::Fronter>) -> String
         fronts_formatted
     )
 }
-#[post("/register", data = "<credentials>")]
+
+#[post("/user/register", data = "<credentials>")]
 async fn register(
     db_pool: &State<PgPool>,
     credentials: Json<UserLoginCredentials>,
@@ -133,7 +141,7 @@ async fn register(
         .map_err(response::Debug)
 }
 
-#[post("/login", data = "<credentials>")]
+#[post("/user/login", data = "<credentials>")]
 async fn login(
     db_pool: &State<PgPool>,
     config: &State<Config>,
@@ -154,7 +162,7 @@ async fn login(
 }
 // todo. how can we enable users to reset their password? Do I really have to do this all manually here???
 
-#[get("/config")]
+#[get("/user/config")]
 async fn get_config(
     db_pool: &State<PgPool>,
     token: Result<JwtString>,
@@ -171,7 +179,7 @@ async fn get_config(
     Ok(Json(config))
 }
 
-#[post("/config", data = "<config>")]
+#[post("/user/config", data = "<config>")]
 async fn set_config(
     db_pool: &State<PgPool>,
     token: Result<JwtString>,

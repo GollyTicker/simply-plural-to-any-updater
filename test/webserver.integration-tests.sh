@@ -52,23 +52,25 @@ check_system_fronts_set() {
     fi
 }
 
-WEBSERVER_FRONTING_URL="http://0.0.0.0:8000/fronting"
+WEBSERVER_FRONTING_URL="http://localhost:8000/api/fronting"
+
+export PATH_TO_CONFIG_JSON="$PWD/test/config.generated.json" # must use PWD here due to later usage in docker compose
+touch "$PATH_TO_CONFIG_JSON"
 
 start_webserver() {
     set -a; source release/config/server.defaults.env; set +a
     export SYSTEM_PUBLIC_NAME="SP-Updater-Test"
     write_env_vars_to_config_json
 
-    (./target/release/sp2any --webserver --config "$CONFIG_FILE" 2>&1 | tee .log | sed 's/^/sp2any | /' ) &
-
-    sleep 1s
+    ./docker/local.start.sh
 
     echo "Started webserver."
 }
 
 stop_webserver() {
-    pkill -f sp2any || true
+    ./docker/local.stop.sh
     echo "Stopped webserver."
 }
+trap stop_webserver EXIT
 
 main

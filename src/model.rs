@@ -62,3 +62,17 @@ pub struct UserLoginCredentials {
     pub email: Email,
     pub password: UserProvidedPassword,
 }
+
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_deserialize() {
+        let creds_str = "{ \"email\": { \"inner\": \"test@example.com\" }, \"password\": { \"inner\": \"password123\" } }";
+        let creds: UserLoginCredentials = serde_json::from_str(creds_str).unwrap();
+        assert_eq!(creds.email.inner, "test@example.com");
+        assert_eq!(creds.password.inner, "password123");
+        assert_eq!(creds.password.inner, "password123");
+    }
+}

@@ -1,17 +1,20 @@
 services:
 
-#   sp2any-webserver:
-#     container_name: sp2any-webserver
-#     build:
-#       dockerfile: server.Dockerfile
-#       context: .
-#     env_file:
-#       - release/config/server.defaults.env
-#     volumes:
-#       - ./sp2any.json:/root/.config/sp2any/sp2any.json
-#     command: "--webserver --no-gui"
-#     restart: "on-failure:2"
-#     network_mode: host
+  sp2any-webserver:
+    container_name: sp2any-webserver
+    build:
+      dockerfile: docker/sp2any.Dockerfile
+      context: ..
+      args:
+        PATH_TO_EXEC: ../target/release/sp2any
+    env_file:
+      - ../release/config/server.defaults.env
+    volumes:
+      - ${PATH_TO_CONFIG_JSON}:/root/.config/sp2any/sp2any.json
+    command: "--database-url postgres://postgres:postgres@localhost:5432/sp2any"
+    network_mode: host
+    # ports:
+    #   - 8000:8000
 
   sp2any-db:
     image: postgres:17-alpine
@@ -23,9 +26,10 @@ services:
     volumes:
       - ./../db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - sp2any-data:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
     restart: "on-failure:2"
+    network_mode: host
+    # ports:
+    #   - 5432:5432
 
 volumes:
   sp2any-data:

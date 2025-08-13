@@ -164,19 +164,55 @@ reset_changed_variables() {
 }
 
 
+create_and_login_test_user() {
+    JSON="{
+        \"email\": { \"inner\": \"test@example.com\" },
+        \"password\": { \"inner\": \"mypwd\" }
+    }"
+
+    curl -s --fail-with-body \
+        -H "Content-Type: application/json" \
+        -d "$JSON" \
+        "$UPDATER_URL/api/user/register"
+
+    JWT_JSON="$(
+        curl -s --fail-with-body \
+            -H "Content-Type: application/json" \
+            -d "$JSON" \
+            "$UPDATER_URL/api/user/login"
+    )"
+
+    JWT="$(echo "$JWT_JSON" | jq -r .inner)"
+
+    echo "jwt: $JWT"
+
+    # todo. continue here.
+    # set config
+    # start updaters
+    # check status
+
+    return 1
+}
+
+UPDATER_URL="http://localhost:8000"
+
+export PATH_TO_CONFIG_JSON="$PWD/test/config.generated.json" # must use PWD here due to later usage in docker compose
+touch "$PATH_TO_CONFIG_JSON"
+
 start_updater() {
     write_env_vars_to_config_json
 
-    (./target/release/sp2any --no-gui --config "$CONFIG_FILE" 2>&1 | tee .log | sed 's/^/sp2any | /' ) &
+    ./docker/local.start.sh
 
-    sleep 5s
+    create_and_login_test_user
 
     echo "Started Updater."
 }
 
 stop_updater() {
-    pkill -f sp2any || true
+    ./docker/local.stop.sh
     echo "Stopped Updater."
 }
+trap stop_updater EXIT
 
 main

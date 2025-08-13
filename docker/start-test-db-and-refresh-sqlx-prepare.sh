@@ -3,8 +3,9 @@
 set -euo pipefail
 
 source docker/source.sh
+export PATH_TO_CONFIG_JSON="./does-not-exist"
 
-./docker/stop-test-db.sh || true
+./docker/local.stop.sh || true
 
 docker compose -f docker/local.compose.yml pull
 docker compose -f docker/local.compose.yml up sp2any-db -d
@@ -19,7 +20,7 @@ rm -v .sqlx/*.json || true
 
 cargo sqlx prepare
 
-./docker/stop-test-db.sh
+./docker/local.stop.sh
 
 unset DATABASE_URL
 

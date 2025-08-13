@@ -22,7 +22,7 @@ pub async fn create_user(
     )
     .execute(db_pool)
     .await
-    .map(|x| ())
+    .map(|_| ())
     .map_err(|e| anyhow!(e))
 }
 

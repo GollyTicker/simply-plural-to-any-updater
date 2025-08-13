@@ -4,6 +4,8 @@
 #[macro_use]
 extern crate rocket;
 
+use std::time::Duration;
+
 use anyhow::Result;
 use clap::Parser;
 use sqlx::postgres::PgPoolOptions;
@@ -31,6 +33,7 @@ async fn main() -> Result<()> {
 
     let db_pool = PgPoolOptions::new()
         .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
         .connect(&cli_args.database_url)
         .await?;
 
@@ -47,6 +50,6 @@ pub struct CliArgs {
     pub config: String,
 
     // Database URL
-    #[arg(long, default_value_t = String::from("postgres://postgres:postgres@localhost/sp2any"))]
+    #[arg(long)]
     pub database_url: String,
 }
