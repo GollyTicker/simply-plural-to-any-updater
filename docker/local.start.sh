@@ -4,8 +4,6 @@ set -euo pipefail
 
 source docker/source.sh
 
-export PATH_TO_CONFIG_JSON="${PATH_TO_CONFIG_JSON-./does-not-exist}"
-
 
 ./docker/local.stop.sh
 

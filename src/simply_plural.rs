@@ -3,9 +3,9 @@ use std::string::ToString;
 use anyhow::Result;
 use serde::Deserialize;
 
-use crate::config::Config;
+use crate::config::UserConfig;
 
-pub async fn fetch_fronts(config: &Config) -> Result<Vec<Fronter>> {
+pub async fn fetch_fronts(config: &UserConfig) -> Result<Vec<Fronter>> {
     let front_entries = simply_plural_http_request_get_fronters(config).await?;
 
     if front_entries.is_empty() {
@@ -30,7 +30,7 @@ pub async fn fetch_fronts(config: &Config) -> Result<Vec<Fronter>> {
 async fn get_all_members_and_custom_fronters(
     system_id: &String,
     vrcsn_field_id: Option<String>,
-    config: &Config,
+    config: &UserConfig,
 ) -> Result<Vec<Fronter>> {
     let all_members: Vec<Fronter> = simply_plural_http_get_members(config, system_id)
         .await?
@@ -76,7 +76,7 @@ fn filter_frontables_by_front_entries(
     fronters
 }
 
-async fn simply_plural_http_request_get_fronters(config: &Config) -> Result<Vec<FrontEntry>> {
+async fn simply_plural_http_request_get_fronters(config: &UserConfig) -> Result<Vec<FrontEntry>> {
     eprintln!("Fetching fronts from SimplyPlural...");
     let fronts_url = format!("{}/fronters", &config.simply_plural_base_url);
     let result = config
@@ -93,7 +93,7 @@ async fn simply_plural_http_request_get_fronters(config: &Config) -> Result<Vec<
 }
 
 async fn get_vrchat_status_name_field_id(
-    config: &Config,
+    config: &UserConfig,
     system_id: &String,
 ) -> Result<Option<String>> {
     eprintln!("Fetching custom fields from SimplyPlural...");
@@ -121,7 +121,7 @@ async fn get_vrchat_status_name_field_id(
 }
 
 async fn simply_plural_http_get_members(
-    config: &Config,
+    config: &UserConfig,
     system_id: &String,
 ) -> Result<Vec<Member>> {
     eprintln!("Fetching all members from SimplyPlural..");
@@ -140,7 +140,7 @@ async fn simply_plural_http_get_members(
 }
 
 async fn simply_plural_http_get_custom_fronts(
-    config: &Config,
+    config: &UserConfig,
     system_id: &String,
 ) -> Result<Vec<CustomFront>> {
     eprintln!("Fetching all Custom Fronts from SimplyPlural...");

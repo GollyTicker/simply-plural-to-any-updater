@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::UserConfig;
 use crate::fronting_status;
 use crate::record_if_error;
 use crate::simply_plural;
@@ -24,7 +24,7 @@ impl VRChatUpdater {
         }
     }
 
-    pub async fn setup(&mut self, config: &Config) -> Result<()> {
+    pub async fn setup(&mut self, config: &UserConfig) -> Result<()> {
         let init_value = record_if_error!(self, vrchat_auth::authenticate_vrchat(config).await);
         self.initialized = Some(init_value?);
         Ok(())
@@ -32,7 +32,7 @@ impl VRChatUpdater {
 
     pub async fn update_fronting_status(
         &mut self,
-        config: &Config,
+        config: &UserConfig,
         fronts: &[simply_plural::Fronter],
     ) -> Result<()> {
         let initialized_updater = record_if_error!(
@@ -49,7 +49,7 @@ impl VRChatUpdater {
 }
 
 async fn update_to_vrchat(
-    config: &Config,
+    config: &UserConfig,
     initialized_updater: &InitializedUpdater,
     fronts: &[simply_plural::Fronter],
 ) -> Result<()> {

@@ -54,13 +54,12 @@ check_system_fronts_set() {
 
 WEBSERVER_FRONTING_URL="http://localhost:8000/api/fronting"
 
-export PATH_TO_CONFIG_JSON="$PWD/test/config.generated.json" # must use PWD here due to later usage in docker compose
-touch "$PATH_TO_CONFIG_JSON"
-
 start_webserver() {
     set -a; source release/config/server.defaults.env; set +a
-    export SYSTEM_PUBLIC_NAME="SP-Updater-Test"
-    write_env_vars_to_config_json
+    
+    # todo. 
+    #export SYSTEM_PUBLIC_NAME="SP-Updater-Test"
+    #get_user_config_json
 
     ./docker/local.start.sh
 

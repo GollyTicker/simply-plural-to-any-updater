@@ -9,8 +9,6 @@ services:
         PATH_TO_EXEC: ../target/release/sp2any
     env_file:
       - ../release/config/server.defaults.env
-    volumes:
-      - ${PATH_TO_CONFIG_JSON}:/root/.config/sp2any/sp2any.json
     command: "--database-url postgres://postgres:postgres@localhost:5432/sp2any"
     network_mode: host
     # ports:

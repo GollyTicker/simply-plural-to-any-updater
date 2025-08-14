@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use tokio::time::sleep;
 
 use crate::{
-    config::Config,
+    config::UserConfig,
     simply_plural::{self},
     updater::{self, Updater, UpdaterState, UpdaterStatus},
 };
@@ -19,7 +19,7 @@ pub fn initial_updaters_state() -> Vec<UpdaterState> {
         .collect()
 }
 
-pub async fn run_loop(config: &Config, updater_state: Arc<Mutex<Vec<UpdaterState>>>) {
+pub async fn run_loop(config: &UserConfig, updater_state: Arc<Mutex<Vec<UpdaterState>>>) {
     eprintln!("Running Updater ...");
 
     let mut updaters: Vec<Updater> = updater::implemented_updaters()
@@ -58,7 +58,7 @@ pub async fn run_loop(config: &Config, updater_state: Arc<Mutex<Vec<UpdaterState
 }
 
 fn write_updaters_state_to_arc(
-    config: &Config,
+    config: &UserConfig,
     updater_state: &Arc<Mutex<Vec<UpdaterState>>>,
     updaters: &[Updater],
 ) {
@@ -71,7 +71,7 @@ fn write_updaters_state_to_arc(
     }
 }
 
-async fn loop_logic(config: &Config, updaters: &mut [Updater]) -> Result<()> {
+async fn loop_logic(config: &UserConfig, updaters: &mut [Updater]) -> Result<()> {
     let fronts = simply_plural::fetch_fronts(config).await?;
 
     for updater in updaters {

@@ -196,12 +196,7 @@ create_and_login_test_user() {
 
 UPDATER_URL="http://localhost:8000"
 
-export PATH_TO_CONFIG_JSON="$PWD/test/config.generated.json" # must use PWD here due to later usage in docker compose
-touch "$PATH_TO_CONFIG_JSON"
-
 start_updater() {
-    write_env_vars_to_config_json
-
     ./docker/local.start.sh
 
     create_and_login_test_user

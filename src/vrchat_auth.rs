@@ -1,5 +1,4 @@
-use crate::config::Config;
-use crate::config_store;
+use crate::config::UserConfig;
 
 use anyhow::{anyhow, Error, Result};
 use reqwest::cookie::{self, CookieStore};
@@ -22,7 +21,7 @@ const VRCHAT_UPDATER_USER_AGENT: &str = concat!(
 
 const VRCHAT_COOKIE_URL: &str = "https://api.vrchat.cloud";
 
-pub async fn authenticate_vrchat(config: &Config) -> Result<(Configuration, String)> {
+pub async fn authenticate_vrchat(config: &UserConfig) -> Result<(Configuration, String)> {
     let cookie_store = Arc::new(cookie::Jar::default());
 
     let vrchat_config =
@@ -40,7 +39,7 @@ pub async fn authenticate_vrchat(config: &Config) -> Result<(Configuration, Stri
 }
 
 fn new_vrchat_config_with_basic_auth_and_optional_cookie(
-    config: &Config,
+    config: &UserConfig,
     cookie_store: &Arc<cookie::Jar>,
 ) -> Result<Configuration> {
     let cookie_url = &Url::from_str(VRCHAT_COOKIE_URL)?;
@@ -63,7 +62,7 @@ fn new_vrchat_config_with_basic_auth_and_optional_cookie(
 }
 
 async fn authenticate_vrchat_user(
-    config: &Config,
+    config: &UserConfig,
     vrchat_config: &Configuration,
 ) -> Result<bool, Error> {
     let new_cookie_recieved_due_to_2fa = match authentication_api::get_current_user(vrchat_config)
@@ -102,15 +101,15 @@ async fn authenticate_vrchat_user(
     Ok(new_cookie_recieved_due_to_2fa)
 }
 
-fn store_new_cookie(config: &Config, cookie_store: &Arc<cookie::Jar>) -> Result<()> {
+fn store_new_cookie(config: &UserConfig, cookie_store: &Arc<cookie::Jar>) -> Result<()> {
     let cookie_url = &Url::from_str(VRCHAT_COOKIE_URL)?;
     let cookie_value = cookie_store
         .cookies(cookie_url)
         .ok_or_else(|| Error::msg("no cookies"))?;
-    config_store::store_vrchat_cookie(cookie_value.to_str()?, &config.cli_args)
+    todo!() // store_vrchat_cookie( cookie_value.to_str()? )
 }
 
-async fn get_vrchat_user_id(config: &Config, vrchat_config: &Configuration) -> Result<String> {
+async fn get_vrchat_user_id(config: &UserConfig, vrchat_config: &Configuration) -> Result<String> {
     match authentication_api::get_current_user(vrchat_config).await? {
         EitherUserOrTwoFactor::CurrentUser(user) => Ok(user.id),
         EitherUserOrTwoFactor::RequiresTwoFactorAuth(_) => Err(anyhow!(

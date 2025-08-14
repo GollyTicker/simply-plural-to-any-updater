@@ -2,14 +2,48 @@ use anyhow::{anyhow, Result};
 use reqwest::Client;
 use std::time::Duration;
 
-use crate::config_store;
-use crate::CliArgs;
 use crate::{config_value, config_value_if};
+use serde::{Deserialize, Serialize};
+
+use sp2any_macros::WithOptionDefaults;
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize, WithOptionDefaults)]
+pub struct UserConfigDbEntries {
+    // None: Use default value, if available
+    // Some(x): Use this value
+    pub wait_seconds: Option<Duration>,
+    pub system_name: Option<String>,
+    pub simply_plural_token: Option<String>,
+    pub simply_plural_base_url: Option<String>,
+    pub enable_discord: Option<bool>,
+    pub enable_vrchat: Option<bool>,
+    pub discord_base_url: Option<String>,
+    pub discord_token: Option<String>,
+    pub vrchat_username: Option<String>,
+    pub vrchat_password: Option<String>,
+    pub vrchat_updater_prefix: Option<String>,
+    pub vrchat_updater_no_fronts: Option<String>,
+    pub vrchat_updater_truncate_names_to: Option<usize>,
+    pub vrchat_cookie: Option<String>,
+}
+
+pub fn default_user_db_entries() -> UserConfigDbEntries {
+    UserConfigDbEntries {
+        vrchat_updater_prefix: Some(String::from("F:")),
+        vrchat_updater_no_fronts: Some(String::from("none?")),
+        vrchat_updater_truncate_names_to: Some(3),
+        discord_base_url: Some(String::from("https://discord.com")),
+        simply_plural_base_url: Some(String::from("https://api.apparyllis.com/v1")),
+        wait_seconds: Some(Duration::from_secs(60)),
+        enable_discord: Some(false),
+        enable_vrchat: Some(false),
+        ..Default::default()
+    }
+}
 
 #[derive(Debug, Clone, Default)]
-pub struct Config {
+pub struct UserConfig {
     pub client: Client,
-    pub cli_args: CliArgs,
     // Note: Keep this in sync with config_store::LocalJsonConfigV2 !
     pub wait_seconds: Duration,
     pub system_name: String,
@@ -27,22 +61,18 @@ pub struct Config {
     pub vrchat_cookie: String,
 }
 
-pub fn setup_and_load_config(cli_args: &CliArgs) -> Result<Config> {
+pub fn create_config_with_strong_constraints(
+    client: Client,
+    db_config: UserConfigDbEntries,
+) -> Result<UserConfig> {
     eprintln!("Loading config ...");
 
-    let local_config_with_defaults = config_store::read_local_config_file(cli_args)?
-        .with_option_defaults(config_store::default_config());
-
-    let request_timeout = config_value!(local_config_with_defaults, request_timeout)?;
-    let client = Client::builder()
-        .cookie_store(true)
-        .timeout(request_timeout)
-        .build()?;
+    let local_config_with_defaults = db_config.with_option_defaults(default_user_db_entries());
 
     let enable_discord = config_value!(local_config_with_defaults, enable_discord)?;
     let enable_vrchat = config_value!(local_config_with_defaults, enable_vrchat)?;
 
-    let config = Config {
+    let config = UserConfig {
         client,
         wait_seconds: config_value!(local_config_with_defaults, wait_seconds)?,
         system_name: config_value!(local_config_with_defaults, system_name)?,
@@ -77,8 +107,7 @@ pub fn setup_and_load_config(cli_args: &CliArgs) -> Result<Config> {
         )?,
         vrchat_cookie: config_value!(local_config_with_defaults, vrchat_cookie)
             .inspect(|_| eprintln!("A VRChat cookie was found and will be used."))
-            .unwrap_or(String::new()),
-        cli_args: cli_args.clone(),
+            .unwrap_or_default(),
     };
 
     if !config.vrchat_username.is_empty() {
@@ -89,4 +118,30 @@ pub fn setup_and_load_config(cli_args: &CliArgs) -> Result<Config> {
     }
 
     Ok(config)
+}
+
+#[cfg(test)]
+mod tests {
+    use anyhow::Result;
+
+    use super::*;
+
+    #[test]
+    fn generate_example_json() -> Result<()> {
+        let example_config = UserConfigDbEntries {
+            simply_plural_token: Some(String::from("simply plural token")),
+            discord_token: Some(String::from("discord token")),
+            system_name: Some(String::from("Our System")),
+            vrchat_username: Some(String::from("vrchat username")),
+            vrchat_password: Some(String::from("vrchat password")),
+            vrchat_cookie: Some(String::from("automatically set when using vrchat")),
+            ..default_user_db_entries()
+        };
+
+        let example_json_string = serde_json::to_string_pretty(&example_config)?;
+
+        println!("{example_json_string}");
+
+        Ok(())
+    }
 }

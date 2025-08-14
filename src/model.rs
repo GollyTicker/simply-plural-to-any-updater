@@ -63,9 +63,8 @@ pub struct UserLoginCredentials {
     pub password: UserProvidedPassword,
 }
 
-
 mod tests {
-    use super::*;
+    
 
     #[test]
     fn test_deserialize() {

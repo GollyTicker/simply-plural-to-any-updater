@@ -4,4 +4,4 @@ set -euo pipefail
 
 ./release/cargo-build.sh
 
-./target/release/sp2any --config dev/sp2any.json
+./target/release/sp2any --database-url todo
