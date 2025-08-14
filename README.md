@@ -121,3 +121,7 @@ The strategy is to make your Rust code the single source of truth for any data s
 #### User Feedback
 * discord rich presence / activity as additonal option instead of status only
 * sync from and to pluralkit as well (checkout pk-rpc)
+* add a warning, that using the discord self-botting comes with a risk for both the user and the dev
+  * [artcle by discord](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots)
+  * [self-botting](https://gist.github.com/nomsi/2684f5692cad5b0ceb52e308631859fd)
+  * [reddit 1](https://old.reddit.com/r/Discord_selfbots/comments/t9o5xf/anyone_got_banned/), [reddit 2](https://old.reddit.com/r/discordapp/comments/7nl35v/regarding_the_ban_on_selfbots/)
