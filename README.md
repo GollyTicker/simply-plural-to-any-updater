@@ -120,4 +120,4 @@ The strategy is to make your Rust code the single source of truth for any data s
 
 #### User Feedback
 * discord rich presence / activity as additonal option instead of status only
-
+* sync from and to pluralkit as well (checkout pk-rpc)
