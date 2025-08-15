@@ -135,3 +135,57 @@ pub fn create_config_with_strong_constraints(
 
     Ok(config)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::DecryptedDbSecret;
+
+    #[test]
+    fn test_user_config_db_entries_serialization() {
+        let config = UserConfigDbEntries::<DecryptedDbSecret> {
+            wait_seconds: Some(30),
+            system_name: Some("My System".to_string()),
+            status_prefix: Some("SP:".to_string()),
+            status_no_fronts: Some("No one fronting".to_string()),
+            status_truncate_names_to: Some(5),
+            enable_discord: Some(true),
+            enable_vrchat: Some(false),
+            simply_plural_token: Some(DecryptedDbSecret {
+                secret: "sp_token_123".to_string(),
+            }),
+            discord_token: Some(DecryptedDbSecret {
+                secret: "discord_token_abc".to_string(),
+            }),
+            vrchat_username: None,
+            vrchat_password: None,
+            vrchat_cookie: None,
+            discord_base_url: Some("https://discord.com/api".to_string()),
+            simply_plural_base_url: Some("https://api.simplyplural.com".to_string()),
+        };
+
+        let json_string = serde_json::to_string_pretty(&config).unwrap();
+        let expected_json = r#"{
+  "wait_seconds": 30,
+  "system_name": "My System",
+  "status_prefix": "SP:",
+  "status_no_fronts": "No one fronting",
+  "status_truncate_names_to": 5,
+  "enable_discord": true,
+  "enable_vrchat": false,
+  "simply_plural_token": {
+    "secret": "sp_token_123"
+  },
+  "discord_token": {
+    "secret": "discord_token_abc"
+  },
+  "vrchat_username": null,
+  "vrchat_password": null,
+  "vrchat_cookie": null,
+  "discord_base_url": "https://discord.com/api",
+  "simply_plural_base_url": "https://api.simplyplural.com"
+}"#;
+
+        assert_eq!(json_string, expected_json);
+    }
+}

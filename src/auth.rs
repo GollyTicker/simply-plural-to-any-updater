@@ -16,8 +16,8 @@ use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
 
 use crate::{
-    database::User,
-    model::{ApplicationJwtSecret, PasswordHashString, SecretType, UserId, UserProvidedPassword},
+    database::UserInfo,
+    model::{ApplicationJwtSecret, PasswordHashString, UserId, UserProvidedPassword},
 };
 
 pub fn create_password_hash(password: UserProvidedPassword) -> Result<PasswordHashString> {
@@ -32,14 +32,14 @@ pub fn create_password_hash(password: UserProvidedPassword) -> Result<PasswordHa
     })
 }
 
-pub fn verify_password_and_create_token<T: SecretType>(
+pub fn verify_password_and_create_token(
     password: UserProvidedPassword,
-    db_user: User<T>,
+    user_info: UserInfo,
     jwt_secret: &ApplicationJwtSecret,
 ) -> Result<JwtString> {
     // don't allow external user to infer what exactly failed
 
-    let pwh = PasswordHash::new(&db_user.password_hash.inner)
+    let pwh = PasswordHash::new(&user_info.password_hash.inner)
         .map_err(|_| anyhow!("Invalid email/password"))?;
 
     Argon2::default()
@@ -47,7 +47,7 @@ pub fn verify_password_and_create_token<T: SecretType>(
         .map_err(|_| anyhow!("Invalid email/password"))?;
 
     let token =
-        create_token(db_user.id, jwt_secret).map_err(|_| anyhow!("Invalid email/password"))?;
+        create_token(user_info.id, jwt_secret).map_err(|_| anyhow!("Invalid email/password"))?;
 
     Ok(token)
 }
@@ -103,15 +103,20 @@ impl<'r> FromRequest<'r> for Jwt {
 
         jwt_secret.and_then(|jwt_secret| {
             let token = JwtString {
-                inner: auth_header_value.to_owned(),
+                inner: auth_header_value
+                    .trim_start_matches("Bearer")
+                    .trim()
+                    .to_owned(),
             };
-            match verify_jwt(token, jwt_secret) {
+            match verify_jwt(&token, jwt_secret) {
                 Ok(claims) => Outcome::Success(Self { claims }),
-                Err(_err) => Outcome::Error((
-                    // todo. log error internally, but don't bubble it to user
-                    Status::Forbidden,
-                    response::Debug(anyhow!("Token verification failed")),
-                )),
+                Err(err) => {
+                    eprintln!("Token verification failed: {err}");
+                    Outcome::Error((
+                        Status::Forbidden,
+                        response::Debug(anyhow!("Token verification failed")),
+                    ))
+                }
             }
         })
     }
@@ -139,7 +144,7 @@ pub fn create_token(user_id: UserId, jwt_secret: &ApplicationJwtSecret) -> Resul
     Ok(JwtString { inner: token })
 }
 
-pub fn verify_jwt(token: JwtString, jwt_secret: &ApplicationJwtSecret) -> Result<Claims> {
+pub fn verify_jwt(token: &JwtString, jwt_secret: &ApplicationJwtSecret) -> Result<Claims> {
     let token_data = jsonwebtoken::decode::<Claims>(
         &token.inner,
         &jsonwebtoken::DecodingKey::from_secret(jwt_secret.inner.as_bytes()),

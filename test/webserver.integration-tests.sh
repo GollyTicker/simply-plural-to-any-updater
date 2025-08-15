@@ -52,16 +52,18 @@ check_system_fronts_set() {
     fi
 }
 
-WEBSERVER_FRONTING_URL="http://localhost:8000/api/fronting"
+export BASE_URL="http://localhost:8000"
+WEBSERVER_FRONTING_URL="$BASE_URL/api/fronting"
+export SYSTEM_PUBLIC_NAME="SP-Updater-Test"
+ENABLE_DISCORD=false
+ENABLE_VRCHAT=false
 
 start_webserver() {
     set -a; source release/config/server.defaults.env; set +a
-    
-    # todo. 
-    #export SYSTEM_PUBLIC_NAME="SP-Updater-Test"
-    #get_user_config_json
 
     ./docker/local.start.sh
+
+    setup_test_user
 
     echo "Started webserver."
 }

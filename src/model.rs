@@ -25,11 +25,6 @@ impl From<Uuid> for UserId {
     }
 }
 
-pub enum EmailOrUserId {
-    Email(Email),
-    UserId(UserId),
-}
-
 #[derive(Deserialize, Clone)]
 pub struct UserProvidedPassword {
     pub inner: String,
@@ -91,7 +86,7 @@ impl<'r> Decode<'r, Postgres> for EncryptedDbSecret {
     }
 }
 
-#[derive(Default, Clone, Deserialize, FromRow, Type, PartialEq, Eq)]
+#[derive(Default, Clone, Serialize, Deserialize, FromRow, Type, PartialEq, Eq)]
 pub struct DecryptedDbSecret {
     pub secret: String,
 }

@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 /*
 secrets fields are stored as encrypted bytea fields.
 we use the users hash(uuid + application_user_secret) as the secret.
-(specifinally argon2.password_hash(password = application_user_secret, salt = user_uuid))
+(specifically sha256(user_uuid, application_user_secret) has hex_string)
 This secret is same for an individual users' fields, but different for each user.
 
 WHEN THE SALT IS CHANGED, THEN WE NEED TO RE-ENCRYPT ALL ENCRYPTED VALUES! TAKE CARE!

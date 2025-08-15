@@ -2682,6 +2682,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
+ "sha2",
  "sp2any_macros",
  "sqlx",
  "strum_macros",

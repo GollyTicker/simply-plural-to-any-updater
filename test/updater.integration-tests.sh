@@ -164,42 +164,12 @@ reset_changed_variables() {
 }
 
 
-create_and_login_test_user() {
-    JSON="{
-        \"email\": { \"inner\": \"test@example.com\" },
-        \"password\": { \"inner\": \"mypwd\" }
-    }"
-
-    curl -s --fail-with-body \
-        -H "Content-Type: application/json" \
-        -d "$JSON" \
-        "$UPDATER_URL/api/user/register"
-
-    JWT_JSON="$(
-        curl -s --fail-with-body \
-            -H "Content-Type: application/json" \
-            -d "$JSON" \
-            "$UPDATER_URL/api/user/login"
-    )"
-
-    JWT="$(echo "$JWT_JSON" | jq -r .inner)"
-
-    echo "jwt: $JWT"
-
-    # todo. continue here.
-    # set config
-    # start updaters
-    # check status
-
-    return 1
-}
-
-UPDATER_URL="http://localhost:8000"
+export BASE_URL="http://localhost:8000"
 
 start_updater() {
     ./docker/local.start.sh
 
-    create_and_login_test_user
+    setup_test_user
 
     echo "Started Updater."
 }

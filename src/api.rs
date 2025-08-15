@@ -1,4 +1,3 @@
-
 use crate::auth;
 use crate::auth::Jwt;
 use crate::auth::JwtString;
@@ -27,15 +26,15 @@ pub async fn run_server(cli_args: CliArgs, client: Client, db_pool: PgPool) -> R
     let jwt_secret = ApplicationJwtSecret {
         inner: cli_args.jwt_application_secret.clone(),
     };
-    let user_secrets_salt = ApplicationUserSecrets {
-        inner: cli_args.user_secrets_salt.clone(),
+    let application_user_secrets = ApplicationUserSecrets {
+        inner: cli_args.application_user_secrets.clone(),
     };
 
     rocket::build()
         .manage(db_pool)
         .manage(cli_args)
         .manage(jwt_secret)
-        .manage(user_secrets_salt)
+        .manage(application_user_secrets)
         .manage(client)
         .mount(
             "/api",
@@ -92,13 +91,13 @@ async fn login(
 ) -> Result<Json<JwtString>, response::Debug<anyhow::Error>> {
     let user_id = database::get_user_id(db_pool, credentials.email.clone()).await?;
 
-    let db_user = database::get_user(db_pool, user_id)
+    let user_info = database::get_user_info(db_pool, user_id)
         .await
         .map_err(response::Debug)?;
 
     let jwt_string = auth::verify_password_and_create_token(
         credentials.password.clone(),
-        db_user,
+        user_info,
         jwt_app_secret,
     )?;
 

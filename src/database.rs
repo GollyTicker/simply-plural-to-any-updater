@@ -2,17 +2,13 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use sqlx::{FromRow, PgPool};
-
-use argon2::{
-    password_hash::{PasswordHasher, Salt},
-    Argon2,
-};
 
 use crate::{
     config::UserConfigDbEntries,
     model::{
-        self, ApplicationUserSecrets, DecryptedDbSecret, Email, EmailOrUserId, EncryptedDbSecret,
+        self, ApplicationUserSecrets, DecryptedDbSecret, Email, EncryptedDbSecret,
         PasswordHashString, SecretType, UserId, UserSecretsKey,
     },
 };
@@ -83,7 +79,7 @@ pub async fn get_user(db_pool: &PgPool, user_id: UserId) -> Result<User<Encrypte
     .await
     .map_err(|e| anyhow!(e))?;
 
-    get_user_info(db_pool, user_id, config).await
+    enrich_with_user_info(db_pool, user_id, config).await
 }
 
 pub async fn set_user_config_secrets(
@@ -92,9 +88,9 @@ pub async fn set_user_config_secrets(
     config: UserConfigDbEntries<DecryptedDbSecret>,
     application_user_secret: &ApplicationUserSecrets,
 ) -> Result<()> {
-    let secrets_key = compute_user_secrets_key(&user_id, application_user_secret)?;
+    let secrets_key = compute_user_secrets_key(&user_id, application_user_secret);
 
-    let new_config: UserConfigDbEntries<DecryptedDbSecret> = sqlx::query_as(
+    let _: Option<UserConfigDbEntries<DecryptedDbSecret>> = sqlx::query_as(
         "UPDATE users
         SET
             wait_seconds = $2,
@@ -108,7 +104,7 @@ pub async fn set_user_config_secrets(
             enc__discord_token = pgp_sym_encrypt($11, $9),
             enc__vrchat_username = pgp_sym_encrypt($12, $9),
             enc__vrchat_password = pgp_sym_encrypt($13, $9),
-            enc__vrchat_cookie = pgp_sym_encrypt($14, $9),
+            enc__vrchat_cookie = pgp_sym_encrypt($14, $9)
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -130,15 +126,11 @@ pub async fn set_user_config_secrets(
     .bind(config.vrchat_username.as_ref().map(|s| s.secret.clone()))
     .bind(config.vrchat_password.as_ref().map(|s| s.secret.clone()))
     .bind(config.vrchat_cookie.as_ref().map(|s| s.secret.clone()))
-    .fetch_one(db_pool)
+    .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
 
-    if new_config == config {
-        Ok(())
-    } else {
-        Err(anyhow!("Couldn't correctly set config values"))
-    }
+    Ok(())
 }
 
 pub async fn get_user_secrets(
@@ -146,7 +138,7 @@ pub async fn get_user_secrets(
     user_id: UserId,
     application_user_secret: &ApplicationUserSecrets,
 ) -> Result<User<DecryptedDbSecret>> {
-    let secrets_key = compute_user_secrets_key(&user_id, application_user_secret)?;
+    let secrets_key = compute_user_secrets_key(&user_id, application_user_secret);
 
     let config: UserConfigDbEntries<DecryptedDbSecret> = sqlx::query_as(
         "SELECT
@@ -172,10 +164,10 @@ pub async fn get_user_secrets(
     .await
     .map_err(|e| anyhow!(e))?;
 
-    get_user_info(db_pool, user_id, config).await
+    enrich_with_user_info(db_pool, user_id, config).await
 }
 
-async fn get_user_info<S: SecretType>(
+async fn enrich_with_user_info<S: SecretType>(
     db_pool: &PgPool,
     user_id: UserId,
     config: UserConfigDbEntries<S>,
@@ -210,24 +202,39 @@ async fn get_user_info<S: SecretType>(
     Ok(user)
 }
 
+pub async fn get_user_info(db_pool: &PgPool, user_id: UserId) -> Result<UserInfo> {
+    sqlx::query_as!(
+        UserInfo,
+        "SELECT
+            id,
+            email,
+            password_hash,
+            created_at
+            FROM users WHERE id = $1",
+        user_id.inner
+    )
+    .fetch_one(db_pool)
+    .await
+    .map_err(|e| anyhow!(e))
+}
+
 fn compute_user_secrets_key(
     user_id: &UserId,
     application_user_secret: &ApplicationUserSecrets,
-) -> Result<UserSecretsKey> {
-    let user_id_string = user_id.inner.to_string();
+) -> UserSecretsKey {
+    let user_id = user_id.inner.to_string();
+    let app_user_secret = &application_user_secret.inner;
 
-    let user_id_salt: Salt = user_id_string
-        .as_str()
-        .try_into()
-        .map_err(|_| anyhow!("Computing user secrets key failed (1)"))?;
+    let digest = {
+        let mut hasher = Sha256::new();
+        hasher.update(user_id);
+        hasher.update(app_user_secret);
+        hasher.finalize()
+    };
 
-    let pwh = Argon2::default()
-        .hash_password(application_user_secret.inner.as_bytes(), user_id_salt)
-        .map_err(|_| anyhow!("Computing user secrets key failed (2)"))?;
+    let hex_string = format!("{digest:x}");
 
-    Ok(UserSecretsKey {
-        inner: pwh.to_string(),
-    })
+    UserSecretsKey { inner: hex_string }
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug, Default)]
@@ -252,13 +259,4 @@ pub struct UserInfo {
     pub email: model::Email,
     pub password_hash: model::PasswordHashString,
     pub created_at: chrono::NaiveDateTime,
-}
-
-impl EmailOrUserId {
-    fn where_clause(&self) -> (String, String) {
-        match self {
-            Self::Email(email) => ("email".into(), email.inner.clone()),
-            Self::UserId(user_id) => ("id".into(), user_id.inner.to_string()),
-        }
-    }
 }
