@@ -3,9 +3,9 @@ use std::string::ToString;
 use anyhow::Result;
 use serde::Deserialize;
 
-use crate::config::UserConfig;
+use crate::config::UserConfigForUpdater;
 
-pub async fn fetch_fronts(config: &UserConfig) -> Result<Vec<Fronter>> {
+pub async fn fetch_fronts(config: &UserConfigForUpdater) -> Result<Vec<Fronter>> {
     let front_entries = simply_plural_http_request_get_fronters(config).await?;
 
     if front_entries.is_empty() {
@@ -30,7 +30,7 @@ pub async fn fetch_fronts(config: &UserConfig) -> Result<Vec<Fronter>> {
 async fn get_all_members_and_custom_fronters(
     system_id: &String,
     vrcsn_field_id: Option<String>,
-    config: &UserConfig,
+    config: &UserConfigForUpdater,
 ) -> Result<Vec<Fronter>> {
     let all_members: Vec<Fronter> = simply_plural_http_get_members(config, system_id)
         .await?
@@ -76,13 +76,15 @@ fn filter_frontables_by_front_entries(
     fronters
 }
 
-async fn simply_plural_http_request_get_fronters(config: &UserConfig) -> Result<Vec<FrontEntry>> {
+async fn simply_plural_http_request_get_fronters(
+    config: &UserConfigForUpdater,
+) -> Result<Vec<FrontEntry>> {
     eprintln!("Fetching fronts from SimplyPlural...");
     let fronts_url = format!("{}/fronters", &config.simply_plural_base_url);
     let result = config
         .client
         .get(&fronts_url)
-        .header("Authorization", &config.simply_plural_token)
+        .header("Authorization", &config.simply_plural_token.secret)
         .send()
         .await?
         .error_for_status()?
@@ -93,7 +95,7 @@ async fn simply_plural_http_request_get_fronters(config: &UserConfig) -> Result<
 }
 
 async fn get_vrchat_status_name_field_id(
-    config: &UserConfig,
+    config: &UserConfigForUpdater,
     system_id: &String,
 ) -> Result<Option<String>> {
     eprintln!("Fetching custom fields from SimplyPlural...");
@@ -104,7 +106,7 @@ async fn get_vrchat_status_name_field_id(
     let custom_fields: Vec<CustomField> = config
         .client
         .get(&custom_fields_url)
-        .header("Authorization", &config.simply_plural_token)
+        .header("Authorization", &config.simply_plural_token.secret)
         .send()
         .await?
         .error_for_status()?
@@ -121,7 +123,7 @@ async fn get_vrchat_status_name_field_id(
 }
 
 async fn simply_plural_http_get_members(
-    config: &UserConfig,
+    config: &UserConfigForUpdater,
     system_id: &String,
 ) -> Result<Vec<Member>> {
     eprintln!("Fetching all members from SimplyPlural..");
@@ -129,7 +131,7 @@ async fn simply_plural_http_get_members(
     let result = config
         .client
         .get(&fronts_url)
-        .header("Authorization", &config.simply_plural_token)
+        .header("Authorization", &config.simply_plural_token.secret)
         .send()
         .await?
         .error_for_status()?
@@ -140,7 +142,7 @@ async fn simply_plural_http_get_members(
 }
 
 async fn simply_plural_http_get_custom_fronts(
-    config: &UserConfig,
+    config: &UserConfigForUpdater,
     system_id: &String,
 ) -> Result<Vec<CustomFront>> {
     eprintln!("Fetching all Custom Fronts from SimplyPlural...");
@@ -151,7 +153,7 @@ async fn simply_plural_http_get_custom_fronts(
     let result = config
         .client
         .get(&custom_fronts_url)
-        .header("Authorization", &config.simply_plural_token)
+        .header("Authorization", &config.simply_plural_token.secret)
         .send()
         .await?
         .error_for_status()?

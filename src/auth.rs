@@ -9,7 +9,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     database::User,
-    model::{ApplicationJwtSecret, JwtString, PasswordHashString, UserId, UserProvidedPassword},
+    model::{
+        ApplicationJwtSecret, JwtString, PasswordHashString, SecretType, UserId,
+        UserProvidedPassword,
+    },
 };
 
 pub fn create_password_hash(password: UserProvidedPassword) -> Result<PasswordHashString> {
@@ -24,10 +27,10 @@ pub fn create_password_hash(password: UserProvidedPassword) -> Result<PasswordHa
     })
 }
 
-pub fn verify_password_and_create_token(
+pub fn verify_password_and_create_token<T: SecretType>(
     password: UserProvidedPassword,
-    db_user: User,
-    jwt_secret: ApplicationJwtSecret,
+    db_user: User<T>,
+    jwt_secret: &ApplicationJwtSecret,
 ) -> Result<JwtString> {
     // don't allow external user to infer what exactly failed
 
@@ -53,7 +56,7 @@ pub struct Claims {
 
 const JWT_VALID_DAYS: i64 = 25;
 
-pub fn create_token(user_id: UserId, jwt_secret: ApplicationJwtSecret) -> Result<JwtString> {
+pub fn create_token(user_id: UserId, jwt_secret: &ApplicationJwtSecret) -> Result<JwtString> {
     let expiration = Utc::now()
         .checked_add_signed(Duration::days(JWT_VALID_DAYS))
         .expect("invalid timestamp")

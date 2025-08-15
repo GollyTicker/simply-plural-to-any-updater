@@ -2,7 +2,8 @@ use anyhow::Result;
 use serde::Serialize;
 
 use crate::{
-    config::UserConfig, discord::DiscordUpdater, simply_plural::Fronter, vrchat::VRChatUpdater,
+    config::UserConfigForUpdater, discord::DiscordUpdater, simply_plural::Fronter,
+    vrchat::VRChatUpdater,
 };
 
 #[derive(Clone, Serialize, strum_macros::Display)]
@@ -50,7 +51,7 @@ impl Updater {
         }
     }
 
-    pub fn status(&self, config: &UserConfig) -> UpdaterStatus {
+    pub fn status(&self, config: &UserConfigForUpdater) -> UpdaterStatus {
         if self.enabled(config) {
             self.last_operation_error()
                 .map_or(UpdaterStatus::Running, |e| UpdaterStatus::Error(e.clone()))
@@ -59,7 +60,7 @@ impl Updater {
         }
     }
 
-    pub fn state(&self, config: &UserConfig) -> UpdaterState {
+    pub fn state(&self, config: &UserConfigForUpdater) -> UpdaterState {
         UpdaterState {
             updater: self.platform(),
             status: self.status(config),
@@ -73,14 +74,14 @@ impl Updater {
         }
     }
 
-    pub const fn enabled(&self, config: &UserConfig) -> bool {
+    pub const fn enabled(&self, config: &UserConfigForUpdater) -> bool {
         match self {
             Self::VRChat(_) => config.enable_vrchat,
             Self::Discord(_) => config.enable_discord,
         }
     }
 
-    pub async fn setup(&mut self, config: &UserConfig) -> Result<()> {
+    pub async fn setup(&mut self, config: &UserConfigForUpdater) -> Result<()> {
         match self {
             Self::VRChat(updater) => updater.setup(config).await,
             Self::Discord(updater) => updater.setup(config).await,
@@ -89,7 +90,7 @@ impl Updater {
 
     pub async fn update_fronting_status(
         &mut self,
-        config: &UserConfig,
+        config: &UserConfigForUpdater,
         fronts: &[Fronter],
     ) -> Result<()> {
         match self {

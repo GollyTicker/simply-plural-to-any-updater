@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use tokio::time::sleep;
 
 use crate::{
-    config::UserConfig,
+    config::UserConfigForUpdater,
     simply_plural::{self},
     updater::{self, Updater, UpdaterState, UpdaterStatus},
 };
@@ -19,7 +19,7 @@ pub fn initial_updaters_state() -> Vec<UpdaterState> {
         .collect()
 }
 
-pub async fn run_loop(config: &UserConfig, updater_state: Arc<Mutex<Vec<UpdaterState>>>) {
+pub async fn run_loop(config: &UserConfigForUpdater, updater_state: Arc<Mutex<Vec<UpdaterState>>>) {
     eprintln!("Running Updater ...");
 
     let mut updaters: Vec<Updater> = updater::implemented_updaters()
@@ -50,15 +50,15 @@ pub async fn run_loop(config: &UserConfig, updater_state: Arc<Mutex<Vec<UpdaterS
 
         eprintln!(
             "Waiting {}s for next update trigger...",
-            config.wait_seconds.as_secs()
+            config.wait_seconds.inner.as_secs()
         );
 
-        sleep(config.wait_seconds).await;
+        sleep(config.wait_seconds.inner).await;
     }
 }
 
 fn write_updaters_state_to_arc(
-    config: &UserConfig,
+    config: &UserConfigForUpdater,
     updater_state: &Arc<Mutex<Vec<UpdaterState>>>,
     updaters: &[Updater],
 ) {
@@ -71,7 +71,7 @@ fn write_updaters_state_to_arc(
     }
 }
 
-async fn loop_logic(config: &UserConfig, updaters: &mut [Updater]) -> Result<()> {
+async fn loop_logic(config: &UserConfigForUpdater, updaters: &mut [Updater]) -> Result<()> {
     let fronts = simply_plural::fetch_fronts(config).await?;
 
     for updater in updaters {

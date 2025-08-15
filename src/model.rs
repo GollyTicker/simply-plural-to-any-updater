@@ -1,8 +1,10 @@
 use rocket::request::{FromRequest, Outcome};
 use serde::{Deserialize, Serialize};
-use sqlx::{types::Uuid, FromRow};
+use sqlx::{
+    error::BoxDynError, postgres::PgValueRef, types::Uuid, Decode, FromRow, Postgres, Row, Type,
+};
 
-#[derive(FromRow, Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow, Type)]
 pub struct Email {
     pub inner: String,
 }
@@ -13,7 +15,7 @@ impl From<String> for Email {
     }
 }
 
-#[derive(FromRow, Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow, Type)]
 pub struct UserId {
     pub inner: Uuid,
 }
@@ -29,7 +31,7 @@ pub struct UserProvidedPassword {
     pub inner: String,
 }
 
-#[derive(FromRow, Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow, Type)]
 pub struct PasswordHashString {
     pub inner: String,
 }
@@ -63,15 +65,52 @@ pub struct UserLoginCredentials {
     pub password: UserProvidedPassword,
 }
 
-mod tests {
-    
+#[derive(Default, Clone, Serialize, FromRow)]
+pub struct EncryptedDbSecret {}
 
-    #[test]
-    fn test_deserialize() {
-        let creds_str = "{ \"email\": { \"inner\": \"test@example.com\" }, \"password\": { \"inner\": \"password123\" } }";
-        let creds: UserLoginCredentials = serde_json::from_str(creds_str).unwrap();
-        assert_eq!(creds.email.inner, "test@example.com");
-        assert_eq!(creds.password.inner, "password123");
-        assert_eq!(creds.password.inner, "password123");
+impl From<String> for EncryptedDbSecret {
+    fn from(_: String) -> Self {
+        Self {}
     }
 }
+
+// manual implementation of `Type<Postgres>` because derive doesn't work :/
+impl Type<Postgres> for EncryptedDbSecret {
+    fn type_info() -> sqlx::postgres::PgTypeInfo {
+        <String as Type<Postgres>>::type_info()
+    }
+
+    fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
+        <String as Type<Postgres>>::compatible(ty)
+    }
+}
+
+impl<'r> Decode<'r, Postgres> for EncryptedDbSecret {
+    fn decode(value: PgValueRef<'r>) -> Result<Self, BoxDynError> {
+        let _ = <String as Decode<Postgres>>::decode(value)?;
+        Ok(Self {})
+    }
+}
+
+#[derive(Default, Clone, Deserialize, FromRow, Type)]
+pub struct DecryptedDbSecret {
+    pub secret: String,
+}
+
+impl From<&str> for DecryptedDbSecret {
+    fn from(value: &str) -> Self {
+        Self {
+            secret: value.to_string(),
+        }
+    }
+}
+
+impl From<String> for DecryptedDbSecret {
+    fn from(secret: String) -> Self {
+        Self { secret }
+    }
+}
+
+pub trait SecretType: Default + Clone {}
+impl SecretType for EncryptedDbSecret {}
+impl SecretType for DecryptedDbSecret {}

@@ -58,4 +58,7 @@ pub struct CliArgs {
 
     #[arg(short, long, default_value_t = 5)]
     pub request_timeout: u64,
+
+    #[arg(short, long)]
+    pub jwt_application_secret: String,
 }
