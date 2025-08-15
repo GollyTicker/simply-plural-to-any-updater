@@ -75,3 +75,12 @@ pub fn create_token(user_id: UserId, jwt_secret: &ApplicationJwtSecret) -> Resul
 
     Ok(JwtString { inner: token })
 }
+
+pub fn verify_jwt(
+    user_id: UserId,
+    jwt_secret: &ApplicationJwtSecret,
+    token: JwtString,
+) -> Result<()> {
+    // todo.
+    Ok(())
+}

@@ -124,5 +124,6 @@ async fn set_config(
 ) -> Result<(), response::Debug<anyhow::Error>> {
     let claims = token.map_err(response::Debug)?;
     // use this: db_pool, claims.sub
+    // todo. continue here
     todo!()
 }

@@ -55,6 +55,11 @@ impl<'r> FromRequest<'r> for JwtString {
     }
 }
 
+#[derive(Clone)]
+pub struct SecretsKey {
+    pub inner: String,
+}
+
 pub struct ApplicationJwtSecret {
     pub inner: String,
 }

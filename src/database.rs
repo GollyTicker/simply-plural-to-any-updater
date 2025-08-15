@@ -6,7 +6,10 @@ use sqlx::{FromRow, PgPool};
 
 use crate::{
     config::UserConfigDbEntries,
-    model::{self, Email, EncryptedDbSecret, PasswordHashString, SecretType},
+    model::{
+        self, DecryptedDbSecret, Email, EncryptedDbSecret, PasswordHashString, SecretType,
+        SecretsKey,
+    },
 };
 
 #[derive(FromRow)]
@@ -62,6 +65,46 @@ pub async fn get_user(db_pool: &PgPool, email: Email) -> Result<User<EncryptedDb
     .await
     .map_err(|e| anyhow!(e))?;
 
+    get_user_info(db_pool, email, config).await
+}
+
+pub async fn get_user_secrets(
+    db_pool: &PgPool,
+    email: Email,
+    secrets_key: SecretsKey,
+) -> Result<User<DecryptedDbSecret>> {
+    let config: UserConfigDbEntries<DecryptedDbSecret> = sqlx::query_as(
+        "SELECT
+            wait_seconds,
+            system_name,
+            status_prefix,
+            status_no_fronts,
+            status_truncate_names_to,
+            enable_discord,
+            enable_vrchat,
+            pgp_sym_decrypt(enc__simply_plural_token, $2)::TEXT AS simply_plural_token,
+            pgp_sym_decrypt(enc__discord_token, $2)::TEXT AS discord_token,
+            pgp_sym_decrypt(enc__vrchat_username, $2)::TEXT AS vrchat_username,
+            pgp_sym_decrypt(enc__vrchat_password, $2)::TEXT AS vrchat_password,
+            pgp_sym_decrypt(enc__vrchat_cookie, $2)::TEXT AS vrchat_cookie,
+            '' as discord_base_url,
+            '' as simply_plural_base_url
+            FROM users WHERE email = $1",
+    )
+    .bind(&email.inner)
+    .bind(secrets_key.inner)
+    .fetch_one(db_pool)
+    .await
+    .map_err(|e| anyhow!(e))?;
+
+    get_user_info(db_pool, email, config).await
+}
+
+async fn get_user_info<S: SecretType>(
+    db_pool: &PgPool,
+    email: Email,
+    config: UserConfigDbEntries<S>,
+) -> Result<User<S>> {
     let UserInfo {
         id,
         email,
@@ -81,7 +124,7 @@ pub async fn get_user(db_pool: &PgPool, email: Email) -> Result<User<EncryptedDb
     .await
     .map_err(|e| anyhow!(e))?;
 
-    let user = User::<EncryptedDbSecret> {
+    let user = User::<S> {
         id,
         email,
         password_hash,
@@ -91,8 +134,6 @@ pub async fn get_user(db_pool: &PgPool, email: Email) -> Result<User<EncryptedDb
 
     Ok(user)
 }
-
-// todo. add variant with decrypted secrets from db
 
 #[derive(Clone, Deserialize, Serialize, Debug, Default)]
 pub struct WaitSeconds {
