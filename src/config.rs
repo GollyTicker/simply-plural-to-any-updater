@@ -11,7 +11,9 @@ use serde::{Deserialize, Serialize};
 
 use sp2any_macros::WithOptionDefaults;
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize, WithOptionDefaults, FromRow)]
+#[derive(
+    Default, Debug, Clone, Serialize, Deserialize, WithOptionDefaults, FromRow, PartialEq, Eq,
+)]
 pub struct UserConfigDbEntries<Secret>
 where
     Secret: SecretType,

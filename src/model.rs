@@ -1,4 +1,3 @@
-use rocket::request::{FromRequest, Outcome};
 use serde::{Deserialize, Serialize};
 use sqlx::{
     error::BoxDynError, postgres::PgValueRef, types::Uuid, Decode, FromRow, Postgres, Row, Type,
@@ -26,6 +25,11 @@ impl From<Uuid> for UserId {
     }
 }
 
+pub enum EmailOrUserId {
+    Email(Email),
+    UserId(UserId),
+}
+
 #[derive(Deserialize, Clone)]
 pub struct UserProvidedPassword {
     pub inner: String,
@@ -41,26 +45,16 @@ impl From<String> for PasswordHashString {
     }
 }
 
-#[derive(Serialize)]
-pub struct JwtString {
-    pub inner: String,
-}
-
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for JwtString {
-    type Error = anyhow::Error;
-
-    async fn from_request(request: &'r rocket::Request<'_>) -> Outcome<Self, Self::Error> {
-        todo!()
-    }
-}
-
 #[derive(Clone)]
-pub struct SecretsKey {
+pub struct UserSecretsKey {
     pub inner: String,
 }
 
 pub struct ApplicationJwtSecret {
+    pub inner: String,
+}
+
+pub struct ApplicationUserSecrets {
     pub inner: String,
 }
 
@@ -70,7 +64,7 @@ pub struct UserLoginCredentials {
     pub password: UserProvidedPassword,
 }
 
-#[derive(Default, Clone, Serialize, FromRow)]
+#[derive(Default, Clone, Serialize, FromRow, PartialEq, Eq)]
 pub struct EncryptedDbSecret {}
 
 impl From<String> for EncryptedDbSecret {
@@ -97,7 +91,7 @@ impl<'r> Decode<'r, Postgres> for EncryptedDbSecret {
     }
 }
 
-#[derive(Default, Clone, Deserialize, FromRow, Type)]
+#[derive(Default, Clone, Deserialize, FromRow, Type, PartialEq, Eq)]
 pub struct DecryptedDbSecret {
     pub secret: String,
 }

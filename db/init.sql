@@ -1,26 +1,12 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 /*
 secrets fields are stored as encrypted bytea fields.
-we use the users hash(uuid + password) as the secret.
-This secret is same for an individual users' fields,
-but different for each user.
-We also need to ensure, that when the user changes their password,
-that then these secrets are re-encrypted.
+we use the users hash(uuid + application_user_secret) as the secret.
+(specifinally argon2.password_hash(password = application_user_secret, salt = user_uuid))
+This secret is same for an individual users' fields, but different for each user.
 
-how to insert:
-    INSERT INTO users (username, password_hash, discord_token)
-    VALUES (
-        'testuser',
-        'some_hash',
-        pgp_sym_encrypt('your_discord_token', 'your_secret_key')
-    );
+WHEN THE SALT IS CHANGED, THEN WE NEED TO RE-ENCRYPT ALL ENCRYPTED VALUES! TAKE CARE!
 
-how to access:
-    SELECT
-        username,
-        pgp_sym_decrypt(discord_token, 'your_secret_key')::TEXT AS decrypted_discord_token
-    FROM users
-    WHERE username = 'testuser';
 */
 
 CREATE TABLE IF NOT EXISTS users (

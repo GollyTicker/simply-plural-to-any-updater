@@ -61,4 +61,7 @@ pub struct CliArgs {
 
     #[arg(short, long)]
     pub jwt_application_secret: String,
+
+    #[arg(short, long)]
+    pub user_secrets_salt: String,
 }

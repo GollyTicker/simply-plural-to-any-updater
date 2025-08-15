@@ -1,12 +1,14 @@
+
 use crate::auth;
-use crate::config;
+use crate::auth::Jwt;
+use crate::auth::JwtString;
 use crate::config::UserConfigDbEntries;
 use crate::config::UserConfigForUpdater;
 use crate::database;
 use crate::model::ApplicationJwtSecret;
+use crate::model::ApplicationUserSecrets;
 use crate::model::DecryptedDbSecret;
 use crate::model::EncryptedDbSecret;
-use crate::model::JwtString;
 use crate::model::UserLoginCredentials;
 use crate::simply_plural;
 use crate::updater::UpdaterState;
@@ -25,11 +27,15 @@ pub async fn run_server(cli_args: CliArgs, client: Client, db_pool: PgPool) -> R
     let jwt_secret = ApplicationJwtSecret {
         inner: cli_args.jwt_application_secret.clone(),
     };
+    let user_secrets_salt = ApplicationUserSecrets {
+        inner: cli_args.user_secrets_salt.clone(),
+    };
 
     rocket::build()
         .manage(db_pool)
         .manage(cli_args)
         .manage(jwt_secret)
+        .manage(user_secrets_salt)
         .manage(client)
         .mount(
             "/api",
@@ -84,7 +90,9 @@ async fn login(
     jwt_app_secret: &State<ApplicationJwtSecret>,
     credentials: Json<UserLoginCredentials>,
 ) -> Result<Json<JwtString>, response::Debug<anyhow::Error>> {
-    let db_user = database::get_user(db_pool, credentials.email.clone())
+    let user_id = database::get_user_id(db_pool, credentials.email.clone()).await?;
+
+    let db_user = database::get_user(db_pool, user_id)
         .await
         .map_err(response::Debug)?;
 
@@ -101,29 +109,27 @@ async fn login(
 #[get("/user/config")]
 async fn get_config(
     db_pool: &State<PgPool>,
-    token: Result<JwtString>,
-) -> Result<Json<config::UserConfigDbEntries<EncryptedDbSecret>>, response::Debug<anyhow::Error>> {
-    let claims = token.map_err(response::Debug)?;
+    jwt: Result<Jwt, response::Debug<anyhow::Error>>,
+) -> Result<Json<UserConfigDbEntries<EncryptedDbSecret>>, response::Debug<anyhow::Error>> {
+    let user_id = jwt?.user_id()?;
 
-    // use db_pool and claims.sub instead and get user specific config
-    let config: UserConfigDbEntries<EncryptedDbSecret> = todo!();
-    // let config = config_store::read_local_config_file(&CliArgs {
-    //     config: String::new(),
-    //     database_url: String::new(),
-    // })
-    // .map_err(response::Debug)?;
+    let user = database::get_user(db_pool, user_id).await?;
 
-    Ok(Json(config))
+    Ok(Json(user.config))
 }
 
 #[post("/user/config", data = "<config>")]
 async fn set_config(
+    config: Json<UserConfigDbEntries<DecryptedDbSecret>>,
+    jwt: Result<Jwt, response::Debug<anyhow::Error>>,
     db_pool: &State<PgPool>,
-    token: Result<JwtString>,
-    config: Json<config::UserConfigDbEntries<DecryptedDbSecret>>,
+    user_secrets_salt: &State<ApplicationUserSecrets>,
 ) -> Result<(), response::Debug<anyhow::Error>> {
-    let claims = token.map_err(response::Debug)?;
-    // use this: db_pool, claims.sub
-    // todo. continue here
-    todo!()
+    let user_id = jwt?.user_id()?;
+
+    let () =
+        database::set_user_config_secrets(db_pool, user_id, config.into_inner(), user_secrets_salt)
+            .await?;
+
+    Ok(())
 }
