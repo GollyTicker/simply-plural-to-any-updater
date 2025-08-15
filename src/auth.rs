@@ -1,4 +1,3 @@
-use std::str::FromStr;
 
 use anyhow::{anyhow, Result};
 use argon2::{
@@ -13,7 +12,6 @@ use rocket::{
     response, Request, State,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::types::Uuid;
 
 use crate::{
     database::UserInfo,
@@ -72,8 +70,9 @@ pub struct Claims {
 
 impl Claims {
     pub fn user_id(&self) -> Result<UserId> {
-        let uuid = Uuid::from_str(&self.sub)?;
-        Ok(UserId { inner: uuid })
+        Ok(UserId {
+            inner: self.sub.clone().try_into()?,
+        })
     }
 }
 

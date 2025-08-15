@@ -34,7 +34,7 @@ main() {
 check_system_fronts_set() {
     SET="$1"
 
-    HTML="$(curl -s "$WEBSERVER_FRONTING_URL")"
+    HTML="$(curl -s --fail-with-body "$BASE_URL/api/fronting/$USER_ID")"
 
     if [[ "$SET" == "A" ]]; then
         grep '<title>SP-Updater-Test - Fronting Status</title>' <<< "$HTML"
@@ -53,7 +53,6 @@ check_system_fronts_set() {
 }
 
 export BASE_URL="http://localhost:8000"
-WEBSERVER_FRONTING_URL="$BASE_URL/api/fronting"
 export SYSTEM_PUBLIC_NAME="SP-Updater-Test"
 ENABLE_DISCORD=false
 ENABLE_VRCHAT=false

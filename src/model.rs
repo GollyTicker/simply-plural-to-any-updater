@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use serde::{Deserialize, Serialize};
 use sqlx::{
     error::BoxDynError, postgres::PgValueRef, types::Uuid, Decode, FromRow, Postgres, Row, Type,
@@ -22,6 +24,14 @@ pub struct UserId {
 impl From<Uuid> for UserId {
     fn from(val: Uuid) -> Self {
         Self { inner: val }
+    }
+}
+
+impl TryFrom<&str> for UserId {
+    type Error = anyhow::Error;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let uuid = Uuid::from_str(value)?;
+        Ok(Self { inner: uuid })
     }
 }
 
@@ -68,7 +78,7 @@ impl From<String> for EncryptedDbSecret {
     }
 }
 
-// manual implementation of `Type<Postgres>` because derive doesn't work :/
+// manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
 impl Type<Postgres> for EncryptedDbSecret {
     fn type_info() -> sqlx::postgres::PgTypeInfo {
         <String as Type<Postgres>>::type_info()
@@ -86,9 +96,27 @@ impl<'r> Decode<'r, Postgres> for EncryptedDbSecret {
     }
 }
 
-#[derive(Default, Clone, Serialize, Deserialize, FromRow, Type, PartialEq, Eq)]
+#[derive(Default, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq)]
 pub struct DecryptedDbSecret {
     pub secret: String,
+}
+
+// manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
+impl Type<Postgres> for DecryptedDbSecret {
+    fn type_info() -> sqlx::postgres::PgTypeInfo {
+        <String as Type<Postgres>>::type_info()
+    }
+
+    fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
+        <String as Type<Postgres>>::compatible(ty)
+    }
+}
+
+impl<'r> Decode<'r, Postgres> for DecryptedDbSecret {
+    fn decode(value: PgValueRef<'r>) -> Result<Self, BoxDynError> {
+        let secret = <String as Decode<Postgres>>::decode(value)?;
+        Ok(Self { secret })
+    }
 }
 
 impl From<&str> for DecryptedDbSecret {

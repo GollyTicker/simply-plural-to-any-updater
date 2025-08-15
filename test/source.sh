@@ -45,7 +45,9 @@ setup_test_user() {
     )"
 
     JWT="$(echo "$JWT_JSON" | jq -r .inner)"
+    export USER_ID="$(echo "$JWT" | cut -d'.' -f2 | base64 --decode | jq -r .sub)"
     echo "Received Jwt: $JWT"
+    echo "User ID: $USER_ID"
 
     echo "Setting config ..."
     JSON="$(get_user_config_json)"

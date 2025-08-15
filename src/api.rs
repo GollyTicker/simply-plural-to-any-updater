@@ -1,20 +1,20 @@
 use crate::auth;
 use crate::auth::Jwt;
 use crate::auth::JwtString;
+use crate::config;
 use crate::config::UserConfigDbEntries;
-use crate::config::UserConfigForUpdater;
 use crate::database;
 use crate::model::ApplicationJwtSecret;
 use crate::model::ApplicationUserSecrets;
 use crate::model::DecryptedDbSecret;
 use crate::model::EncryptedDbSecret;
+use crate::model::UserId;
 use crate::model::UserLoginCredentials;
 use crate::simply_plural;
 use crate::updater::UpdaterState;
 use crate::webview;
 use crate::CliArgs;
 use anyhow::{anyhow, Result};
-use reqwest::Client;
 use rocket::{
     response::{self, content::RawHtml},
     serde::json::Json,
@@ -22,7 +22,7 @@ use rocket::{
 };
 use sqlx::PgPool;
 
-pub async fn run_server(cli_args: CliArgs, client: Client, db_pool: PgPool) -> Result<()> {
+pub async fn run_server(cli_args: CliArgs, client: reqwest::Client, db_pool: PgPool) -> Result<()> {
     let jwt_secret = ApplicationJwtSecret {
         inner: cli_args.jwt_application_secret.clone(),
     };
@@ -59,15 +59,37 @@ const fn get_updaters_state() -> Json<Vec<UpdaterState>> {
     Json(vec![])
 }
 
-#[get("/fronting")]
+#[get("/fronting/<user_id>")]
 async fn rest_get_fronting(
-    cli_args: &State<CliArgs>,
+    user_id: &str, // todo. actually use system name here instead of user-id
+    db_pool: &State<PgPool>,
+    application_user_secrets: &State<ApplicationUserSecrets>,
+    client: &State<reqwest::Client>,
 ) -> Result<RawHtml<String>, response::Debug<anyhow::Error>> {
-    let config: UserConfigForUpdater = todo!();
+    eprintln!("GET /fronting/{user_id}.");
+
+    let user_id: UserId = user_id.try_into()?;
+
+    eprintln!("GET /fronting/{}. Getting user secrets", user_id.inner);
+
+    let user = database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
+
+    eprintln!("GET /fronting/{}. Creating config", user_id.inner);
+
+    let config =
+        config::create_config_with_strong_constraints(client.inner().to_owned(), user.config)?;
+
+    eprintln!("GET /fronting/{}. Fetching fronts", user_id.inner);
+
     let fronts = simply_plural::fetch_fronts(&config)
         .await
-        .map_err(response::Debug)?; // Convert anyhow::Error to response::Debug
+        .map_err(response::Debug)?;
+
+    eprintln!("GET /fronting/{}. Rendering HTML", user_id.inner);
+
     let html = webview::generate_html(&config.system_name, fronts);
+
+    eprintln!("GET /fronting/{}. OK", user_id.inner);
     Ok(RawHtml(html))
 }
 
@@ -112,7 +134,7 @@ async fn get_config(
 ) -> Result<Json<UserConfigDbEntries<EncryptedDbSecret>>, response::Debug<anyhow::Error>> {
     let user_id = jwt?.user_id()?;
 
-    let user = database::get_user(db_pool, user_id).await?;
+    let user = database::get_user(db_pool, &user_id).await?;
 
     Ok(Json(user.config))
 }
@@ -122,12 +144,19 @@ async fn set_config(
     config: Json<UserConfigDbEntries<DecryptedDbSecret>>,
     jwt: Result<Jwt, response::Debug<anyhow::Error>>,
     db_pool: &State<PgPool>,
-    user_secrets_salt: &State<ApplicationUserSecrets>,
+    app_user_secrets: &State<ApplicationUserSecrets>,
+    client: &State<reqwest::Client>,
 ) -> Result<(), response::Debug<anyhow::Error>> {
     let user_id = jwt?.user_id()?;
 
+    // check that config satisfies contraints
+    let _ = config::create_config_with_strong_constraints(
+        client.inner().to_owned(),
+        config.clone().into_inner(),
+    );
+
     let () =
-        database::set_user_config_secrets(db_pool, user_id, config.into_inner(), user_secrets_salt)
+        database::set_user_config_secrets(db_pool, user_id, config.into_inner(), app_user_secrets)
             .await?;
 
     Ok(())

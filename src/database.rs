@@ -55,7 +55,7 @@ pub async fn get_user_id(db_pool: &PgPool, email: Email) -> Result<UserId> {
     .map_err(|e| anyhow!(e))
 }
 
-pub async fn get_user(db_pool: &PgPool, user_id: UserId) -> Result<User<EncryptedDbSecret>> {
+pub async fn get_user(db_pool: &PgPool, user_id: &UserId) -> Result<User<EncryptedDbSecret>> {
     let config: UserConfigDbEntries<EncryptedDbSecret> = sqlx::query_as(
         "SELECT
             wait_seconds,
@@ -70,9 +70,7 @@ pub async fn get_user(db_pool: &PgPool, user_id: UserId) -> Result<User<Encrypte
             '' as vrchat_username,
             '' as vrchat_password,
             '' as vrchat_cookie,
-            '' as discord_base_url,
-            '' as simply_plural_base_url
-            FROM users WHERE id = 1",
+            FROM users WHERE id = $1",
     )
     .bind(user_id.inner)
     .fetch_one(db_pool)
@@ -135,10 +133,10 @@ pub async fn set_user_config_secrets(
 
 pub async fn get_user_secrets(
     db_pool: &PgPool,
-    user_id: UserId,
+    user_id: &UserId,
     application_user_secret: &ApplicationUserSecrets,
 ) -> Result<User<DecryptedDbSecret>> {
-    let secrets_key = compute_user_secrets_key(&user_id, application_user_secret);
+    let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
     let config: UserConfigDbEntries<DecryptedDbSecret> = sqlx::query_as(
         "SELECT
@@ -149,13 +147,11 @@ pub async fn get_user_secrets(
             status_truncate_names_to,
             enable_discord,
             enable_vrchat,
-            pgp_sym_decrypt(enc__simply_plural_token, $2)::TEXT AS simply_plural_token,
-            pgp_sym_decrypt(enc__discord_token, $2)::TEXT AS discord_token,
-            pgp_sym_decrypt(enc__vrchat_username, $2)::TEXT AS vrchat_username,
-            pgp_sym_decrypt(enc__vrchat_password, $2)::TEXT AS vrchat_password,
-            pgp_sym_decrypt(enc__vrchat_cookie, $2)::TEXT AS vrchat_cookie,
-            '' as discord_base_url,
-            '' as simply_plural_base_url
+            pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,
+            pgp_sym_decrypt(enc__discord_token, $2) AS discord_token,
+            pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,
+            pgp_sym_decrypt(enc__vrchat_password, $2) AS vrchat_password,
+            pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie
             FROM users WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -169,7 +165,7 @@ pub async fn get_user_secrets(
 
 async fn enrich_with_user_info<S: SecretType>(
     db_pool: &PgPool,
-    user_id: UserId,
+    user_id: &UserId,
     config: UserConfigDbEntries<S>,
 ) -> Result<User<S>> {
     let UserInfo {

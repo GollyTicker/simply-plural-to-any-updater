@@ -36,9 +36,6 @@ where
     pub vrchat_username: Option<Secret>,
     pub vrchat_password: Option<Secret>,
     pub vrchat_cookie: Option<Secret>,
-
-    pub discord_base_url: Option<String>,
-    pub simply_plural_base_url: Option<String>,
 }
 
 pub fn default_user_db_entries<S: SecretType>() -> UserConfigDbEntries<S> {
@@ -46,8 +43,6 @@ pub fn default_user_db_entries<S: SecretType>() -> UserConfigDbEntries<S> {
         status_prefix: Some(String::from("F:")),
         status_no_fronts: Some(String::from("none?")),
         status_truncate_names_to: Some(3),
-        discord_base_url: Some(String::from("https://discord.com")),
-        simply_plural_base_url: Some(String::from("https://api.apparyllis.com/v1")),
         wait_seconds: Some(60),
         enable_discord: Some(false),
         enable_vrchat: Some(false),
@@ -58,7 +53,10 @@ pub fn default_user_db_entries<S: SecretType>() -> UserConfigDbEntries<S> {
 #[derive(Clone, Default)]
 pub struct UserConfigForUpdater {
     pub client: Client,
-    // Note: Keep this in sync with config_store::LocalJsonConfigV2 !
+    pub simply_plural_base_url: String,
+    pub discord_base_url: String,
+
+    // Note: v Keep this in sync with UserConfigDbEntries! v
     pub wait_seconds: WaitSeconds,
 
     pub system_name: String,
@@ -74,11 +72,9 @@ pub struct UserConfigForUpdater {
     pub vrchat_username: DecryptedDbSecret,
     pub vrchat_password: DecryptedDbSecret,
     pub vrchat_cookie: DecryptedDbSecret,
-
-    pub simply_plural_base_url: String,
-    pub discord_base_url: String,
 }
 
+// todo. how do we ensure, that only correctly verified constraints userconfigdbentries are passed to the DB?
 pub fn create_config_with_strong_constraints(
     client: Client,
     db_config: UserConfigDbEntries<DecryptedDbSecret>,
@@ -95,14 +91,14 @@ pub fn create_config_with_strong_constraints(
         wait_seconds: config_value!(local_config_with_defaults, wait_seconds)?.into(),
         system_name: config_value!(local_config_with_defaults, system_name)?,
         simply_plural_token: config_value!(local_config_with_defaults, simply_plural_token)?,
-        simply_plural_base_url: config_value!(local_config_with_defaults, simply_plural_base_url)?,
+        simply_plural_base_url: String::from("https://api.apparyllis.com/v1"),
         enable_discord,
         enable_vrchat,
-        discord_base_url: config_value_if!(
-            enable_discord,
-            local_config_with_defaults,
-            discord_base_url
-        )?,
+        discord_base_url: if enable_discord {
+            String::from("https://discord.com")
+        } else {
+            String::new()
+        },
         discord_token: config_value_if!(enable_discord, local_config_with_defaults, discord_token)?,
         vrchat_username: config_value_if!(
             enable_vrchat,
@@ -160,8 +156,6 @@ mod tests {
             vrchat_username: None,
             vrchat_password: None,
             vrchat_cookie: None,
-            discord_base_url: Some("https://discord.com/api".to_string()),
-            simply_plural_base_url: Some("https://api.simplyplural.com".to_string()),
         };
 
         let json_string = serde_json::to_string_pretty(&config).unwrap();
@@ -181,9 +175,7 @@ mod tests {
   },
   "vrchat_username": null,
   "vrchat_password": null,
-  "vrchat_cookie": null,
-  "discord_base_url": "https://discord.com/api",
-  "simply_plural_base_url": "https://api.simplyplural.com"
+  "vrchat_cookie": null
 }"#;
 
         assert_eq!(json_string, expected_json);
