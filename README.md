@@ -125,5 +125,8 @@ The strategy is to make your Rust code the single source of truth for any data s
   * [artcle by discord](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots)
   * [self-botting](https://gist.github.com/nomsi/2684f5692cad5b0ceb52e308631859fd)
   * [reddit 1](https://old.reddit.com/r/Discord_selfbots/comments/t9o5xf/anyone_got_banned/), [reddit 2](https://old.reddit.com/r/discordapp/comments/7nl35v/regarding_the_ban_on_selfbots/)
-* create discord server with initial interests
+* DONE: create discord server with initial interests
+  * share in pluralkit server
+  * plural hub server
+  * other plural reddit communities
 * share with refactionvr server mods before sharing in channel
