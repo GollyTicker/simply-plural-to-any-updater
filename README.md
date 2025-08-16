@@ -119,6 +119,10 @@ The strategy is to make your Rust code the single source of truth for any data s
 * add `enable_website` config
 * Rename 'VRChat Status Name' field to 'SP2Any Simple Name' field
 * Ask on Reddit and various discord servers for what features the users want
+* persistent deployment:
+  * cheap free tier VMs and docker based deployment?
+  * using [free managed postgres](https://www.bytebase.com/blog/postgres-hosting-options-pricing-comparison/) with free tier serverless functions?
+  * alternatively a mixture of the above?
 
 #### User Feedback
 * discord rich presence / activity as additonal option instead of status only
