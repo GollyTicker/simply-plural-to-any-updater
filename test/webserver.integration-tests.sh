@@ -53,9 +53,14 @@ check_system_fronts_set() {
 }
 
 export BASE_URL="http://localhost:8000"
-export SYSTEM_PUBLIC_NAME="SP-Updater-Test"
+
+SYSTEM_PUBLIC_NAME="SP-Updater-Test"
 ENABLE_DISCORD=false
 ENABLE_VRCHAT=false
+unset DISCORD_TOKEN
+unset VRCHAT_USERNAME
+unset VRCHAT_PASSWORD
+unset VRCHAT_COOKIE
 
 start_webserver() {
     set -a; source release/config/server.defaults.env; set +a

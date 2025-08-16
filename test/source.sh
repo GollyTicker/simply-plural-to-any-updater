@@ -10,14 +10,45 @@ export SECONDS_BETWEEN_UPDATES=10
 export SYSTEM_PUBLIC_NAME=ayake-test
 
 get_user_config_json() {
+
+    if [ -v DISCORD_TOKEN ] ; then 
+        DISCORD_TOKEN_LINE="\"discord_token\": { \"secret\": \"${DISCORD_TOKEN}\" },"
+    else
+        DISCORD_TOKEN_LINE=""
+    fi
+
+    if [ -v SPS_API_TOKEN ] ; then
+        SIMPLY_PLURAL_TOKEN_LINE="\"simply_plural_token\": { \"secret\": \"${SPS_API_TOKEN}\" },"
+    else
+        SIMPLY_PLURAL_TOKEN_LINE=""
+    fi
+
+    if [ -v VRCHAT_USERNAME ] ; then
+        VRCHAT_USERNAME_LINE="\"vrchat_username\": { \"secret\": \"${VRCHAT_USERNAME}\" },"
+    else
+        VRCHAT_USERNAME_LINE=""
+    fi
+
+    if [ -v VRCHAT_PASSWORD ] ; then
+        VRCHAT_PASSWORD_LINE="\"vrchat_password\": { \"secret\": \"${VRCHAT_PASSWORD}\" },"
+    else
+        VRCHAT_PASSWORD_LINE=""
+    fi
+
+    if [ -v VRCHAT_COOKIE ] ; then
+        VRCHAT_COOKIE_LINE="\"vrchat_cookie\": { \"secret\": \"${VRCHAT_COOKIE}\" },"
+    else
+        VRCHAT_COOKIE_LINE=""
+    fi
+
     echo "{
-        \"simply_plural_token\": { \"secret\": \"${SPS_API_TOKEN}\" },
         \"enable_discord\": ${ENABLE_DISCORD},
         \"enable_vrchat\": ${ENABLE_VRCHAT},
-        \"discord_token\":  { \"secret\": \"${DISCORD_TOKEN}\" },
-        \"vrchat_username\":  { \"secret\": \"${VRCHAT_USERNAME}\" },
-        \"vrchat_password\":  { \"secret\": \"${VRCHAT_PASSWORD}\" },
-        \"vrchat_cookie\":  { \"secret\": \"${VRCHAT_COOKIE}\" },
+        $SIMPLY_PLURAL_TOKEN_LINE
+        $DISCORD_TOKEN_LINE
+        $VRCHAT_USERNAME_LINE
+        $VRCHAT_PASSWORD_LINE
+        $VRCHAT_COOKIE_LINE
         \"system_name\": \"${SYSTEM_PUBLIC_NAME-null}\",
         \"wait_seconds\": ${SECONDS_BETWEEN_UPDATES-null}
     }"
