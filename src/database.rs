@@ -9,7 +9,7 @@ use crate::{
     config::UserConfigDbEntries,
     model::{
         self, ApplicationUserSecrets, DecryptedDbSecret, Email, EncryptedDbSecret,
-        PasswordHashString, UserId, UserSecretsKey,
+        PasswordHashString, UserId, UserSecretsKey, ValidConstraints,
     },
 };
 
@@ -55,11 +55,12 @@ pub async fn get_user(
             status_truncate_names_to,
             enable_discord,
             enable_vrchat,
-            '' as simply_plural_token,
-            '' as discord_token,
-            '' as vrchat_username,
-            '' as vrchat_password,
-            '' as vrchat_cookie,
+            '' AS simply_plural_token,
+            '' AS discord_token,
+            '' AS vrchat_username,
+            '' AS vrchat_password,
+            '' AS vrchat_cookie,
+            false AS valid_constraints
             FROM users WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -71,7 +72,7 @@ pub async fn get_user(
 pub async fn set_user_config_secrets(
     db_pool: &PgPool,
     user_id: UserId,
-    config: UserConfigDbEntries<DecryptedDbSecret>,
+    config: UserConfigDbEntries<DecryptedDbSecret, ValidConstraints>,
     application_user_secret: &ApplicationUserSecrets,
 ) -> Result<()> {
     let secrets_key = compute_user_secrets_key(&user_id, application_user_secret);
@@ -123,7 +124,7 @@ pub async fn get_user_secrets(
     db_pool: &PgPool,
     user_id: &UserId,
     application_user_secret: &ApplicationUserSecrets,
-) -> Result<UserConfigDbEntries<DecryptedDbSecret>> {
+) -> Result<UserConfigDbEntries<DecryptedDbSecret, ValidConstraints>> {
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
     sqlx::query_as(
@@ -139,7 +140,8 @@ pub async fn get_user_secrets(
             pgp_sym_decrypt(enc__discord_token, $2) AS discord_token,
             pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,
             pgp_sym_decrypt(enc__vrchat_password, $2) AS vrchat_password,
-            pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie
+            pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie,
+            true AS valid_constraints
             FROM users WHERE id = $1",
     )
     .bind(user_id.inner)

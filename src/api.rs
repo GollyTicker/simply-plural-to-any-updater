@@ -80,10 +80,9 @@ async fn restart_updaters(
 ) -> Result<(), response::Debug<anyhow::Error>> {
     let user_id = jwt?.user_id()?;
 
-    let user_config =
-        database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
+    let db_config = database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
 
-    let config = config::create_config_with_strong_constraints(&user_id, client, &user_config)?;
+    let (config, _) = config::create_config_with_strong_constraints(&user_id, client, &db_config)?;
 
     let () = shared_updater_state.restart_updater(&user_id, config)?;
 
@@ -108,17 +107,18 @@ async fn rest_get_fronting(
 
     eprintln!("GET /fronting/{}. Creating config", user_id.inner);
 
-    let config = config::create_config_with_strong_constraints(&user_id, client, &user_config)?;
+    let (updater_config, _) =
+        config::create_config_with_strong_constraints(&user_id, client, &user_config)?;
 
     eprintln!("GET /fronting/{}. Fetching fronts", user_id.inner);
 
-    let fronts = simply_plural::fetch_fronts(&config)
+    let fronts = simply_plural::fetch_fronts(&updater_config)
         .await
         .map_err(response::Debug)?;
 
     eprintln!("GET /fronting/{}. Rendering HTML", user_id.inner);
 
-    let html = webview::generate_html(&config.system_name, fronts);
+    let html = webview::generate_html(&updater_config.system_name, fronts);
 
     eprintln!("GET /fronting/{}. OK", user_id.inner);
     Ok(RawHtml(html))
@@ -178,11 +178,11 @@ async fn set_config(
     let user_id = jwt?.user_id()?;
 
     // check that config satisfies contraints
-    let _ = config::create_config_with_strong_constraints(&user_id, client, &config);
+    let (_, valid_db_config) =
+        config::create_config_with_strong_constraints(&user_id, client, &config)?;
 
-    let () =
-        database::set_user_config_secrets(db_pool, user_id, config.into_inner(), app_user_secrets)
-            .await?;
+    let () = database::set_user_config_secrets(db_pool, user_id, valid_db_config, app_user_secrets)
+        .await?;
 
     Ok(())
 }

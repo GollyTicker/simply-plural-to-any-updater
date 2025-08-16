@@ -24,13 +24,6 @@ macro_rules! config_value_if {
 
 // For Future Runtime
 #[macro_export]
-macro_rules! run_async_blocking {
-    ($future:expr) => {
-        runtime::Runtime::new()?.block_on($future)
-    };
-}
-
-#[macro_export]
 macro_rules! record_if_error {
     ($self:expr, $result:expr) => {{
         let operation = $result;

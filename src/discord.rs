@@ -46,9 +46,9 @@ async fn update_to_discord(
     let fronting_format = fronting_status::FrontingFormat {
         max_length: Some(fronting_status::DISCORD_STATUS_MAX_LENGTH),
         cleaning: fronting_status::CleanForPlatform::NoClean,
-        prefix: config.status_prefix.clone(), // todo. rename to generic config
-        status_if_no_fronters: config.status_no_fronts.clone(), // todo. rename to generic config
-        truncate_names_to_length_if_status_too_long: config.status_truncate_names_to, // todo. rename to generic config
+        prefix: config.status_prefix.clone(),
+        status_if_no_fronters: config.status_no_fronts.clone(),
+        truncate_names_to_length_if_status_too_long: config.status_truncate_names_to,
     };
 
     let status_string = fronting_status::format_fronting_status(&fronting_format, fronts);
