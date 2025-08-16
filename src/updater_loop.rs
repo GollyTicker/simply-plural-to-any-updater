@@ -1,39 +1,38 @@
-use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 use tokio::time::sleep;
 
 use crate::{
     config::UserConfigForUpdater,
     simply_plural::{self},
-    updater::{self, Updater, UpdaterState, UpdaterStatus},
+    updater::{self, Platform, Updater, UpdaterStatus},
+    updater_state::SharedUpdaters,
 };
 use anyhow::Result;
 use chrono::Utc;
 
-pub fn initial_updaters_state() -> Vec<UpdaterState> {
-    updater::implemented_updaters()
-        .iter()
-        .map(|platform| UpdaterState {
-            updater: platform.to_owned(),
-            status: UpdaterStatus::Unknown,
-        })
-        .collect()
-}
+pub type CancleableUpdater = tokio::task::JoinHandle<()>;
+pub type UserUpdatersStatuses = HashMap<Platform, UpdaterStatus>;
+type UserUpdaters = HashMap<Platform, Updater>;
 
-pub async fn run_loop(config: &UserConfigForUpdater, updater_state: Arc<Mutex<Vec<UpdaterState>>>) {
+pub async fn run_loop(config: UserConfigForUpdater, shared_updaters: SharedUpdaters) -> ! {
     eprintln!("Running Updater ...");
 
-    let mut updaters: Vec<Updater> = updater::implemented_updaters()
+    let mut updaters: UserUpdaters = updater::implemented_updaters()
         .iter()
-        .map(|platform| Updater::new(platform.to_owned()))
+        .map(|platform| (platform.to_owned(), Updater::new(platform.to_owned())))
         .collect();
 
-    for u in updaters.as_mut_slice() {
-        if u.enabled(config) {
-            log_error_and_continue(&u.platform().to_string(), u.setup(config).await);
+    for u in updaters.values_mut() {
+        if u.enabled(&config) {
+            log_error_and_continue(&u.platform().to_string(), u.setup(&config).await);
         }
     }
 
-    write_updaters_state_to_arc(config, &updater_state, &updaters);
+    let statues = get_statuses(&updaters, &config);
+    log_error_and_continue(
+        "update statues",
+        shared_updaters.set_updater_state(&config.user_id, statues),
+    );
 
     loop {
         eprintln!(
@@ -41,12 +40,13 @@ pub async fn run_loop(config: &UserConfigForUpdater, updater_state: Arc<Mutex<Ve
             Utc::now().format("%Y-%m-%d %H:%M:%S")
         );
 
-        log_error_and_continue(
-            "Updater Logic",
-            loop_logic(config, updaters.as_mut_slice()).await,
-        );
+        log_error_and_continue("Updater Logic", loop_logic(&config, &mut updaters).await);
 
-        write_updaters_state_to_arc(config, &updater_state, &updaters);
+        let statues = get_statuses(&updaters, &config);
+        log_error_and_continue(
+            "update statues",
+            shared_updaters.set_updater_state(&config.user_id, statues),
+        );
 
         eprintln!(
             "Waiting {}s for next update trigger...",
@@ -57,24 +57,17 @@ pub async fn run_loop(config: &UserConfigForUpdater, updater_state: Arc<Mutex<Ve
     }
 }
 
-fn write_updaters_state_to_arc(
-    config: &UserConfigForUpdater,
-    updater_state: &Arc<Mutex<Vec<UpdaterState>>>,
-    updaters: &[Updater],
-) {
-    let new_state: Vec<UpdaterState> = updaters.iter().map(|u| u.state(config)).collect();
-    match updater_state.try_lock() {
-        Err(err) => eprintln!("Error: Failed to lock updater state mutex: {err}"),
-        Ok(mut state) => {
-            *state = new_state;
-        }
-    }
+fn get_statuses(updaters: &UserUpdaters, config: &UserConfigForUpdater) -> UserUpdatersStatuses {
+    updaters
+        .iter()
+        .map(|(k, u)| (k.to_owned(), u.status(config)))
+        .collect()
 }
 
-async fn loop_logic(config: &UserConfigForUpdater, updaters: &mut [Updater]) -> Result<()> {
+async fn loop_logic(config: &UserConfigForUpdater, updaters: &mut UserUpdaters) -> Result<()> {
     let fronts = simply_plural::fetch_fronts(config).await?;
 
-    for updater in updaters {
+    for updater in updaters.values_mut() {
         if updater.enabled(config) {
             log_error_and_continue(
                 &updater.platform().to_string(),

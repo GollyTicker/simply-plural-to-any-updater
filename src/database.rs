@@ -9,22 +9,9 @@ use crate::{
     config::UserConfigDbEntries,
     model::{
         self, ApplicationUserSecrets, DecryptedDbSecret, Email, EncryptedDbSecret,
-        PasswordHashString, SecretType, UserId, UserSecretsKey,
+        PasswordHashString, UserId, UserSecretsKey,
     },
 };
-
-#[derive(FromRow)]
-pub struct User<Secret>
-where
-    Secret: SecretType,
-{
-    pub id: model::UserId,
-    pub email: model::Email,
-    pub password_hash: model::PasswordHashString,
-    pub created_at: chrono::NaiveDateTime,
-
-    pub config: UserConfigDbEntries<Secret>,
-}
 
 pub async fn create_user(
     db_pool: &PgPool,
@@ -55,8 +42,11 @@ pub async fn get_user_id(db_pool: &PgPool, email: Email) -> Result<UserId> {
     .map_err(|e| anyhow!(e))
 }
 
-pub async fn get_user(db_pool: &PgPool, user_id: &UserId) -> Result<User<EncryptedDbSecret>> {
-    let config: UserConfigDbEntries<EncryptedDbSecret> = sqlx::query_as(
+pub async fn get_user(
+    db_pool: &PgPool,
+    user_id: &UserId,
+) -> Result<UserConfigDbEntries<EncryptedDbSecret>> {
+    sqlx::query_as(
         "SELECT
             wait_seconds,
             system_name,
@@ -75,9 +65,7 @@ pub async fn get_user(db_pool: &PgPool, user_id: &UserId) -> Result<User<Encrypt
     .bind(user_id.inner)
     .fetch_one(db_pool)
     .await
-    .map_err(|e| anyhow!(e))?;
-
-    enrich_with_user_info(db_pool, user_id, config).await
+    .map_err(|e| anyhow!(e))
 }
 
 pub async fn set_user_config_secrets(
@@ -135,10 +123,10 @@ pub async fn get_user_secrets(
     db_pool: &PgPool,
     user_id: &UserId,
     application_user_secret: &ApplicationUserSecrets,
-) -> Result<User<DecryptedDbSecret>> {
+) -> Result<UserConfigDbEntries<DecryptedDbSecret>> {
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
-    let config: UserConfigDbEntries<DecryptedDbSecret> = sqlx::query_as(
+    sqlx::query_as(
         "SELECT
             wait_seconds,
             system_name,
@@ -158,44 +146,7 @@ pub async fn get_user_secrets(
     .bind(secrets_key.inner)
     .fetch_one(db_pool)
     .await
-    .map_err(|e| anyhow!(e))?;
-
-    enrich_with_user_info(db_pool, user_id, config).await
-}
-
-async fn enrich_with_user_info<S: SecretType>(
-    db_pool: &PgPool,
-    user_id: &UserId,
-    config: UserConfigDbEntries<S>,
-) -> Result<User<S>> {
-    let UserInfo {
-        id,
-        email,
-        password_hash,
-        created_at,
-    } = sqlx::query_as!(
-        UserInfo,
-        "SELECT
-            id,
-            email,
-            password_hash,
-            created_at
-            FROM users WHERE id = $1",
-        user_id.inner
-    )
-    .fetch_one(db_pool)
-    .await
-    .map_err(|e| anyhow!(e))?;
-
-    let user = User::<S> {
-        id,
-        email,
-        password_hash,
-        created_at,
-        config,
-    };
-
-    Ok(user)
+    .map_err(|e| anyhow!(e))
 }
 
 pub async fn get_user_info(db_pool: &PgPool, user_id: UserId) -> Result<UserInfo> {

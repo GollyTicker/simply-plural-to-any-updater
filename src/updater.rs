@@ -6,7 +6,7 @@ use crate::{
     vrchat::VRChatUpdater,
 };
 
-#[derive(Clone, Serialize, strum_macros::Display)]
+#[derive(Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
 pub enum Platform {
     VRChat,
     Discord,
@@ -19,12 +19,6 @@ pub enum UpdaterStatus {
     Running,
     Error(String),
     Unknown,
-}
-
-#[derive(Clone, Serialize)]
-pub struct UpdaterState {
-    pub updater: Platform,
-    pub status: UpdaterStatus,
 }
 
 pub enum Updater {
@@ -57,13 +51,6 @@ impl Updater {
                 .map_or(UpdaterStatus::Running, |e| UpdaterStatus::Error(e.clone()))
         } else {
             UpdaterStatus::Inactive
-        }
-    }
-
-    pub fn state(&self, config: &UserConfigForUpdater) -> UpdaterState {
-        UpdaterState {
-            updater: self.platform(),
-            status: self.status(config),
         }
     }
 

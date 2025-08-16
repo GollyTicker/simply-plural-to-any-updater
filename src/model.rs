@@ -16,7 +16,7 @@ impl From<String> for Email {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRow, Type)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow, Type, Eq, Hash, PartialEq)]
 pub struct UserId {
     pub inner: Uuid,
 }

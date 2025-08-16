@@ -5,7 +5,7 @@ use sqlx::FromRow;
 use crate::{
     config_value, config_value_if,
     database::WaitSeconds,
-    model::{DecryptedDbSecret, SecretType},
+    model::{DecryptedDbSecret, SecretType, UserId},
 };
 use serde::{Deserialize, Serialize};
 
@@ -50,9 +50,9 @@ pub fn default_user_db_entries<S: SecretType>() -> UserConfigDbEntries<S> {
     }
 }
 
-#[derive(Clone, Default)]
 pub struct UserConfigForUpdater {
     pub client: Client,
+    pub user_id: UserId,
     pub simply_plural_base_url: String,
     pub discord_base_url: String,
 
@@ -76,6 +76,7 @@ pub struct UserConfigForUpdater {
 
 // todo. how do we ensure, that only correctly verified constraints userconfigdbentries are passed to the DB?
 pub fn create_config_with_strong_constraints(
+    user_id: &UserId,
     client: &Client,
     db_config: &UserConfigDbEntries<DecryptedDbSecret>,
 ) -> Result<UserConfigForUpdater> {
@@ -87,6 +88,7 @@ pub fn create_config_with_strong_constraints(
     let enable_vrchat = config_value!(local_config_with_defaults, enable_vrchat)?;
 
     let config = UserConfigForUpdater {
+        user_id: user_id.clone(),
         client: client.clone(),
         wait_seconds: config_value!(local_config_with_defaults, wait_seconds)?.into(),
         system_name: config_value!(local_config_with_defaults, system_name)?,
@@ -133,6 +135,7 @@ pub fn create_config_with_strong_constraints(
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
     use crate::model::DecryptedDbSecret;
