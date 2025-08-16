@@ -60,6 +60,13 @@ const fn get_updaters_state() -> Json<Vec<UpdaterState>> {
     Json(vec![])
 }
 
+#[post("/updaters/restart")]
+fn restart_updaters() -> Result<(), response::Debug<anyhow::Error>> {
+    // todo. continue here. create updaters state with references to the async tasks
+    // in main and fill them here.
+    todo!()
+}
+
 #[get("/fronting/<user_id>")]
 async fn rest_get_fronting(
     user_id: &str, // todo. actually use system name here instead of user-id
