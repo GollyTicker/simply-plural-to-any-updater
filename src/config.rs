@@ -1,10 +1,8 @@
 use anyhow::{anyhow, Result};
-use reqwest::Client;
 use sqlx::FromRow;
 
 use crate::{
     config_value, config_value_if,
-    database::WaitSeconds,
     model::{
         self, only_use_this_function_to_mark_validation_after_you_have_actually_validated_it,
         ConstraintsType, DecryptedDbSecret, InvalidConstraints, SecretType, UserId,
@@ -59,13 +57,13 @@ pub fn default_user_db_entries<S: SecretType>() -> UserConfigDbEntries<S> {
 }
 
 pub struct UserConfigForUpdater {
-    pub client: Client,
+    pub client: reqwest::Client,
     pub user_id: UserId,
     pub simply_plural_base_url: String,
     pub discord_base_url: String,
 
     // Note: v Keep this in sync with UserConfigDbEntries! v
-    pub wait_seconds: WaitSeconds,
+    pub wait_seconds: model::WaitSeconds,
 
     pub system_name: String,
     pub status_prefix: String,
@@ -84,7 +82,7 @@ pub struct UserConfigForUpdater {
 
 pub fn create_config_with_strong_constraints<Constraints>(
     user_id: &UserId,
-    client: &Client,
+    client: &reqwest::Client,
     db_config: &UserConfigDbEntries<DecryptedDbSecret, Constraints>,
 ) -> Result<(
     UserConfigForUpdater,

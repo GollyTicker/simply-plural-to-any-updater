@@ -7,11 +7,11 @@ use crate::vrchat_auth;
 use anyhow::anyhow;
 use anyhow::{Ok, Result};
 use vrchatapi::{
-    apis::{configuration::Configuration, users_api},
-    models::UpdateUserRequest,
+    apis::{configuration::Configuration as VrcConfig, users_api},
+    models as vrc,
 };
 
-type InitializedUpdater = (Configuration, String);
+type InitializedUpdater = (VrcConfig, String);
 pub struct VRChatUpdater {
     pub last_operation_error: Option<String>,
     initialized: Option<InitializedUpdater>,
@@ -70,7 +70,7 @@ async fn set_vrchat_status(
     initialized_updater: &InitializedUpdater,
     status_string: &str,
 ) -> Result<()> {
-    let mut update_request = UpdateUserRequest::new();
+    let mut update_request = vrc::UpdateUserRequest::new();
     update_request.status_description = Some(status_string.to_string());
 
     let (vrchat_config, user_id) = initialized_updater;

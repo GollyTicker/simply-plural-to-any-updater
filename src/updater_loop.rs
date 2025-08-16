@@ -5,7 +5,7 @@ use crate::{
     config::UserConfigForUpdater,
     simply_plural::{self},
     updater::{self, Platform, Updater, UpdaterStatus},
-    updater_state::SharedUpdaters,
+    updater_manager,
 };
 use anyhow::Result;
 use chrono::Utc;
@@ -14,7 +14,10 @@ pub type CancleableUpdater = tokio::task::JoinHandle<()>;
 pub type UserUpdatersStatuses = HashMap<Platform, UpdaterStatus>;
 type UserUpdaters = HashMap<Platform, Updater>;
 
-pub async fn run_loop(config: UserConfigForUpdater, shared_updaters: SharedUpdaters) -> ! {
+pub async fn run_loop(
+    config: UserConfigForUpdater,
+    shared_updaters: updater_manager::SharedUpdaters,
+) -> ! {
     eprintln!("Running Updater ...");
 
     let mut updaters: UserUpdaters = updater::implemented_updaters()

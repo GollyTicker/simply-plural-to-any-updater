@@ -1,5 +1,5 @@
 use crate::model;
-use crate::updater_state;
+use crate::updater_manager;
 use anyhow::Result;
 use clap::Parser;
 use sqlx::postgres;
@@ -25,7 +25,7 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
         inner: cli_args.application_user_secrets.clone(),
     };
 
-    let shared_updater_state = updater_state::SharedUpdaters::new();
+    let shared_updater_state = updater_manager::SharedUpdaters::new();
 
     Ok(ApplicationSetup {
         db_pool,
@@ -57,5 +57,5 @@ pub struct ApplicationSetup {
     pub client: reqwest::Client,
     pub jwt_secret: model::ApplicationJwtSecret,
     pub application_user_secrets: model::ApplicationUserSecrets,
-    pub shared_updaters: updater_state::SharedUpdaters,
+    pub shared_updaters: updater_manager::SharedUpdaters,
 }

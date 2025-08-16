@@ -1,15 +1,12 @@
-use std::time::Duration;
-
 use anyhow::{anyhow, Result};
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{FromRow, PgPool};
 
 use crate::{
     config::UserConfigDbEntries,
     model::{
-        self, ApplicationUserSecrets, DecryptedDbSecret, Email, EncryptedDbSecret,
-        PasswordHashString, UserId, UserSecretsKey, ValidConstraints,
+        self, DecryptedDbSecret, Email, EncryptedDbSecret, PasswordHashString, UserId,
+        ValidConstraints,
     },
 };
 
@@ -73,7 +70,7 @@ pub async fn set_user_config_secrets(
     db_pool: &PgPool,
     user_id: UserId,
     config: UserConfigDbEntries<DecryptedDbSecret, ValidConstraints>,
-    application_user_secret: &ApplicationUserSecrets,
+    application_user_secret: &model::ApplicationUserSecrets,
 ) -> Result<()> {
     let secrets_key = compute_user_secrets_key(&user_id, application_user_secret);
 
@@ -123,7 +120,7 @@ pub async fn set_user_config_secrets(
 pub async fn get_user_secrets(
     db_pool: &PgPool,
     user_id: &UserId,
-    application_user_secret: &ApplicationUserSecrets,
+    application_user_secret: &model::ApplicationUserSecrets,
 ) -> Result<UserConfigDbEntries<DecryptedDbSecret, ValidConstraints>> {
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
@@ -169,8 +166,8 @@ pub async fn get_user_info(db_pool: &PgPool, user_id: UserId) -> Result<UserInfo
 
 fn compute_user_secrets_key(
     user_id: &UserId,
-    application_user_secret: &ApplicationUserSecrets,
-) -> UserSecretsKey {
+    application_user_secret: &model::ApplicationUserSecrets,
+) -> model::UserSecretsKey {
     let user_id = user_id.inner.to_string();
     let app_user_secret = &application_user_secret.inner;
 
@@ -183,24 +180,7 @@ fn compute_user_secrets_key(
 
     let hex_string = format!("{digest:x}");
 
-    UserSecretsKey { inner: hex_string }
-}
-
-#[derive(Clone, Deserialize, Serialize, Debug, Default)]
-pub struct WaitSeconds {
-    pub inner: Duration,
-}
-impl From<Duration> for WaitSeconds {
-    fn from(value: Duration) -> Self {
-        Self { inner: value }
-    }
-}
-
-impl From<i32> for WaitSeconds {
-    #[allow(clippy::cast_sign_loss)]
-    fn from(secs: i32) -> Self {
-        Duration::from_secs(secs as u64).into()
-    }
+    model::UserSecretsKey { inner: hex_string }
 }
 
 #[derive(FromRow)]

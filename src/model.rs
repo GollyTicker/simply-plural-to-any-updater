@@ -1,14 +1,12 @@
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
 
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
-use sqlx::{
-    error::BoxDynError, postgres::PgValueRef, types::Uuid, Decode, FromRow, Postgres, Type,
-};
+use sqlx::{error::BoxDynError, postgres, types::Uuid, Decode, FromRow, Postgres};
 
 use crate::config::UserConfigDbEntries;
 
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow, Type)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type)]
 pub struct Email {
     pub inner: String,
 }
@@ -19,7 +17,7 @@ impl From<String> for Email {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow, Type, Eq, Hash, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type, Eq, Hash, PartialEq)]
 pub struct UserId {
     pub inner: Uuid,
 }
@@ -43,7 +41,7 @@ pub struct UserProvidedPassword {
     pub inner: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRow, Type)]
+#[derive(Debug, Serialize, Deserialize, FromRow, sqlx::Type)]
 pub struct PasswordHashString {
     pub inner: String,
 }
@@ -72,6 +70,23 @@ pub struct UserLoginCredentials {
     pub password: UserProvidedPassword,
 }
 
+#[derive(Clone, Deserialize, Serialize, Debug, Default)]
+pub struct WaitSeconds {
+    pub inner: Duration,
+}
+impl From<Duration> for WaitSeconds {
+    fn from(value: Duration) -> Self {
+        Self { inner: value }
+    }
+}
+
+impl From<i32> for WaitSeconds {
+    #[allow(clippy::cast_sign_loss)]
+    fn from(secs: i32) -> Self {
+        Duration::from_secs(secs as u64).into()
+    }
+}
+
 #[derive(Default, Clone, Serialize, FromRow, PartialEq, Eq)]
 pub struct EncryptedDbSecret {}
 
@@ -82,18 +97,18 @@ impl From<String> for EncryptedDbSecret {
 }
 
 // manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl Type<Postgres> for EncryptedDbSecret {
+impl sqlx::Type<Postgres> for EncryptedDbSecret {
     fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <String as Type<Postgres>>::type_info()
+        <String as sqlx::Type<Postgres>>::type_info()
     }
 
     fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <String as Type<Postgres>>::compatible(ty)
+        <String as sqlx::Type<Postgres>>::compatible(ty)
     }
 }
 
 impl<'r> Decode<'r, Postgres> for EncryptedDbSecret {
-    fn decode(value: PgValueRef<'r>) -> Result<Self, BoxDynError> {
+    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
         let _ = <String as Decode<Postgres>>::decode(value)?;
         Ok(Self {})
     }
@@ -105,18 +120,18 @@ pub struct DecryptedDbSecret {
 }
 
 // manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl Type<Postgres> for DecryptedDbSecret {
+impl sqlx::Type<Postgres> for DecryptedDbSecret {
     fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <String as Type<Postgres>>::type_info()
+        <String as sqlx::Type<Postgres>>::type_info()
     }
 
     fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <String as Type<Postgres>>::compatible(ty)
+        <String as sqlx::Type<Postgres>>::compatible(ty)
     }
 }
 
 impl<'r> Decode<'r, Postgres> for DecryptedDbSecret {
-    fn decode(value: PgValueRef<'r>) -> Result<Self, BoxDynError> {
+    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
         let secret = <String as Decode<Postgres>>::decode(value)?;
         Ok(Self { secret })
     }
@@ -155,18 +170,18 @@ impl ConstraintsType for ValidConstraints {}
 impl ConstraintsType for InvalidConstraints {}
 
 // manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl Type<Postgres> for ValidConstraints {
+impl sqlx::Type<Postgres> for ValidConstraints {
     fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <bool as Type<Postgres>>::type_info()
+        <bool as sqlx::Type<Postgres>>::type_info()
     }
 
     fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <bool as Type<Postgres>>::compatible(ty)
+        <bool as sqlx::Type<Postgres>>::compatible(ty)
     }
 }
 
 impl<'r> Decode<'r, Postgres> for ValidConstraints {
-    fn decode(value: PgValueRef<'r>) -> Result<Self, BoxDynError> {
+    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
         let valid_constraints = <bool as Decode<Postgres>>::decode(value)?;
 
         if valid_constraints {
@@ -178,18 +193,18 @@ impl<'r> Decode<'r, Postgres> for ValidConstraints {
 }
 
 // manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl Type<Postgres> for InvalidConstraints {
+impl sqlx::Type<Postgres> for InvalidConstraints {
     fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <bool as Type<Postgres>>::type_info()
+        <bool as sqlx::Type<Postgres>>::type_info()
     }
 
     fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <bool as Type<Postgres>>::compatible(ty)
+        <bool as sqlx::Type<Postgres>>::compatible(ty)
     }
 }
 
 impl<'r> Decode<'r, Postgres> for InvalidConstraints {
-    fn decode(value: PgValueRef<'r>) -> Result<Self, BoxDynError> {
+    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
         let valid_constraints = <bool as Decode<Postgres>>::decode(value)?;
 
         if valid_constraints {

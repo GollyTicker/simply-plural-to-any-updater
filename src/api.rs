@@ -13,7 +13,7 @@ use crate::model::UserLoginCredentials;
 use crate::setup;
 use crate::simply_plural;
 use crate::updater_loop;
-use crate::updater_state::SharedUpdaters;
+use crate::updater_manager;
 use crate::webview;
 use anyhow::{anyhow, Result};
 use rocket::{
@@ -59,7 +59,7 @@ pub async fn run_server(application_setup: setup::ApplicationSetup) -> Result<()
 
 #[get("/updaters/state")]
 fn get_updaters_state(
-    shared_updaters: &State<SharedUpdaters>,
+    shared_updaters: &State<updater_manager::SharedUpdaters>,
     jwt: Result<Jwt, response::Debug<anyhow::Error>>,
 ) -> Result<Json<updater_loop::UserUpdatersStatuses>, response::Debug<anyhow::Error>> {
     let user_id = jwt?.user_id()?;
@@ -76,7 +76,7 @@ async fn restart_updaters(
     db_pool: &State<PgPool>,
     application_user_secrets: &State<ApplicationUserSecrets>,
     client: &State<reqwest::Client>,
-    shared_updater_state: &State<SharedUpdaters>,
+    shared_updater_state: &State<updater_manager::SharedUpdaters>,
 ) -> Result<(), response::Debug<anyhow::Error>> {
     let user_id = jwt?.user_id()?;
 

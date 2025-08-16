@@ -1,6 +1,6 @@
 use crate::config::UserConfigForUpdater;
 use crate::model::UserId;
-use crate::updater_loop::{self};
+use crate::updater_loop;
 use anyhow::{anyhow, Result};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -57,7 +57,7 @@ impl SharedUpdaters {
             .ok_or_else(|| anyhow!("No updaters found!"))?;
 
         let owned_self = self.clone();
-        task.abort();
+        task.abort(); // todo. how d we check, that we don't have any significant blocking calls anywhere???
         *task = tokio::spawn(async move {
             updater_loop::run_loop(config, owned_self).await;
         });

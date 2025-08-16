@@ -2,8 +2,7 @@ use anyhow::Result;
 use serde::Serialize;
 
 use crate::{
-    config::UserConfigForUpdater, discord::DiscordUpdater, simply_plural::Fronter,
-    vrchat::VRChatUpdater,
+    config::UserConfigForUpdater, discord::DiscordUpdater, simply_plural, vrchat::VRChatUpdater,
 };
 
 #[derive(Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
@@ -78,7 +77,7 @@ impl Updater {
     pub async fn update_fronting_status(
         &mut self,
         config: &UserConfigForUpdater,
-        fronts: &[Fronter],
+        fronts: &[simply_plural::Fronter],
     ) -> Result<()> {
         match self {
             Self::VRChat(updater) => updater.update_fronting_status(config, fronts).await,

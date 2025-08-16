@@ -19,7 +19,7 @@ mod setup;
 mod simply_plural;
 mod updater;
 mod updater_loop;
-mod updater_state;
+mod updater_manager;
 mod vrchat;
 mod vrchat_auth;
 mod webview;
