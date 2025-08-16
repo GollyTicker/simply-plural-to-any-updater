@@ -244,6 +244,7 @@ impl From<Duration> for WaitSeconds {
 }
 
 impl From<i32> for WaitSeconds {
+    #[allow(clippy::cast_sign_loss)]
     fn from(secs: i32) -> Self {
         Duration::from_secs(secs as u64).into()
     }

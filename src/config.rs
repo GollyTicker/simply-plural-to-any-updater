@@ -76,8 +76,8 @@ pub struct UserConfigForUpdater {
 
 // todo. how do we ensure, that only correctly verified constraints userconfigdbentries are passed to the DB?
 pub fn create_config_with_strong_constraints(
-    client: Client,
-    db_config: UserConfigDbEntries<DecryptedDbSecret>,
+    client: &Client,
+    db_config: &UserConfigDbEntries<DecryptedDbSecret>,
 ) -> Result<UserConfigForUpdater> {
     eprintln!("Loading config ...");
 
@@ -87,7 +87,7 @@ pub fn create_config_with_strong_constraints(
     let enable_vrchat = config_value!(local_config_with_defaults, enable_vrchat)?;
 
     let config = UserConfigForUpdater {
-        client,
+        client: client.clone(),
         wait_seconds: config_value!(local_config_with_defaults, wait_seconds)?.into(),
         system_name: config_value!(local_config_with_defaults, system_name)?,
         simply_plural_token: config_value!(local_config_with_defaults, simply_plural_token)?,

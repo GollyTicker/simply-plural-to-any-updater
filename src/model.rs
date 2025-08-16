@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 use sqlx::{
-    error::BoxDynError, postgres::PgValueRef, types::Uuid, Decode, FromRow, Postgres, Row, Type,
+    error::BoxDynError, postgres::PgValueRef, types::Uuid, Decode, FromRow, Postgres, Type,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow, Type)]

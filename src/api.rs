@@ -30,7 +30,7 @@ pub async fn run_server(cli_args: CliArgs, client: reqwest::Client, db_pool: PgP
         inner: cli_args.application_user_secrets.clone(),
     };
 
-    rocket::build()
+    let _ = rocket::build()
         .manage(db_pool)
         .manage(cli_args)
         .manage(jwt_secret)
@@ -49,8 +49,9 @@ pub async fn run_server(cli_args: CliArgs, client: reqwest::Client, db_pool: PgP
         )
         .launch()
         .await
-        .map_err(|e| anyhow!(e))
-        .map(|_| (()))
+        .map_err(|e| anyhow!(e))?;
+
+    Ok(())
 }
 
 #[get("/updaters/state")]
@@ -76,8 +77,7 @@ async fn rest_get_fronting(
 
     eprintln!("GET /fronting/{}. Creating config", user_id.inner);
 
-    let config =
-        config::create_config_with_strong_constraints(client.inner().to_owned(), user.config)?;
+    let config = config::create_config_with_strong_constraints(client, &user.config)?;
 
     eprintln!("GET /fronting/{}. Fetching fronts", user_id.inner);
 
@@ -98,7 +98,7 @@ async fn register(
     db_pool: &State<PgPool>,
     credentials: Json<UserLoginCredentials>,
 ) -> Result<(), response::Debug<anyhow::Error>> {
-    let pwh = auth::create_password_hash(credentials.password.clone())?;
+    let pwh = auth::create_password_hash(&credentials.password)?;
 
     database::create_user(db_pool, credentials.email.clone(), pwh)
         .await
@@ -117,11 +117,8 @@ async fn login(
         .await
         .map_err(response::Debug)?;
 
-    let jwt_string = auth::verify_password_and_create_token(
-        credentials.password.clone(),
-        user_info,
-        jwt_app_secret,
-    )?;
+    let jwt_string =
+        auth::verify_password_and_create_token(&credentials.password, &user_info, jwt_app_secret)?;
 
     Ok(Json(jwt_string))
 }
@@ -150,10 +147,7 @@ async fn set_config(
     let user_id = jwt?.user_id()?;
 
     // check that config satisfies contraints
-    let _ = config::create_config_with_strong_constraints(
-        client.inner().to_owned(),
-        config.clone().into_inner(),
-    );
+    let _ = config::create_config_with_strong_constraints(client, &config);
 
     let () =
         database::set_user_config_secrets(db_pool, user_id, config.into_inner(), app_user_secrets)

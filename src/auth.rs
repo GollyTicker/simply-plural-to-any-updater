@@ -1,4 +1,3 @@
-
 use anyhow::{anyhow, Result};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
@@ -18,7 +17,7 @@ use crate::{
     model::{ApplicationJwtSecret, PasswordHashString, UserId, UserProvidedPassword},
 };
 
-pub fn create_password_hash(password: UserProvidedPassword) -> Result<PasswordHashString> {
+pub fn create_password_hash(password: &UserProvidedPassword) -> Result<PasswordHashString> {
     let salt = SaltString::generate(&mut OsRng);
 
     let pwh = Argon2::default()
@@ -31,8 +30,8 @@ pub fn create_password_hash(password: UserProvidedPassword) -> Result<PasswordHa
 }
 
 pub fn verify_password_and_create_token(
-    password: UserProvidedPassword,
-    user_info: UserInfo,
+    password: &UserProvidedPassword,
+    user_info: &UserInfo,
     jwt_secret: &ApplicationJwtSecret,
 ) -> Result<JwtString> {
     // don't allow external user to infer what exactly failed
@@ -45,7 +44,7 @@ pub fn verify_password_and_create_token(
         .map_err(|_| anyhow!("Invalid email/password"))?;
 
     let token =
-        create_token(user_info.id, jwt_secret).map_err(|_| anyhow!("Invalid email/password"))?;
+        create_token(&user_info.id, jwt_secret).map_err(|_| anyhow!("Invalid email/password"))?;
 
     Ok(token)
 }
@@ -86,21 +85,17 @@ impl<'r> FromRequest<'r> for Jwt {
     type Error = rocket::response::Debug<anyhow::Error>;
 
     async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        let auth_header_value = req.headers().get_one("authorization");
-        if auth_header_value.is_none() {
-            return Outcome::Error((
+        fn no_jwt_provided_outcome() -> Outcome<Jwt, response::Debug<anyhow::Error>> {
+            Outcome::Error((
                 Status::Unauthorized,
                 response::Debug::from(anyhow!("No Jwt provided")),
-            ));
+            ))
         }
-        let auth_header_value = auth_header_value.unwrap();
 
-        let jwt_secret = req
-            .guard::<&State<ApplicationJwtSecret>>()
-            .await
-            .map_error(|(err_status, ())| (err_status, response::Debug(anyhow!(err_status))));
-
-        jwt_secret.and_then(|jwt_secret| {
+        fn verify_jwt_and_handle_result(
+            auth_header_value: &str,
+            jwt_secret: &ApplicationJwtSecret,
+        ) -> Outcome<Jwt, response::Debug<anyhow::Error>> {
             let token = JwtString {
                 inner: auth_header_value
                     .trim_start_matches("Bearer")
@@ -108,7 +103,7 @@ impl<'r> FromRequest<'r> for Jwt {
                     .to_owned(),
             };
             match verify_jwt(&token, jwt_secret) {
-                Ok(claims) => Outcome::Success(Self { claims }),
+                Ok(claims) => Outcome::Success(Jwt { claims }),
                 Err(err) => {
                     eprintln!("Token verification failed: {err}");
                     Outcome::Error((
@@ -117,21 +112,34 @@ impl<'r> FromRequest<'r> for Jwt {
                     ))
                 }
             }
+        }
+
+        let jwt_secret = req
+            .guard::<&State<ApplicationJwtSecret>>()
+            .await
+            .map_error(|(err_status, ())| (err_status, response::Debug(anyhow!(err_status))));
+
+        let auth_header_value = req.headers().get_one("authorization");
+
+        auth_header_value.map_or_else(no_jwt_provided_outcome, |auth_header_value| {
+            jwt_secret
+                .and_then(|jwt_secret| verify_jwt_and_handle_result(auth_header_value, jwt_secret))
         })
     }
 }
 
 const JWT_VALID_DAYS: i64 = 25;
 
-pub fn create_token(user_id: UserId, jwt_secret: &ApplicationJwtSecret) -> Result<JwtString> {
-    let expiration = Utc::now()
+pub fn create_token(user_id: &UserId, jwt_secret: &ApplicationJwtSecret) -> Result<JwtString> {
+    let expiration: usize = Utc::now()
         .checked_add_signed(Duration::days(JWT_VALID_DAYS))
-        .expect("invalid timestamp")
-        .timestamp();
+        .ok_or_else(|| anyhow!("invalid timestamp"))?
+        .timestamp()
+        .try_into()?;
 
     let claims = Claims {
         sub: user_id.inner.to_string(),
-        exp: expiration as usize,
+        exp: expiration,
     };
 
     let token = encode(
