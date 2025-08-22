@@ -6,6 +6,7 @@ use crate::{platforms, plurality, users};
 #[derive(Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
 pub enum Platform {
     VRChat,
+    Discord,
     DiscordStatusMessage,
 }
 
@@ -18,6 +19,7 @@ pub enum UpdaterStatus {
 
 pub enum Updater {
     VRChat(Box<platforms::VRChatUpdater>),
+    Discord(platforms::DiscordUpdater),
     DiscordStatusMessage(platforms::DiscordStatusMessageUpdater),
 }
 
@@ -38,9 +40,10 @@ pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
 impl Updater {
     pub fn new(platform: Platform) -> Self {
         match platform {
-            Platform::VRChat => Self::VRChat(Box::new(platforms::VRChatUpdater::new(platform))),
+            Platform::VRChat => Self::VRChat(Box::new(platforms::VRChatUpdater::new())),
+            Platform::Discord => Self::Discord(platforms::DiscordUpdater::new()),
             Platform::DiscordStatusMessage => {
-                Self::DiscordStatusMessage(platforms::DiscordStatusMessageUpdater::new(platform))
+                Self::DiscordStatusMessage(platforms::DiscordStatusMessageUpdater::new())
             }
         }
     }
@@ -48,6 +51,7 @@ impl Updater {
     pub const fn platform(&self) -> Platform {
         match self {
             Self::VRChat(_) => Platform::VRChat,
+            Self::Discord(_) => Platform::Discord,
             Self::DiscordStatusMessage(_) => Platform::DiscordStatusMessage,
         }
     }
@@ -61,9 +65,10 @@ impl Updater {
         }
     }
 
-    pub const fn last_operation_error(&self) -> Option<&String> {
+    const fn last_operation_error(&self) -> Option<&String> {
         match self {
             Self::VRChat(updater) => updater.last_operation_error.as_ref(),
+            Self::Discord(updater) => updater.last_operation_error.as_ref(),
             Self::DiscordStatusMessage(updater) => updater.last_operation_error.as_ref(),
         }
     }
@@ -71,6 +76,7 @@ impl Updater {
     pub const fn enabled(&self, config: &users::UserConfigForUpdater) -> bool {
         match self {
             Self::VRChat(_) => config.enable_vrchat,
+            Self::Discord(_) => todo!(),
             Self::DiscordStatusMessage(_) => config.enable_discord_status_message,
         }
     }
@@ -78,6 +84,7 @@ impl Updater {
     pub async fn setup(&mut self, config: &users::UserConfigForUpdater) -> Result<()> {
         match self {
             Self::VRChat(updater) => updater.setup(config).await,
+            Self::Discord(updater) => updater.setup(config).await,
             Self::DiscordStatusMessage(updater) => updater.setup(config).await,
         }
     }
@@ -89,6 +96,7 @@ impl Updater {
     ) -> Result<()> {
         match self {
             Self::VRChat(updater) => updater.update_fronting_status(config, fronts).await,
+            Self::Discord(updater) => updater.update_fronting_status(config, fronts).await,
             Self::DiscordStatusMessage(updater) => {
                 updater.update_fronting_status(config, fronts).await
             }

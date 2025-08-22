@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     status_no_fronts TEXT,
     status_truncate_names_to INTEGER CHECK (status_truncate_names_to > 0),
     
+    enable_discord BOOLEAN NOT NULL DEFAULT false,
     enable_discord_status_message BOOLEAN NOT NULL DEFAULT false,
     enable_vrchat BOOLEAN NOT NULL DEFAULT false,
     

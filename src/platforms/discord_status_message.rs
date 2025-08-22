@@ -1,4 +1,4 @@
-use crate::{plurality, record_if_error, updater, users};
+use crate::{plurality, record_if_error, users};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
@@ -16,7 +16,7 @@ pub struct DiscordStatusMessageUpdater {
     pub last_operation_error: Option<String>,
 }
 impl DiscordStatusMessageUpdater {
-    pub const fn new(_platform: updater::Platform) -> Self {
+    pub const fn new() -> Self {
         Self {
             last_operation_error: None,
         }

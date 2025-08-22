@@ -50,6 +50,7 @@ pub async fn get_user(
             status_prefix,
             status_no_fronts,
             status_truncate_names_to,
+            enable_discord,
             enable_discord_status_message,
             enable_vrchat,
             '' AS simply_plural_token,
@@ -88,7 +89,8 @@ pub async fn set_user_config_secrets(
             enc__discord_status_message_token = pgp_sym_encrypt($11, $9),
             enc__vrchat_username = pgp_sym_encrypt($12, $9),
             enc__vrchat_password = pgp_sym_encrypt($13, $9),
-            enc__vrchat_cookie = pgp_sym_encrypt($14, $9)
+            enc__vrchat_cookie = pgp_sym_encrypt($14, $9),
+            enable_discord
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -115,6 +117,7 @@ pub async fn set_user_config_secrets(
     .bind(config.vrchat_username.as_ref().map(|s| s.secret.clone()))
     .bind(config.vrchat_password.as_ref().map(|s| s.secret.clone()))
     .bind(config.vrchat_cookie.as_ref().map(|s| s.secret.clone()))
+    .bind(config.enable_discord)
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -136,6 +139,7 @@ pub async fn get_user_secrets(
             status_prefix,
             status_no_fronts,
             status_truncate_names_to,
+            enable_discord,
             enable_discord_status_message,
             enable_vrchat,
             pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,

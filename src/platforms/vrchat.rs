@@ -1,6 +1,5 @@
 use crate::plurality;
 use crate::record_if_error;
-use crate::updater;
 use crate::{platforms::vrchat_auth, users};
 use anyhow::anyhow;
 use anyhow::{Ok, Result};
@@ -15,7 +14,7 @@ pub struct VRChatUpdater {
     initialized: Option<InitializedUpdater>,
 }
 impl VRChatUpdater {
-    pub const fn new(_platform: updater::Platform) -> Self {
+    pub const fn new() -> Self {
         Self {
             last_operation_error: None,
             initialized: None,

@@ -28,6 +28,7 @@ where
     pub status_no_fronts: Option<String>,
     pub status_truncate_names_to: Option<i32>,
 
+    pub enable_discord: Option<bool>,
     pub enable_discord_status_message: Option<bool>,
     pub enable_vrchat: Option<bool>,
 
@@ -44,6 +45,7 @@ pub fn default_user_db_entries<S: database::SecretType>() -> UserConfigDbEntries
         status_no_fronts: Some(String::from("none?")),
         status_truncate_names_to: Some(3),
         wait_seconds: Some(60),
+        enable_discord: Some(false),
         enable_discord_status_message: Some(false),
         enable_vrchat: Some(false),
         ..Default::default()
@@ -64,6 +66,7 @@ pub struct UserConfigForUpdater {
     pub status_no_fronts: String,
     pub status_truncate_names_to: usize,
 
+    pub enable_discord: bool,
     pub enable_discord_status_message: bool,
     pub enable_vrchat: bool,
 
@@ -119,6 +122,7 @@ where
         system_name: config_value!(local_config_with_defaults, system_name)?,
         simply_plural_token: config_value!(local_config_with_defaults, simply_plural_token)?,
         simply_plural_base_url: String::from("https://api.apparyllis.com/v1"),
+        enable_discord: config_value!(local_config_with_defaults, enable_discord)?,
         enable_discord_status_message,
         enable_vrchat,
         discord_base_url: if enable_discord_status_message {
@@ -182,6 +186,7 @@ mod tests {
             status_prefix: Some("SP:".to_string()),
             status_no_fronts: Some("No one fronting".to_string()),
             status_truncate_names_to: Some(5),
+            enable_discord: Some(true),
             enable_discord_status_message: Some(true),
             enable_vrchat: Some(false),
             simply_plural_token: Some(Decrypted {
@@ -203,6 +208,7 @@ mod tests {
   "status_prefix": "SP:",
   "status_no_fronts": "No one fronting",
   "status_truncate_names_to": 5,
+  "enable_discord": true,
   "enable_discord_status_message": true,
   "enable_vrchat": false,
   "simply_plural_token": {

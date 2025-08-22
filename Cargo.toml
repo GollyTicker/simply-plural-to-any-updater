@@ -8,6 +8,10 @@ rust-version = "1.87.0"
 name = "sp2any"
 path = "src/main.rs"
 
+[[bin]]
+name = "sp2any-discord-bridge"
+path = "src/bin/discord_bridge.rs"
+
 [dependencies]
 sp2any_macros = { path = "sp2any_macros" }
 chrono = { version = "0.4", features = ["serde"] }
@@ -41,6 +45,6 @@ jsonwebtoken = "9.3"
 rand = "0.9"
 sha2 = "0.10"
 rocket = { version = "0.5", features = ["json"] }
-serenity = "0.12"
+discord-rich-presence = { path = "patched/discord-rich-presence" }
 
 [build-dependencies]

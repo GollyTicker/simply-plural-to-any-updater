@@ -1,0 +1,3 @@
+119a120,121
+>     /// Activity type, "Custom" for setting the custom status text message
+>     Custom = 4,
