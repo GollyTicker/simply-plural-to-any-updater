@@ -1,4 +1,5 @@
 use crate::database;
+use crate::platforms;
 use crate::updater;
 use crate::users;
 use anyhow::Result;
@@ -26,6 +27,11 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
         inner: cli_args.application_user_secrets.clone(),
     };
 
+    let discord_oauth_secrets = platforms::discord_api::ApplicationDiscordOAuthSecrets {
+        client_id: cli_args.discord_oauth_client_id.clone(),
+        client_secret: cli_args.discord_oauth_client_secret.clone(),
+    };
+
     let shared_updaters = updater::UpdaterManager::new(cli_args);
 
     Ok(ApplicationSetup {
@@ -34,6 +40,7 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
         jwt_secret,
         application_user_secrets,
         shared_updaters,
+        discord_oauth_secrets,
     })
 }
 
@@ -54,6 +61,12 @@ pub struct CliArgs {
 
     #[arg(short, long, env, default_value_t = false, action = clap::ArgAction::SetTrue)]
     pub discord_status_message_updater_available: bool,
+
+    #[arg(long, env)]
+    pub discord_oauth_client_id: String,
+
+    #[arg(long, env)]
+    pub discord_oauth_client_secret: String,
 }
 
 #[derive(Clone)]
@@ -63,4 +76,5 @@ pub struct ApplicationSetup {
     pub jwt_secret: users::ApplicationJwtSecret,
     pub application_user_secrets: database::ApplicationUserSecrets,
     pub shared_updaters: updater::UpdaterManager,
+    pub discord_oauth_secrets: platforms::discord_api::ApplicationDiscordOAuthSecrets,
 }

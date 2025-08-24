@@ -31,8 +31,9 @@ pub async fn post_api_user_config(
     let (_, valid_db_config) =
         config::create_config_with_strong_constraints(&user_id, client, &config)?;
 
-    let () = database::set_user_config_secrets(db_pool, user_id, valid_db_config, app_user_secrets)
-        .await?;
+    let () =
+        database::set_user_config_secrets(db_pool, &user_id, valid_db_config, app_user_secrets)
+            .await?;
 
     Ok(())
 }

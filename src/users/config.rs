@@ -34,6 +34,9 @@ where
 
     pub simply_plural_token: Option<Secret>,
     pub discord_status_message_token: Option<Secret>,
+    pub discord_user_id: Option<Secret>,
+    pub discord_oauth_access_token: Option<Secret>,
+    pub discord_oauth_refresh_token: Option<Secret>,
     pub vrchat_username: Option<Secret>,
     pub vrchat_password: Option<Secret>,
     pub vrchat_cookie: Option<Secret>,
@@ -72,6 +75,9 @@ pub struct UserConfigForUpdater {
 
     pub simply_plural_token: database::Decrypted,
     pub discord_status_message_token: database::Decrypted,
+    pub discord_user_id: database::Decrypted,
+    pub discord_oauth_access_token: database::Decrypted,
+    pub discord_oauth_refresh_token: database::Decrypted,
     pub vrchat_username: database::Decrypted,
     pub vrchat_password: database::Decrypted,
     pub vrchat_cookie: database::Decrypted,
@@ -111,6 +117,7 @@ where
     let db_config = database::downgrade(db_config);
     let local_config_with_defaults = db_config.with_option_defaults(default_user_db_entries());
 
+    let enable_discord = config_value!(local_config_with_defaults, enable_discord)?;
     let enable_discord_status_message =
         config_value!(local_config_with_defaults, enable_discord_status_message)?;
     let enable_vrchat = config_value!(local_config_with_defaults, enable_vrchat)?;
@@ -122,7 +129,7 @@ where
         system_name: config_value!(local_config_with_defaults, system_name)?,
         simply_plural_token: config_value!(local_config_with_defaults, simply_plural_token)?,
         simply_plural_base_url: String::from("https://api.apparyllis.com/v1"),
-        enable_discord: config_value!(local_config_with_defaults, enable_discord)?,
+        enable_discord,
         enable_discord_status_message,
         enable_vrchat,
         discord_base_url: if enable_discord_status_message {
@@ -134,6 +141,21 @@ where
             enable_discord_status_message,
             local_config_with_defaults,
             discord_status_message_token
+        )?,
+        discord_user_id: config_value_if!(
+            enable_discord,
+            local_config_with_defaults,
+            discord_user_id
+        )?,
+        discord_oauth_access_token: config_value_if!(
+            enable_discord,
+            local_config_with_defaults,
+            discord_oauth_access_token
+        )?,
+        discord_oauth_refresh_token: config_value_if!(
+            enable_discord,
+            local_config_with_defaults,
+            discord_oauth_refresh_token
         )?,
         vrchat_username: config_value_if!(
             enable_vrchat,
@@ -195,6 +217,15 @@ mod tests {
             discord_status_message_token: Some(Decrypted {
                 secret: "discord_status_message_token_abc".to_string(),
             }),
+            discord_user_id: Some(Decrypted {
+                secret: "discord_user_id".to_string(),
+            }),
+            discord_oauth_access_token: Some(Decrypted {
+                secret: "discord_oauth_access_token".to_string(),
+            }),
+            discord_oauth_refresh_token: Some(Decrypted {
+                secret: "discord_oauth_refresh_token".to_string(),
+            }),
             vrchat_username: None,
             vrchat_password: None,
             vrchat_cookie: None,
@@ -216,6 +247,15 @@ mod tests {
   },
   "discord_status_message_token": {
     "secret": "discord_status_message_token_abc"
+  },
+  "discord_user_id": {
+    "secret": "discord_user_id"
+  },
+  "discord_oauth_access_token": {
+    "secret": "discord_oauth_access_token"
+  },
+  "discord_oauth_refresh_token": {
+    "secret": "discord_oauth_refresh_token"
   },
   "vrchat_username": null,
   "vrchat_password": null,

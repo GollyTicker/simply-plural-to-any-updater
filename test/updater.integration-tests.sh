@@ -17,6 +17,7 @@ set -euo pipefail
 export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=true
 ENABLE_DISCORD_STATUS_MESSAGE=true
 ENABLE_VRCHAT=true
+ENABLE_DISCORD=false
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
@@ -32,6 +33,9 @@ main() {
     set_system_fronts_set "B"
     sleep "$SECONDS_BETWEEN_UPDATES"s
     check_system_fronts_set "B"
+
+    echo "Sleeping now... now you can do stuff!"
+    sleep 500s
 
 
     stop_updater

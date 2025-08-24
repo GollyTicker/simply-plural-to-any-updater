@@ -1,4 +1,5 @@
 mod discord;
+pub mod discord_api;
 mod discord_status_message;
 mod updater_macro;
 mod vrchat;
