@@ -4,6 +4,10 @@ inputs:
     required: true
   SPS_API_WRITE_TOKEN:
     required: true
+  DISCORD_OAUTH_CLIENT_ID:
+    required: true
+  DISCORD_OAUTH_CLIENT_SECRET:
+    required: true
   DISCORD_STATUS_MESSAGE_TOKEN:
     required: true
   VRCHAT_USERNAME:
@@ -64,6 +68,8 @@ runs:
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
+        DISCORD_OAUTH_CLIENT_ID: ${{ inputs.DISCORD_OAUTH_CLIENT_ID }}
+        DISCORD_OAUTH_CLIENT_SECRET: ${{ inputs.DISCORD_OAUTH_CLIENT_SECRET }}
         DISCORD_STATUS_MESSAGE_TOKEN: ${{inputs.DISCORD_STATUS_MESSAGE_TOKEN}}
         VRCHAT_USERNAME: ${{ inputs.VRCHAT_USERNAME }}
         VRCHAT_PASSWORD: ${{ inputs.VRCHAT_PASSWORD }}
@@ -76,6 +82,8 @@ runs:
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
+        DISCORD_OAUTH_CLIENT_ID: ${{ inputs.DISCORD_OAUTH_CLIENT_ID }}
+        DISCORD_OAUTH_CLIENT_SECRET: ${{ inputs.DISCORD_OAUTH_CLIENT_SECRET }}
         DISCORD_STATUS_MESSAGE_TOKEN: ${{inputs.DISCORD_STATUS_MESSAGE_TOKEN}}
         VRCHAT_USERNAME: ${{ inputs.VRCHAT_USERNAME }}
         VRCHAT_PASSWORD: ${{ inputs.VRCHAT_PASSWORD }}
@@ -88,6 +96,8 @@ runs:
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
+        DISCORD_OAUTH_CLIENT_ID: ${{ inputs.DISCORD_OAUTH_CLIENT_ID }}
+        DISCORD_OAUTH_CLIENT_SECRET: ${{ inputs.DISCORD_OAUTH_CLIENT_SECRET }}
       run: ./test/webserver.integration-tests.sh
 
     - name: Lint
