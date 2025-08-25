@@ -1,7 +1,4 @@
-use sqlx::{error::BoxDynError, postgres, Decode, FromRow, Postgres};
-
 use crate::{database::secrets, users::UserConfigDbEntries};
-use anyhow::anyhow;
 
 pub trait ConstraintsType: Clone {}
 
@@ -11,55 +8,21 @@ pub trait ConstraintsType: Clone {}
 #[derive(Clone)]
 pub struct ValidConstraints {}
 
-#[derive(Clone, Default, FromRow)]
+#[derive(Clone, Default)]
 pub struct InvalidConstraints {}
 
 impl ConstraintsType for ValidConstraints {}
 impl ConstraintsType for InvalidConstraints {}
 
-// manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl sqlx::Type<Postgres> for ValidConstraints {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <bool as sqlx::Type<Postgres>>::type_info()
-    }
-
-    fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <bool as sqlx::Type<Postgres>>::compatible(ty)
+impl From<Option<bool>> for InvalidConstraints {
+    fn from(_: Option<bool>) -> Self {
+        Self {}
     }
 }
 
-impl<'r> Decode<'r, Postgres> for ValidConstraints {
-    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
-        let valid_constraints = <bool as Decode<Postgres>>::decode(value)?;
-
-        if valid_constraints {
-            Ok(Self {})
-        } else {
-            Err(anyhow!("Implementation bug! (49273)").into())
-        }
-    }
-}
-
-// manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl sqlx::Type<Postgres> for InvalidConstraints {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <bool as sqlx::Type<Postgres>>::type_info()
-    }
-
-    fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <bool as sqlx::Type<Postgres>>::compatible(ty)
-    }
-}
-
-impl<'r> Decode<'r, Postgres> for InvalidConstraints {
-    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
-        let valid_constraints = <bool as Decode<Postgres>>::decode(value)?;
-
-        if valid_constraints {
-            Err(anyhow!("Implementation bug! (49273)").into())
-        } else {
-            Ok(Self {})
-        }
+impl From<Option<bool>> for ValidConstraints {
+    fn from(_: Option<bool>) -> Self {
+        Self {}
     }
 }
 
@@ -67,7 +30,7 @@ pub fn downgrade<Secret: secrets::SecretType, C: ConstraintsType>(
     value: &UserConfigDbEntries<Secret, C>,
 ) -> UserConfigDbEntries<Secret, InvalidConstraints> {
     UserConfigDbEntries {
-        valid_constraints: Some(InvalidConstraints {}),
+        valid_constraints: InvalidConstraints {},
         wait_seconds: value.wait_seconds,
         system_name: value.system_name.clone(),
         status_prefix: value.status_prefix.clone(),
@@ -93,7 +56,7 @@ pub fn only_use_this_function_to_mark_validation_after_you_have_actually_validat
     value: &UserConfigDbEntries<Secret, InvalidConstraints>,
 ) -> UserConfigDbEntries<Secret, ValidConstraints> {
     UserConfigDbEntries {
-        valid_constraints: Some(ValidConstraints {}),
+        valid_constraints: ValidConstraints {},
         wait_seconds: value.wait_seconds,
         system_name: value.system_name.clone(),
         status_prefix: value.status_prefix.clone(),

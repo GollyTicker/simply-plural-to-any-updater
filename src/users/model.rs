@@ -1,9 +1,9 @@
 use std::{fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use sqlx::{types::Uuid, FromRow};
+use sqlx::types::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Email {
     pub inner: String,
 }
@@ -14,7 +14,7 @@ impl From<String> for Email {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type, Eq, Hash, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, Hash, PartialEq)]
 pub struct UserId {
     pub inner: Uuid,
 }

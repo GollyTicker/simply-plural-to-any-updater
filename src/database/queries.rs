@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use sha2::{Digest, Sha256};
-use sqlx::{FromRow, PgPool};
+use sqlx::PgPool;
 
 use crate::{
     database::constraints,
@@ -39,11 +39,14 @@ pub async fn get_user_id(db_pool: &PgPool, email: Email) -> Result<UserId> {
     .map_err(|e| anyhow!(e))
 }
 
+// sqlx can't accept inline types with generics currently
+type TMPTYPE1 = UserConfigDbEntries<secrets::Encrypted>;
 pub async fn get_user(
     db_pool: &PgPool,
     user_id: &UserId,
 ) -> Result<UserConfigDbEntries<secrets::Encrypted>> {
-    sqlx::query_as(
+    sqlx::query_as!(
+        TMPTYPE1,
         "SELECT
             wait_seconds,
             system_name,
@@ -63,8 +66,8 @@ pub async fn get_user(
             '' AS vrchat_cookie,
             false AS valid_constraints
             FROM users WHERE id = $1",
+        user_id.inner
     )
-    .bind(user_id.inner)
     .fetch_one(db_pool)
     .await
     .map_err(|e| anyhow!(e))
@@ -78,7 +81,9 @@ pub async fn set_user_config_secrets(
 ) -> Result<()> {
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
-    let _: Option<UserConfigDbEntries<secrets::Decrypted>> = sqlx::query_as(
+    eprintln!("setting secrets: cookie {:?}", config.vrchat_cookie.secret);
+
+    let _ = sqlx::query!(
         "UPDATE users
         SET
             wait_seconds = $2,
@@ -98,52 +103,34 @@ pub async fn set_user_config_secrets(
             enc__discord_oauth_access_token = pgp_sym_encrypt($17, $9),
             enc__discord_oauth_refresh_token = pgp_sym_encrypt($18, $9)
         WHERE id = $1",
+        user_id.inner,
+        config.wait_seconds,
+        config.system_name,
+        config.status_prefix,
+        config.status_no_fronts,
+        config.status_truncate_names_to,
+        config.enable_discord_status_message,
+        config.enable_vrchat,
+        secrets_key.inner,
+        config.simply_plural_token.secret,
+        config.discord_status_message_token.secret,
+        config.vrchat_username.secret,
+        config.vrchat_password.secret,
+        config.vrchat_cookie.secret,
+        config.enable_discord,
+        config.discord_user_id.secret,
+        config.discord_oauth_access_token.secret,
+        config.discord_oauth_refresh_token.secret,
     )
-    .bind(user_id.inner)
-    .bind(config.wait_seconds)
-    .bind(&config.system_name)
-    .bind(&config.status_prefix)
-    .bind(&config.status_no_fronts)
-    .bind(config.status_truncate_names_to)
-    .bind(config.enable_discord_status_message)
-    .bind(config.enable_vrchat)
-    .bind(&secrets_key.inner)
-    .bind(
-        config
-            .simply_plural_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
-    .bind(
-        config
-            .discord_status_message_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
-    .bind(config.vrchat_username.as_ref().map(|s| s.secret.clone()))
-    .bind(config.vrchat_password.as_ref().map(|s| s.secret.clone()))
-    .bind(config.vrchat_cookie.as_ref().map(|s| s.secret.clone()))
-    .bind(config.enable_discord)
-    .bind(config.discord_user_id.as_ref().map(|s| s.secret.clone()))
-    .bind(
-        config
-            .discord_oauth_access_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
-    .bind(
-        config
-            .discord_oauth_refresh_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
-    .fetch_optional(db_pool)
+    .execute(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
 
     Ok(())
 }
 
+// sqlx cannot accept inline types with generics currently
+type TMPTYPE2 = UserConfigDbEntries<secrets::Decrypted, constraints::ValidConstraints>;
 pub async fn get_user_secrets(
     db_pool: &PgPool,
     user_id: &UserId,
@@ -151,7 +138,8 @@ pub async fn get_user_secrets(
 ) -> Result<UserConfigDbEntries<secrets::Decrypted, constraints::ValidConstraints>> {
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
-    sqlx::query_as(
+    sqlx::query_as!(
+        TMPTYPE2,
         "SELECT
             wait_seconds,
             system_name,
@@ -171,9 +159,9 @@ pub async fn get_user_secrets(
             pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie,
             true AS valid_constraints
             FROM users WHERE id = $1",
+        user_id.inner,
+        secrets_key.inner,
     )
-    .bind(user_id.inner)
-    .bind(secrets_key.inner)
     .fetch_one(db_pool)
     .await
     .map_err(|e| anyhow!(e))
@@ -226,7 +214,6 @@ fn compute_user_secrets_key(
     secrets::UserSecretsDecryptionKey { inner: hex_string }
 }
 
-#[derive(FromRow)]
 pub struct UserInfo {
     pub id: UserId,
     pub email: Email,

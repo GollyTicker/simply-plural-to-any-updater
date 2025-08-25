@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users\n        SET\n            wait_seconds = $2,\n            system_name = $3,\n            status_prefix = $4,\n            status_no_fronts = $5,\n            status_truncate_names_to = $6,\n            enable_discord_status_message = $7,\n            enable_vrchat = $8,\n            enc__simply_plural_token = pgp_sym_encrypt($10, $9),\n            enc__discord_status_message_token = pgp_sym_encrypt($11, $9),\n            enc__vrchat_username = pgp_sym_encrypt($12, $9),\n            enc__vrchat_password = pgp_sym_encrypt($13, $9),\n            enc__vrchat_cookie = pgp_sym_encrypt($14, $9),\n            enable_discord = $15,\n            enc__discord_user_id = pgp_sym_encrypt($16, $9),\n            enc__discord_oauth_access_token = pgp_sym_encrypt($17, $9),\n            enc__discord_oauth_refresh_token = pgp_sym_encrypt($18, $9)\n        WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Text",
+        "Text",
+        "Int4",
+        "Bool",
+        "Bool",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Bool",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "71e03999a165428971e08404522701eb0d68edac9127a173651900bb6072f65f"
+}

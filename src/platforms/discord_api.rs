@@ -79,10 +79,9 @@ async fn store_discord_user_secrets(
     let mut user_with_secrets =
         database::get_user_secrets(db_pool, user_id, application_user_secrets).await?;
 
-    user_with_secrets.discord_user_id = Some(discord_user.id.clone().into());
-    user_with_secrets.discord_oauth_access_token = Some(discord_tokens.access_token.clone().into());
-    user_with_secrets.discord_oauth_refresh_token =
-        Some(discord_tokens.refresh_token.clone().into());
+    user_with_secrets.discord_user_id = discord_user.id.clone().into();
+    user_with_secrets.discord_oauth_access_token = discord_tokens.access_token.clone().into();
+    user_with_secrets.discord_oauth_refresh_token = discord_tokens.refresh_token.clone().into();
 
     let (_, new_config) =
         users::create_config_with_strong_constraints(user_id, client, &user_with_secrets)?;

@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{error::BoxDynError, postgres, Decode, FromRow, Postgres};
 
 #[derive(Clone)]
 pub struct UserSecretsDecryptionKey {
@@ -15,7 +14,7 @@ pub trait SecretType: Default + Clone {}
 impl SecretType for Encrypted {}
 impl SecretType for Decrypted {}
 
-#[derive(Default, Clone, Serialize, FromRow, PartialEq, Eq)]
+#[derive(Default, Clone, Serialize, PartialEq, Eq)]
 pub struct Encrypted {}
 
 impl From<String> for Encrypted {
@@ -24,44 +23,39 @@ impl From<String> for Encrypted {
     }
 }
 
-// manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl sqlx::Type<Postgres> for Encrypted {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <String as sqlx::Type<Postgres>>::type_info()
-    }
-
-    fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <String as sqlx::Type<Postgres>>::compatible(ty)
+impl From<Option<String>> for Encrypted {
+    fn from(_: Option<String>) -> Self {
+        Self {}
     }
 }
 
-impl<'r> Decode<'r, Postgres> for Encrypted {
-    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
-        let _ = <String as Decode<Postgres>>::decode(value)?;
-        Ok(Self {})
-    }
-}
-
-#[derive(Default, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq)]
+#[derive(Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Decrypted {
+    /// String may be empty!
+    /// If the contianing config has `ValidConstraints` then this is non-empty
+    /// if the conditions are met. (e.g. when `enabled_vrchat` is true, then `vrchat_username` is non-empty).
     pub secret: String,
 }
 
-// manual implementation of `Type<Postgres>` because derive doesn't work for non-newtype structs
-impl sqlx::Type<Postgres> for Decrypted {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <String as sqlx::Type<Postgres>>::type_info()
-    }
-
-    fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
-        <String as sqlx::Type<Postgres>>::compatible(ty)
+impl Decrypted {
+    pub fn ok_or_else<E, F>(self, err: F) -> Result<Self, E>
+    where
+        F: FnOnce() -> E,
+    {
+        let secret = self.secret;
+        if secret.is_empty() {
+            Err(err())
+        } else {
+            Ok(Self { secret })
+        }
     }
 }
 
-impl<'r> Decode<'r, Postgres> for Decrypted {
-    fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
-        let secret = <String as Decode<Postgres>>::decode(value)?;
-        Ok(Self { secret })
+impl From<Option<String>> for Decrypted {
+    fn from(value: Option<String>) -> Self {
+        Self {
+            secret: value.unwrap_or_default(),
+        }
     }
 }
 

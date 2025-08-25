@@ -1,0 +1,119 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            wait_seconds,\n            system_name,\n            status_prefix,\n            status_no_fronts,\n            status_truncate_names_to,\n            enable_discord,\n            enable_discord_status_message,\n            enable_vrchat,\n            pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,\n            pgp_sym_decrypt(enc__discord_status_message_token, $2) AS discord_status_message_token,\n            pgp_sym_decrypt(enc__discord_user_id, $2) AS discord_user_id,\n            pgp_sym_decrypt(enc__discord_oauth_access_token, $2) AS discord_oauth_access_token,\n            pgp_sym_decrypt(enc__discord_oauth_refresh_token, $2) AS discord_oauth_refresh_token,\n            pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,\n            pgp_sym_decrypt(enc__vrchat_password, $2) AS vrchat_password,\n            pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie,\n            true AS valid_constraints\n            FROM users WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "wait_seconds",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "system_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status_prefix",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "status_no_fronts",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "status_truncate_names_to",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "enable_discord",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "enable_discord_status_message",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "enable_vrchat",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 8,
+        "name": "simply_plural_token",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "discord_status_message_token",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "discord_user_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "discord_oauth_access_token",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "discord_oauth_refresh_token",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "vrchat_username",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 14,
+        "name": "vrchat_password",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 15,
+        "name": "vrchat_cookie",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 16,
+        "name": "valid_constraints",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "6d89af94e45413b607e1a2671a6b27553ff32b45d42c92942c6ffcb2e499286a"
+}

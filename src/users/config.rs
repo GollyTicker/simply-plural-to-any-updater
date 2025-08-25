@@ -1,22 +1,21 @@
 use anyhow::{anyhow, Result};
-use sqlx::FromRow;
 use std::time::Duration;
 
-use crate::{config_value, config_value_if, database, users::model::UserId};
+use crate::{
+    config_value, config_value_if,
+    database::{self, ConstraintsType, SecretType},
+    users::model::UserId,
+};
 use serde::{Deserialize, Serialize};
 
-use sp2any_macros::WithOptionDefaults;
-
-#[derive(
-    Default, Debug, Clone, Serialize, Deserialize, WithOptionDefaults, FromRow, PartialEq, Eq,
-)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct UserConfigDbEntries<Secret, Constraints = database::InvalidConstraints>
 where
     Secret: database::SecretType,
     Constraints: database::ConstraintsType,
 {
     #[serde(skip)]
-    pub valid_constraints: Option<Constraints>,
+    pub valid_constraints: Constraints,
 
     // None: Use default value, if available
     // Some(x): Use this value
@@ -32,14 +31,42 @@ where
     pub enable_discord_status_message: Option<bool>,
     pub enable_vrchat: Option<bool>,
 
-    pub simply_plural_token: Option<Secret>,
-    pub discord_status_message_token: Option<Secret>,
-    pub discord_user_id: Option<Secret>,
-    pub discord_oauth_access_token: Option<Secret>,
-    pub discord_oauth_refresh_token: Option<Secret>,
-    pub vrchat_username: Option<Secret>,
-    pub vrchat_password: Option<Secret>,
-    pub vrchat_cookie: Option<Secret>,
+    pub simply_plural_token: Secret,
+    pub discord_status_message_token: Secret,
+    pub discord_user_id: Secret,
+    pub discord_oauth_access_token: Secret,
+    pub discord_oauth_refresh_token: Secret,
+    pub vrchat_username: Secret,
+    pub vrchat_password: Secret,
+    pub vrchat_cookie: Secret,
+}
+
+impl<S: SecretType, C: ConstraintsType> UserConfigDbEntries<S, C> {
+    fn with_option_defaults(&self, defaults: Self) -> Self {
+        Self {
+            valid_constraints: self.valid_constraints.clone(),
+            wait_seconds: self.wait_seconds.or(defaults.wait_seconds),
+            system_name: self.system_name.clone().or(defaults.system_name),
+            status_prefix: self.status_prefix.clone().or(defaults.status_prefix),
+            status_no_fronts: self.status_no_fronts.clone().or(defaults.status_no_fronts),
+            status_truncate_names_to: self
+                .status_truncate_names_to
+                .or(defaults.status_truncate_names_to),
+            enable_discord: self.enable_discord.or(defaults.enable_discord),
+            enable_discord_status_message: self
+                .enable_discord_status_message
+                .or(defaults.enable_discord_status_message),
+            enable_vrchat: self.enable_vrchat.or(defaults.enable_vrchat),
+            simply_plural_token: self.simply_plural_token.clone(),
+            discord_status_message_token: self.discord_status_message_token.clone(),
+            discord_user_id: self.discord_user_id.clone(),
+            discord_oauth_access_token: self.discord_oauth_access_token.clone(),
+            discord_oauth_refresh_token: self.discord_oauth_refresh_token.clone(),
+            vrchat_username: self.vrchat_username.clone(),
+            vrchat_password: self.vrchat_password.clone(),
+            vrchat_cookie: self.vrchat_cookie.clone(),
+        }
+    }
 }
 
 pub fn default_user_db_entries<S: database::SecretType>() -> UserConfigDbEntries<S> {
@@ -211,25 +238,31 @@ mod tests {
             enable_discord: Some(true),
             enable_discord_status_message: Some(true),
             enable_vrchat: Some(false),
-            simply_plural_token: Some(Decrypted {
+            simply_plural_token: Decrypted {
                 secret: "sp_token_123".to_string(),
-            }),
-            discord_status_message_token: Some(Decrypted {
+            },
+            discord_status_message_token: Decrypted {
                 secret: "discord_status_message_token_abc".to_string(),
-            }),
-            discord_user_id: Some(Decrypted {
+            },
+            discord_user_id: Decrypted {
                 secret: "discord_user_id".to_string(),
-            }),
-            discord_oauth_access_token: Some(Decrypted {
+            },
+            discord_oauth_access_token: Decrypted {
                 secret: "discord_oauth_access_token".to_string(),
-            }),
-            discord_oauth_refresh_token: Some(Decrypted {
+            },
+            discord_oauth_refresh_token: Decrypted {
                 secret: "discord_oauth_refresh_token".to_string(),
-            }),
-            vrchat_username: None,
-            vrchat_password: None,
-            vrchat_cookie: None,
-            valid_constraints: None,
+            },
+            vrchat_username: Decrypted {
+                secret: String::new(),
+            },
+            vrchat_password: Decrypted {
+                secret: String::new(),
+            },
+            vrchat_cookie: Decrypted {
+                secret: String::new(),
+            },
+            valid_constraints: database::InvalidConstraints {},
         };
 
         let json_string = serde_json::to_string_pretty(&config).unwrap();
@@ -257,9 +290,15 @@ mod tests {
   "discord_oauth_refresh_token": {
     "secret": "discord_oauth_refresh_token"
   },
-  "vrchat_username": null,
-  "vrchat_password": null,
-  "vrchat_cookie": null
+  "vrchat_username": {
+    "secret": ""
+  },
+  "vrchat_password": {
+    "secret": ""
+  },
+  "vrchat_cookie": {
+    "secret": ""
+  }
 }"#;
 
         assert_eq!(json_string, expected_json);

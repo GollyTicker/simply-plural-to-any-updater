@@ -5,7 +5,6 @@ use argon2::{
 };
 
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
 
 use crate::{database, users::jwt};
 
@@ -14,7 +13,7 @@ pub struct UserProvidedPassword {
     pub inner: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRow, sqlx::Type)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PasswordHashString {
     pub inner: String,
 }
