@@ -17,4 +17,6 @@ await sp2any-db "listening on IPv4 address"
 
 $COMPOSE up -d
 
-await sp2any-webserver "Rocket has launched from"
+await sp2any-api "Rocket has launched from"
+
+await sp2any-frontend "start worker processes"

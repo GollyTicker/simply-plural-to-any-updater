@@ -52,9 +52,10 @@ check_system_fronts_set() {
     fi
 }
 
-export BASE_URL="http://localhost:8000"
+export BASE_URL="http://localhost:8080"
 
 SYSTEM_PUBLIC_NAME="SP-Updater-Test"
+ENABLE_DISCORD=false
 ENABLE_DISCORD_STATUS_MESSAGE=false
 ENABLE_VRCHAT=false
 unset DISCORD_STATUS_MESSAGE_TOKEN

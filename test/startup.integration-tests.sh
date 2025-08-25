@@ -21,6 +21,7 @@ FUNCTIONAL_SPS_API_TOKEN="$SPS_API_TOKEN"
 export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=true
 ENABLE_DISCORD_STATUS_MESSAGE=true
 ENABLE_VRCHAT=true
+ENABLE_DISCORD=false
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
@@ -87,17 +88,17 @@ main() {
 
 check_updater_has_no_errors() {
     echo "check_updater_has_no_errors"
-    [[ "$( docker logs sp2any-webserver 2>&1 | grep "Error" | wc -l )" == "0" ]]
+    [[ "$( docker logs sp2any-api 2>&1 | grep "Error" | wc -l )" == "0" ]]
 }
 
 check_updater_loop_continues() {
     echo "check_updater_loop_continues"
-    docker logs sp2any-webserver 2>&1 | grep -q "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+    docker logs sp2any-api 2>&1 | grep -q "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
 }
 
 check_updater_failure() {
     echo "check_updater_failure"
-    docker logs sp2any-webserver 2>&1 | grep -q "Error"
+    docker logs sp2any-api 2>&1 | grep -q "Error"
 }
 
 check_updater() {
@@ -112,7 +113,7 @@ check_missing() {
     MESSAGE="$1"
     echo "Check missing: '$MESSAGE'"
     set +e
-    N_LINES="$( docker logs sp2any-webserver 2>&1 | grep "$MESSAGE" | wc -l )"
+    N_LINES="$( docker logs sp2any-api 2>&1 | grep "$MESSAGE" | wc -l )"
     set -e
     [[ "$N_LINES" == "0" ]]
 }
@@ -157,7 +158,7 @@ reset_changed_variables() {
 }
 
 
-export BASE_URL="http://localhost:8000"
+export BASE_URL="http://localhost:8080"
 
 start_updater() {
     echo "start_updater"
@@ -166,9 +167,9 @@ start_updater() {
     setup_test_user
 
     # ensure the automatic restart of updaters happens during startup
-    docker restart sp2any-webserver
+    docker restart sp2any-api
 
-    await sp2any-webserver "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+    await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
 
     echo "Started startup-test."
 }

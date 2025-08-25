@@ -14,7 +14,6 @@ pub struct FrontEntryContent {
     pub member: String, // member ID or custom front ID
     pub uid: String,    // System ID
 
-    #[allow(dead_code)] // todo. remove this when implementation done.
     #[serde(rename = "startTime")]
     #[serde(deserialize_with = "parse_epoch_millis_to_datetime_utc")]
     pub start_time: chrono::DateTime<chrono::Utc>,

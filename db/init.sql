@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS users (
     /* encrypted secrets. need to be re-encrypted, when password changes. */
     enc__simply_plural_token bytea,
     enc__discord_status_message_token bytea,
+    enc__discord_user_id bytea,
+    enc__discord_oauth_access_token bytea,
+    enc__discord_oauth_refresh_token bytea,
     enc__vrchat_username bytea,
     enc__vrchat_password bytea,
     enc__vrchat_cookie bytea

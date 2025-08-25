@@ -40,7 +40,7 @@ impl Claims {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct JwtString {
     pub inner: String,
 }

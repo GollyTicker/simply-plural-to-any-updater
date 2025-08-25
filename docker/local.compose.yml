@@ -1,9 +1,24 @@
 services:
 
-  sp2any-webserver:
-    container_name: sp2any-webserver
+  sp2any-frontend:
+    container_name: sp2any-frontend
     build:
-      dockerfile: docker/sp2any.Dockerfile
+      dockerfile: docker/frontend.Dockerfile
+      context: ..
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/nginx.conf.template
+    environment:
+      NGINX_HOST: localhost
+      NGINX_PORT: 8080
+      SP2ANY_API_HOST: localhost
+    network_mode: host
+    # ports:
+    #   - 8080:8080
+
+  sp2any-api:
+    container_name: sp2any-api
+    build:
+      dockerfile: docker/api.Dockerfile
       context: ..
       args:
         PATH_TO_EXEC: ../target/release/sp2any
@@ -12,6 +27,8 @@ services:
       DATABASE_URL: "postgres://postgres:postgres@localhost:5432/sp2any"
       APPLICATION_USER_SECRETS: "${APPLICATION_USER_SECRETS}"
       DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE: "${DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE-false}"
+      DISCORD_OAUTH_CLIENT_ID: "${DISCORD_OAUTH_CLIENT_ID}"
+      DISCORD_OAUTH_CLIENT_SECRET: "${DISCORD_OAUTH_CLIENT_SECRET}"
       ROCKET_ADDRESS: "0.0.0.0"
       ROCKET_PORT: 8000
     network_mode: host
