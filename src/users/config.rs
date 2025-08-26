@@ -226,6 +226,12 @@ mod tests {
             discord_oauth_refresh_token: Some(Decrypted {
                 secret: "discord_oauth_refresh_token".to_string(),
             }),
+            discord_pairing_code: Some(Decrypted {
+                secret: "123456789".to_string(),
+            }),
+            discord_bridge_secret: Some(Decrypted {
+                secret: "discord_bridge_secret".to_string(),
+            }),
             vrchat_username: None,
             vrchat_password: None,
             vrchat_cookie: None,
@@ -242,6 +248,7 @@ mod tests {
   "enable_discord": true,
   "enable_discord_status_message": true,
   "enable_vrchat": false,
+  "discord_pairing_code_expires_at": null,
   "simply_plural_token": {
     "secret": "sp_token_123"
   },

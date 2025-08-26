@@ -40,6 +40,12 @@ impl VRChatCredentialsWithCookie {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TwoFactorCodeRequiredResponse {
+    pub method: TwoFactorAuthMethod,
+    pub tmp_cookie: String,
+}
+
 #[derive(Clone, Serialize, Deserialize, Display, Debug)]
 pub enum TwoFactorAuthMethod {
     TwoFactorAuthMethodEmail,
@@ -61,11 +67,13 @@ impl TwoFactorAuthMethod {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct TwoFactorAuthCode(String);
+pub struct TwoFactorAuthCode {
+    inner: String,
+}
 
 impl From<TwoFactorAuthCode> for String {
     fn from(val: TwoFactorAuthCode) -> Self {
-        val.0
+        val.inner
     }
 }
 
@@ -74,4 +82,5 @@ pub struct VRChatCredentialsWithTwoFactorAuth {
     pub creds: VRChatCredentials,
     pub method: TwoFactorAuthMethod,
     pub code: TwoFactorAuthCode,
+    pub tmp_cookie: String,
 }

@@ -1,6 +1,6 @@
 use crate::platforms::vrchat_auth_types::{
-    TwoFactorAuthCode, TwoFactorAuthMethod, VRChatCredentials, VRChatCredentialsWithCookie,
-    VRChatCredentialsWithTwoFactorAuth,
+    TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
+    VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
 };
 use crate::users;
 
@@ -49,7 +49,7 @@ pub async fn authenticate_vrchat_with_cookie(
 
 pub async fn authenticate_vrchat_for_new_cookie(
     creds: VRChatCredentials,
-) -> Result<Either<VRChatCredentialsWithCookie, TwoFactorAuthMethod>> {
+) -> Result<Either<VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse>> {
     let (vrchat_config, cookie_store) =
         new_vrchat_config_with_basic_auth_and_optional_cookie(Either::Left(&creds))?;
 
@@ -62,8 +62,12 @@ pub async fn authenticate_vrchat_for_new_cookie(
         }
 
         vrc::EitherUserOrTwoFactor::RequiresTwoFactorAuth(requires_auth) => {
-            let auth_method = TwoFactorAuthMethod::from(&requires_auth);
-            Ok(Either::Right(auth_method))
+            let method = TwoFactorAuthMethod::from(&requires_auth);
+            let tmp_cookie = extract_new_cookie(&cookie_store)?;
+            Ok(Either::Right(TwoFactorCodeRequiredResponse {
+                method,
+                tmp_cookie,
+            }))
         }
     }
 }
@@ -71,8 +75,14 @@ pub async fn authenticate_vrchat_for_new_cookie(
 pub async fn authenticate_vrchat_for_new_cookie_with_2fa(
     creds_with_tfa: VRChatCredentialsWithTwoFactorAuth,
 ) -> Result<VRChatCredentialsWithCookie> {
-    let (vrchat_config, cookie_store) =
-        new_vrchat_config_with_basic_auth_and_optional_cookie(Either::Left(&creds_with_tfa.creds))?;
+    let creds_with_tmp_cookie = VRChatCredentialsWithCookie {
+        creds: creds_with_tfa.creds.clone(),
+        cookie: creds_with_tfa.tmp_cookie.clone(),
+    };
+
+    let (vrchat_config, cookie_store) = new_vrchat_config_with_basic_auth_and_optional_cookie(
+        Either::Right(&creds_with_tmp_cookie),
+    )?;
 
     let () = vrchat_verify_2fa(creds_with_tfa.method, creds_with_tfa.code, &vrchat_config).await?;
 

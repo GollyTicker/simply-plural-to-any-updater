@@ -1,0 +1,110 @@
+#!/bin/bash
+
+set -euo pipefail
+
+export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=false
+ENABLE_DISCORD_STATUS_MESSAGE=false
+ENABLE_VRCHAT=true
+ENABLE_DISCORD=false
+
+source ./test/source.sh
+source ./test/plural_system_to_test.sh
+
+export BASE_URL="http://localhost:8080"
+
+main() {
+    stop_updater
+    ./release/cargo-build.sh
+    ./docker/local.start.sh > docker/logs/start.log 2>&1
+
+    setup_test_user
+
+    attempt_login_without_cookie
+
+    read_2fa_code_from_terminal
+
+    provide_2fa_code_for_new_cookie
+
+    echo "Done."
+}
+
+
+attempt_login_without_cookie() {
+    echo "attempting login without cookie..."
+    VRCHAT_CREDENTIALS="{\"username\":\"$VRCHAT_USERNAME\",\"password\":\"$VRCHAT_PASSWORD\"}"
+    RESPONSE="$(
+        curl -v --fail-with-body \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $JWT" \
+            -d "$VRCHAT_CREDENTIALS" \
+            "$BASE_URL/api/user/platform/vrchat/auth_2fa/request"
+    )"
+    echo "Response: $RESPONSE"
+    METHOD="$( echo "$RESPONSE" | jq -r .Right.method )"
+    TMP_COOKIE="$( echo "$RESPONSE" | jq -r .Right.tmp_cookie )"
+    echo "Method: $METHOD"
+    echo "tmp_cookie: $TMP_COOKIE"
+}
+
+read_2fa_code_from_terminal() {
+    echo "Enter the 2FA code from your auth-app / Email:"
+    read -r TFA_CODE
+    export TFA_CODE
+}
+
+provide_2fa_code_for_new_cookie() {
+    echo "Providing 2FA code for new cookie ..."
+    REQUEST_BODY="{
+        \"creds\": $VRCHAT_CREDENTIALS,
+        \"code\":{\"inner\":\"$TFA_CODE\"},
+        \"method\":\"$METHOD\",
+        \"tmp_cookie\": \"$TMP_COOKIE\"
+    }"
+    NEW_COOKIE_JSON="$(
+        curl -v --fail-with-body \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $JWT" \
+            -d "$REQUEST_BODY" \
+            "$BASE_URL/api/user/platform/vrchat/auth_2fa/resolve"
+    )"
+    echo "Response: $NEW_COOKIE_JSON"
+    NEW_COOKIE="$(echo "$NEW_COOKIE_JSON" | jq -r .cookie)"
+    echo "Received new VRChat cookie:"
+    echo "$NEW_COOKIE"
+}
+
+
+stop_updater() {
+    echo "stop_updater"
+    ./docker/local.stop.sh > docker/logs/stop.log 2>&1
+    echo "Stopped Updater."
+}
+trap stop_updater EXIT
+
+
+# manual approach
+works() {
+    echo "======================= 1 ========================"
+    curl -i 'https://vrchat.com/api/1/auth/user' \
+        -H 'User-Agent: Mozilla/5.0 Firefox/142.0' \
+        -H 'Accept: */*' \
+        -u "$VRCHAT_USERNAME:$VRCHAT_PASSWORD"
+
+    echo "Enter the 'auth=auth_cookie...' part:"
+    read -r COOKIE
+    export COOKIE
+    read_2fa_code_from_terminal
+
+    echo "======================= 2 ========================"
+    curl -v 'https://vrchat.com/api/1/auth/twofactorauth/emailotp/verify' \
+    -X POST \
+    -H 'User-Agent: Mozilla/5.0 Firefox/142.0' \
+    -H 'content-type: application/json' \
+    -H "Cookie: $COOKIE" \
+    --data-raw "{\"code\":\"$TFA_CODE\"}"
+}
+
+
+# works
+
+main

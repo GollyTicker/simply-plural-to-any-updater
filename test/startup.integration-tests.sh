@@ -142,7 +142,12 @@ setup_discord_status_message_not_available() {
 
 setup_vrchat_misconfigured() {
     echo "setup_vrchat_misconfigured"
-    VRCHAT_USERNAME="invalid"
+    
+    # todo. apparently vrchat doesn't care about wrong username/password as long as the cookie is valid!
+    #VRCHAT_USERNAME="invalid"
+    VRCHAT_PASSWORD="invalid2348" # we still set an invalid password here to ensure, that no 2FA code is sent to the email
+    VRCHAT_COOKIE=""
+
     # VRCHAT enabled!
 }
 
