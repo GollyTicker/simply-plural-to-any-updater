@@ -21,7 +21,7 @@ services:
       dockerfile: docker/api.Dockerfile
       context: ..
       args:
-        PATH_TO_EXEC: ../target/release/sp2any
+        PATH_TO_EXEC: ../target/debug/sp2any
     environment:
       JWT_APPLICATION_SECRET: "${JWT_APPLICATION_SECRET}"
       DATABASE_URL: "postgres://postgres:postgres@localhost:5432/sp2any"

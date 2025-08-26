@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-cargo build --release "$@"
+cargo build "$@"
