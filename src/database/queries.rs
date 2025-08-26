@@ -3,11 +3,8 @@ use sha2::{Digest, Sha256};
 use sqlx::{FromRow, PgPool};
 
 use crate::{
-    database::constraints,
-    database::secrets,
-    users,
-    users::UserConfigDbEntries,
-    users::{Email, UserId},
+    database::{constraints, secrets, Decrypted, ValidConstraints},
+    users::{self, Email, UserConfigDbEntries, UserId},
 };
 
 pub async fn create_user(
@@ -53,11 +50,14 @@ pub async fn get_user(
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
+            discord_pairing_code_expires_at,
             '' AS simply_plural_token,
             '' AS discord_status_message_token,
             '' AS discord_user_id,
             '' AS discord_oauth_access_token,
             '' AS discord_oauth_refresh_token,
+            '' AS discord_pairing_code,
+            '' AS discord_bridge_secret,
             '' AS vrchat_username,
             '' AS vrchat_password,
             '' AS vrchat_cookie,
@@ -96,7 +96,10 @@ pub async fn set_user_config_secrets(
             enable_discord = $15,
             enc__discord_user_id = pgp_sym_encrypt($16, $9),
             enc__discord_oauth_access_token = pgp_sym_encrypt($17, $9),
-            enc__discord_oauth_refresh_token = pgp_sym_encrypt($18, $9)
+            enc__discord_oauth_refresh_token = pgp_sym_encrypt($18, $9),
+            enc__discord_pairing_code = pgp_sym_encrypt($19, $9),
+            enc__discord_bridge_secret = pgp_sym_encrypt($20, $9),
+            discord_pairing_code_expires_at = $21
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -108,35 +111,18 @@ pub async fn set_user_config_secrets(
     .bind(config.enable_discord_status_message)
     .bind(config.enable_vrchat)
     .bind(&secrets_key.inner)
-    .bind(
-        config
-            .simply_plural_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
-    .bind(
-        config
-            .discord_status_message_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
-    .bind(config.vrchat_username.as_ref().map(|s| s.secret.clone()))
-    .bind(config.vrchat_password.as_ref().map(|s| s.secret.clone()))
-    .bind(config.vrchat_cookie.as_ref().map(|s| s.secret.clone()))
+    .bind(config.simply_plural_token.map(|s| s.secret))
+    .bind(config.discord_status_message_token.map(|s| s.secret))
+    .bind(config.vrchat_username.map(|s| s.secret))
+    .bind(config.vrchat_password.map(|s| s.secret))
+    .bind(config.vrchat_cookie.map(|s| s.secret))
     .bind(config.enable_discord)
-    .bind(config.discord_user_id.as_ref().map(|s| s.secret.clone()))
-    .bind(
-        config
-            .discord_oauth_access_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
-    .bind(
-        config
-            .discord_oauth_refresh_token
-            .as_ref()
-            .map(|s| s.secret.clone()),
-    )
+    .bind(config.discord_user_id.map(|s| s.secret))
+    .bind(config.discord_oauth_access_token.map(|s| s.secret))
+    .bind(config.discord_oauth_refresh_token.map(|s| s.secret))
+    .bind(config.discord_pairing_code.map(|s| s.secret))
+    .bind(config.discord_bridge_secret.map(|s| s.secret))
+    .bind(config.discord_pairing_code_expires_at)
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -161,11 +147,14 @@ pub async fn get_user_secrets(
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
+            discord_pairing_code_expires_at,
             pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,
             pgp_sym_decrypt(enc__discord_status_message_token, $2) AS discord_status_message_token,
             pgp_sym_decrypt(enc__discord_user_id, $2) AS discord_user_id,
             pgp_sym_decrypt(enc__discord_oauth_access_token, $2) AS discord_oauth_access_token,
             pgp_sym_decrypt(enc__discord_oauth_refresh_token, $2) AS discord_oauth_refresh_token,
+            pgp_sym_decrypt(enc__discord_pairing_code, $2) AS discord_pairing_code,
+            pgp_sym_decrypt(enc__discord_bridge_secret, $2) AS discord_bridge_secret,
             pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,
             pgp_sym_decrypt(enc__vrchat_password, $2) AS vrchat_password,
             pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie,
@@ -177,6 +166,27 @@ pub async fn get_user_secrets(
     .fetch_one(db_pool)
     .await
     .map_err(|e| anyhow!(e))
+}
+
+pub async fn modify_user_secrets(
+    db_pool: &PgPool,
+    user_id: &UserId,
+    client: &reqwest::Client,
+    application_user_secrets: &secrets::ApplicationUserSecrets,
+    modify: impl FnOnce(&mut UserConfigDbEntries<Decrypted, ValidConstraints>),
+) -> Result<()> {
+    let mut user_with_secrets =
+        get_user_secrets(db_pool, user_id, application_user_secrets).await?;
+
+    modify(&mut user_with_secrets);
+
+    let (_, new_config) =
+        users::create_config_with_strong_constraints(user_id, client, &user_with_secrets)?;
+
+    let () =
+        set_user_config_secrets(db_pool, user_id, new_config, application_user_secrets).await?;
+
+    Ok(())
 }
 
 pub async fn get_all_users(db_pool: &PgPool) -> Result<Vec<UserId>> {

@@ -43,9 +43,9 @@ pub async fn post_api_user_login(
 #[get("/api/user/info")]
 pub async fn get_api_user_info(
     db_pool: &State<PgPool>,
-    jwt: HttpResult<jwt::Jwt>,
+    jwt: jwt::Jwt,
 ) -> HttpResult<Json<UserInfoUI>> {
-    let user_id = jwt?.user_id()?;
+    let user_id = jwt.user_id()?;
     let user_info = database::get_user_info(db_pool, user_id)
         .await
         .map_err(response::Debug)?;

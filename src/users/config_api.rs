@@ -8,9 +8,9 @@ use sqlx::PgPool;
 #[get("/api/user/config")]
 pub async fn get_api_user_config(
     db_pool: &State<PgPool>,
-    jwt: HttpResult<jwt::Jwt>,
+    jwt: jwt::Jwt,
 ) -> HttpResult<Json<config::UserConfigDbEntries<database::Encrypted>>> {
-    let user_id = jwt?.user_id()?;
+    let user_id = jwt.user_id()?;
 
     let user_config = database::get_user(db_pool, &user_id).await?;
 
@@ -20,12 +20,12 @@ pub async fn get_api_user_config(
 #[post("/api/user/config", data = "<config>")]
 pub async fn post_api_user_config(
     config: Json<config::UserConfigDbEntries<database::Decrypted>>,
-    jwt: HttpResult<jwt::Jwt>,
+    jwt: jwt::Jwt,
     db_pool: &State<PgPool>,
     app_user_secrets: &State<database::ApplicationUserSecrets>,
     client: &State<reqwest::Client>,
 ) -> HttpResult<()> {
-    let user_id = jwt?.user_id()?;
+    let user_id = jwt.user_id()?;
 
     // check that config satisfies contraints
     let (_, valid_db_config) =

@@ -11,9 +11,9 @@ use sqlx::PgPool;
 #[get("/api/updaters/status")]
 pub fn get_api_updaters_status(
     shared_updaters: &State<manager::UpdaterManager>,
-    jwt: HttpResult<users::Jwt>,
+    jwt: users::Jwt,
 ) -> HttpResult<Json<work_loop::UserUpdatersStatuses>> {
-    let user_id = jwt?.user_id()?;
+    let user_id = jwt.user_id()?;
 
     let updaters_state: work_loop::UserUpdatersStatuses =
         shared_updaters.get_updaters_state(&user_id)?;
@@ -23,13 +23,13 @@ pub fn get_api_updaters_status(
 
 #[post("/api/updaters/restart")]
 pub async fn post_api_updaters_restart(
-    jwt: HttpResult<users::Jwt>,
+    jwt: users::Jwt,
     db_pool: &State<PgPool>,
     application_user_secrets: &State<database::ApplicationUserSecrets>,
     client: &State<reqwest::Client>,
     shared_updater_state: &State<manager::UpdaterManager>,
 ) -> HttpResult<()> {
-    let user_id = jwt?.user_id()?;
+    let user_id = jwt.user_id()?;
 
     let () = restart_updater_for_user(
         &user_id,

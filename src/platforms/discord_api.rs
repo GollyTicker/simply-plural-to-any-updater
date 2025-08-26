@@ -1,9 +1,12 @@
 use crate::http::HttpResult;
-use crate::users::{verify_jwt, JwtString, UserId};
+use crate::users::JwtString;
 use crate::{database, users};
 use anyhow::{anyhow, Result};
+use rand::Rng;
+use rand::{distr::Alphanumeric, rngs::StdRng, SeedableRng};
 use reqwest::Client;
 use rocket::response::content::RawHtml;
+use rocket::serde::json::Json;
 use rocket::State;
 use serde::Deserialize;
 use serde::Serialize;
@@ -38,7 +41,7 @@ pub async fn get_api_auth_discord_callback(
 
     let sp2any_jwt_token: JwtString = serde_json::from_str(&state).map_err(|e| anyhow!(e))?;
 
-    let user_id = verify_jwt(&sp2any_jwt_token, jwt_app_secret)?.user_id()?;
+    let user_id = users::verify_jwt(&sp2any_jwt_token, jwt_app_secret)?.user_id()?;
 
     eprintln!("GET /api/user/platform/discord/oauth/callback 1. verified user-id {user_id}");
 
@@ -54,44 +57,24 @@ pub async fn get_api_auth_discord_callback(
         discord_user.id
     );
 
-    let () = store_discord_user_secrets(
+    database::modify_user_secrets(
         db_pool,
         &user_id,
         client,
-        &discord_user,
-        &discord_tokens,
         application_user_secrets,
+        |user_with_secrets| {
+            user_with_secrets.discord_user_id = Some(discord_user.id.clone().into());
+            user_with_secrets.discord_oauth_access_token =
+                Some(discord_tokens.access_token.clone().into());
+            user_with_secrets.discord_oauth_refresh_token =
+                Some(discord_tokens.refresh_token.clone().into());
+        },
     )
     .await?;
 
     eprintln!("GET /api/user/platform/discord/oauth/callback 4. stored secrets into database.");
 
     Ok(RawHtml(DISCORD_OAUTH_SUCCESS_HTML.to_owned()))
-}
-async fn store_discord_user_secrets(
-    db_pool: &PgPool,
-    user_id: &UserId,
-    client: &Client,
-    discord_user: &UserResponse,
-    discord_tokens: &OAuthTokenResponse,
-    application_user_secrets: &database::ApplicationUserSecrets,
-) -> Result<()> {
-    let mut user_with_secrets =
-        database::get_user_secrets(db_pool, user_id, application_user_secrets).await?;
-
-    user_with_secrets.discord_user_id = Some(discord_user.id.clone().into());
-    user_with_secrets.discord_oauth_access_token = Some(discord_tokens.access_token.clone().into());
-    user_with_secrets.discord_oauth_refresh_token =
-        Some(discord_tokens.refresh_token.clone().into());
-
-    let (_, new_config) =
-        users::create_config_with_strong_constraints(user_id, client, &user_with_secrets)?;
-
-    let () =
-        database::set_user_config_secrets(db_pool, user_id, new_config, application_user_secrets)
-            .await?;
-
-    Ok(())
 }
 
 async fn http_get_discord_oauth_tokens(
@@ -173,3 +156,68 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
     </body>
 </html>
 ";
+
+#[post("/api/user/platform/discord/pairing-code")]
+pub async fn post_api_user_discord_pairing_code(
+    db_pool: &State<PgPool>,
+    jwt: users::Jwt,
+    client: &State<reqwest::Client>,
+    application_user_secrets: &State<database::ApplicationUserSecrets>,
+) -> HttpResult<Json<String>> {
+    let user_id = jwt.user_id()?;
+
+    let code = generate_9_digit_apiring_code();
+
+    database::modify_user_secrets(
+        db_pool,
+        &user_id,
+        client,
+        application_user_secrets,
+        |user_with_secrets| {
+            user_with_secrets.discord_pairing_code = Some(code.clone().into());
+            user_with_secrets.discord_pairing_code_expires_at =
+                Some(chrono::Utc::now() + chrono::Duration::minutes(5));
+        },
+    )
+    .await?;
+
+    Ok(Json(code))
+}
+
+#[post("/api/user/platform/discord/pair?<pairing_code>")]
+pub async fn post_api_user_discord_pair(
+    db_pool: &State<PgPool>,
+    jwt: users::Jwt,
+    pairing_code: String,
+    application_user_secret: &State<database::ApplicationUserSecrets>,
+) -> HttpResult<Json<String>> {
+    let user_id = jwt.user_id()?;
+
+    let _user_secrets =
+        database::get_user_secrets(db_pool, &user_id, application_user_secret).await?;
+
+    // todo. check: user_secrets.discord_pairing_code == request.pairing_code and that code in DB isn't expired in DB.
+
+    let bridge_secret = generate_random_secret();
+
+    eprintln!("{pairing_code}");
+
+    // todo. unset discord_pairing code and it's expitation date
+    // todo. set bridge_secret. and save all changes.
+
+    Ok(Json(bridge_secret))
+}
+
+pub fn generate_random_secret() -> String {
+    StdRng::from_os_rng()
+        .sample_iter(&Alphanumeric)
+        .take(64)
+        .map(char::from)
+        .collect()
+}
+
+pub fn generate_9_digit_apiring_code() -> String {
+    let mut rng = rand::rngs::StdRng::from_os_rng();
+    let code: u32 = rng.random_range(100_000_000..1_000_000_000);
+    format!("{code:09}")
+}
