@@ -8,6 +8,10 @@ use discord_rich_presence::{
 use serde::Deserialize;
 use tokio::time::sleep;
 
+const UPDATE_REPO_OWNER: &str = "GollyTicker";
+const UPDATE_REPO_NAME: &str = "simply-plural-to-any-updater";
+const UPDATE_BIN_NAME: &str = "sp2any-discord-bridge";
+
 #[allow(clippy::unreadable_literal)]
 const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 
@@ -18,6 +22,10 @@ const FRONTING_TEST_IMAGE: &str = "https://ayake.net/cloud/apps/files_sharing/pu
 
 #[tokio::main]
 async fn main() {
+    if needs_restart_after_automatic_update() {
+        return;
+    };
+
     loop {
         match connect_to_discord_ipc().await {
             Ok(mut client) => {
@@ -31,6 +39,43 @@ async fn main() {
                 eprintln!("Retrying in 5s...");
                 sleep(Duration::from_secs(5)).await;
             }
+        }
+    }
+}
+
+fn run_update() -> Result<self_update::Status, Box<dyn ::std::error::Error>> {
+    let version = env!("DYNAMIC_VERSION");
+    let mut builder = self_update::backends::github::Update::configure()
+        .repo_owner(UPDATE_REPO_OWNER)
+        .repo_name(UPDATE_REPO_NAME)
+        .bin_name(UPDATE_BIN_NAME)
+        .show_download_progress(true)
+        .current_version(version);
+
+    if version.contains('-') {
+        builder = builder.prerelease(true);
+    }
+
+    let status = builder.build()?.update()?;
+    Ok(status)
+}
+
+fn needs_restart_after_automatic_update() -> bool {
+    eprintln!("Checking for updates...");
+    match run_update() {
+        Ok(status) => {
+            if status.updated() {
+                eprintln!("Update successful! New version: {}", status.version());
+                eprintln!("Restarting after automatic update.");
+                true
+            } else {
+                eprintln!("Already up to date.");
+                false
+            }
+        }
+        Err(e) => {
+            eprintln!("Update failed: {}", e);
+            false
         }
     }
 }
@@ -62,17 +107,17 @@ async fn set_activity_and_wait(client: &mut DiscordIpcClient) -> Result<(), Box<
     // note. tell users they may need to activate rich presence sharing in their activity privacy settings. they can also customize it per server.
 
     let activity_type = ActivityType::Playing; // display as rich presence!
-    // visible on yourself as well as on others. but the button isn't available for everyone to see
-    // OR
-    // let activity_type = ActivityType::Custom; // display as custom status message!
-    // only visible to yourself when you haven't set a custom status message manually AND when you are not hovering
-    // over your status on the botom left. You can also not see it on your full bio lol.
-    // however, it seems to be overshadowed by the normal custom status, if it's manually set by the user! to be noted!
-    //what about hungstatus? and is the RPC method limited or does it work scalably??? Do I need to have it verified?
-    // https://discord.com/developers/docs/topics/rpc
-    // or is this already done by this create?
-    // NOTE. THIS DOESN'T WORK WITH THE OFFICIAL DISCORD CLIENT! I can offer it, but let users know, that it only works with
-    // certain modded clients and that there is no guarantee.
+                                               // visible on yourself as well as on others. but the button isn't available for everyone to see
+                                               // OR
+                                               // let activity_type = ActivityType::Custom; // display as custom status message!
+                                               // only visible to yourself when you haven't set a custom status message manually AND when you are not hovering
+                                               // over your status on the botom left. You can also not see it on your full bio lol.
+                                               // however, it seems to be overshadowed by the normal custom status, if it's manually set by the user! to be noted!
+                                               //what about hungstatus? and is the RPC method limited or does it work scalably??? Do I need to have it verified?
+                                               // https://discord.com/developers/docs/topics/rpc
+                                               // or is this already done by this create?
+                                               // NOTE. THIS DOESN'T WORK WITH THE OFFICIAL DISCORD CLIENT! I can offer it, but let users know, that it only works with
+                                               // certain modded clients and that there is no guarantee.
 
     // Formatting based on activity type: https://discord.com/developers/docs/events/gateway-events#activity-object-activity-types
 
