@@ -1,9 +1,6 @@
 use crate::{plurality, users};
 use anyhow::Result;
 
-#[allow(clippy::unreadable_literal)]
-const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
-
 pub struct DiscordUpdater {
     pub last_operation_error: Option<String>,
 }
