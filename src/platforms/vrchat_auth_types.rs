@@ -19,23 +19,20 @@ pub struct VRChatCredentialsWithCookie {
 impl VRChatCredentialsWithCookie {
     pub fn from_config(config: &users::UserConfigForUpdater) -> Self {
         Self::from_strings(
-            config.vrchat_username.secret.as_str(),
-            config.vrchat_password.secret.as_str(),
-            config.vrchat_cookie.secret.as_str(),
+            config.vrchat_username.secret.clone(),
+            config.vrchat_password.secret.clone(),
+            config.vrchat_cookie.secret.clone(),
         )
     }
 
-    pub fn from(creds: &VRChatCredentials, cookie: &str) -> Self {
-        Self::from_strings(creds.username.as_str(), creds.password.as_str(), cookie)
+    pub fn from(creds: VRChatCredentials, cookie: String) -> Self {
+        Self::from_strings(creds.username, creds.password, cookie)
     }
 
-    fn from_strings(username: &str, password: &str, cookie: &str) -> Self {
+    const fn from_strings(username: String, password: String, cookie: String) -> Self {
         Self {
-            creds: VRChatCredentials {
-                username: username.to_owned(),
-                password: password.to_owned(),
-            },
-            cookie: cookie.to_owned(),
+            creds: VRChatCredentials { username, password },
+            cookie,
         }
     }
 }

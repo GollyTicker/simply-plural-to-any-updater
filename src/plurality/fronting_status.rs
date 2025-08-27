@@ -40,11 +40,10 @@ fn collect_clean_fronter_names(
     } else {
         fronts
             .iter()
-            .map(|f| match fronting_format.cleaning {
-                CleanForPlatform::NoClean => f.preferred_vrchat_status_name(),
-                CleanForPlatform::VRChat => {
-                    clean_name_for_vrchat_status(&f.preferred_vrchat_status_name())
-                }
+            .map(super::simply_plural_model::Fronter::preferred_vrchat_status_name)
+            .map(|name| match fronting_format.cleaning {
+                CleanForPlatform::NoClean => name.to_string(),
+                CleanForPlatform::VRChat => clean_name_for_vrchat_status(name),
             })
             .collect()
     }
@@ -131,28 +130,20 @@ fn pick_longest_string_within_vrchat_status_length_limit(
 // This function removes all characters which are not of a specific encoding from the string.
 // We also trim the name, in case the cleanup made new spaces appear.
 pub fn clean_name_for_vrchat_status(dirty_name: &str) -> String {
-    let mut iso_filtered_name = String::new();
+    dirty_name
+        .chars()
+        .filter(|&ch| {
+            let mut buf = [0u8; 4];
+            let s = ch.encode_utf8(&mut buf);
+            let mut out = [0u8; 20];
+            let (_, _, _, unsupported) = ISO_8859_15
+                .new_encoder()
+                .encode_from_utf8(s, &mut out, true);
 
-    for ch in dirty_name.chars() {
-        // Convert char utf-8 str
-        let ch_string = ch.to_string();
-
-        // convert utf-8 str to the limited encoding and check if the character is supported.
-        let mut char_cleaned_buffer = [0u8; 20];
-        let (_, _, _, is_unsupported_character) = ISO_8859_15.new_encoder().encode_from_utf8(
-            ch_string.as_str(),
-            &mut char_cleaned_buffer,
-            true,
-        );
-
-        if !is_unsupported_character {
-            iso_filtered_name.push(ch);
-        }
-    }
-
-    // remove consecutive whitespace resulting from cleanup. also trims string.
-    iso_filtered_name
-        .split_whitespace()
+            !unsupported
+        })
+        .collect::<String>()
+        .split_whitespace() // remove consecutive whitespace resulting from cleanup. also trims string.
         .collect::<Vec<&str>>()
         .join(" ")
 }

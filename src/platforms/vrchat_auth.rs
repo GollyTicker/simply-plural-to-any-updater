@@ -57,7 +57,7 @@ pub async fn authenticate_vrchat_for_new_cookie(
         // User doesn't need 2fa
         vrc::EitherUserOrTwoFactor::CurrentUser(_me) => {
             let cookie = extract_new_cookie(&cookie_store)?;
-            let creds_with_cookie = VRChatCredentialsWithCookie::from(&creds, cookie.as_str());
+            let creds_with_cookie = VRChatCredentialsWithCookie::from(creds, cookie);
             Ok(Either::Left(creds_with_cookie))
         }
 
@@ -89,8 +89,8 @@ pub async fn authenticate_vrchat_for_new_cookie_with_2fa(
     let cookie = extract_new_cookie(&cookie_store)?;
 
     Ok(VRChatCredentialsWithCookie::from(
-        &creds_with_tfa.creds,
-        cookie.as_str(),
+        creds_with_tfa.creds,
+        cookie,
     ))
 }
 

@@ -43,12 +43,13 @@ async fn get_all_members_and_custom_fronters(
                 .clone_from(&vrcsn_field_id);
             enriched_member
         })
-        .map(|m| Fronter::from(&m))
+        .map(Fronter::from)
         .collect();
 
     let all_custom_fronts: Vec<Fronter> = simply_plural_http_get_custom_fronts(config, system_id)
         .await?
         .iter()
+        .cloned()
         .map(Fronter::from)
         .collect();
 

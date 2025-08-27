@@ -39,10 +39,8 @@ pub struct Fronter {
 }
 
 impl Fronter {
-    pub fn preferred_vrchat_status_name(&self) -> String {
-        self.vrchat_status_name
-            .clone()
-            .unwrap_or_else(|| self.name.clone())
+    pub fn preferred_vrchat_status_name(&self) -> &str {
+        self.vrchat_status_name.as_ref().unwrap_or(&self.name)
     }
 }
 
@@ -61,12 +59,12 @@ pub struct CustomFrontContent {
     pub avatar_url: String,
 }
 
-impl From<&CustomFront> for Fronter {
-    fn from(cf: &CustomFront) -> Self {
+impl From<CustomFront> for Fronter {
+    fn from(cf: CustomFront) -> Self {
         Self {
-            id: cf.id.clone(),
-            name: cf.content.name.clone(),
-            avatar_url: cf.content.avatar_url.clone(),
+            id: cf.id,
+            name: cf.content.name,
+            avatar_url: cf.content.avatar_url,
             vrchat_status_name: None,
         }
     }
@@ -96,8 +94,8 @@ pub struct MemberContent {
     pub vrcsn_field_id: Option<String>,
 }
 
-impl From<&Member> for Fronter {
-    fn from(m: &Member) -> Self {
+impl From<Member> for Fronter {
+    fn from(m: Member) -> Self {
         let vrchat_status_name = m.content.vrcsn_field_id.as_ref().and_then(|field_id| {
             m.content
                 .info
@@ -107,9 +105,9 @@ impl From<&Member> for Fronter {
                 .map(ToString::to_string)
         });
         Self {
-            id: m.id.clone(),
-            name: m.content.name.clone(),
-            avatar_url: m.content.avatar_url.clone(),
+            id: m.id,
+            name: m.content.name,
+            avatar_url: m.content.avatar_url,
             vrchat_status_name,
         }
     }

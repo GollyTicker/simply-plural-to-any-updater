@@ -23,5 +23,5 @@ fn main() {
         }
     };
 
-    println!("cargo:rustc-env=DYNAMIC_VERSION={}", version);
+    println!("cargo:rustc-env=DYNAMIC_VERSION={version}");
 }

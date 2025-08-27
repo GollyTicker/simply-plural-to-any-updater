@@ -24,7 +24,7 @@ const FRONTING_TEST_IMAGE: &str = "https://ayake.net/cloud/apps/files_sharing/pu
 async fn main() {
     if needs_restart_after_automatic_update() {
         return;
-    };
+    }
 
     loop {
         match connect_to_discord_ipc().await {
@@ -45,7 +45,8 @@ async fn main() {
 
 fn run_update() -> Result<self_update::Status, Box<dyn ::std::error::Error>> {
     let version = env!("DYNAMIC_VERSION");
-    let mut builder = self_update::backends::github::Update::configure()
+    let mut binding = self_update::backends::github::Update::configure();
+    let builder = binding
         .repo_owner(UPDATE_REPO_OWNER)
         .repo_name(UPDATE_REPO_NAME)
         .bin_name(UPDATE_BIN_NAME)
@@ -53,7 +54,9 @@ fn run_update() -> Result<self_update::Status, Box<dyn ::std::error::Error>> {
         .current_version(version);
 
     if version.contains('-') {
-        builder = builder.prerelease(true);
+        // todo!()
+        // builder = builder.prerelease(true);
+        ();
     }
 
     let status = builder.build()?.update()?;
@@ -74,7 +77,7 @@ fn needs_restart_after_automatic_update() -> bool {
             }
         }
         Err(e) => {
-            eprintln!("Update failed: {}", e);
+            eprintln!("Update failed: {e}");
             false
         }
     }
