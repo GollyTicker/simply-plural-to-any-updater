@@ -76,6 +76,8 @@ runs:
         VRCHAT_COOKIE: ${{ inputs.VRCHAT_COOKIE }}
       run: ./test/startup.integration-tests.sh
 
+    # todo. problem is that the vrchat cookie is invalidated after one successful run on github actions :(
+    # vrchat seems to do some new check on their own side...
     - name: Updater Integration Tests
       shell: bash
       if: ${{ inputs.SKIP_TESTS }} == 'false'
