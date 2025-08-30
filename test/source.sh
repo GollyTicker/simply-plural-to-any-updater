@@ -93,6 +93,8 @@ setup_test_user() {
         -H "Authorization: Bearer $JWT" \
         -d "$JSON" \
         "$BASE_URL/api/user/config"
+    
+    # echo "User config JSON: $JSON"
 
     echo "Getting user info ..."
     USER_INFO="$(
