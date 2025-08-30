@@ -10,8 +10,6 @@ set -euo pipefail
 
 [[ "$VRCHAT_PASSWORD" != "" ]]
 
-[[ "$VRCHAT_COOKIE" != "" ]]
-
 [[ "$DISCORD_STATUS_MESSAGE_TOKEN" != "" ]]
 
 FUNCTIONAL_DISCORD_STATUS_MESSAGE_TOKEN="$DISCORD_STATUS_MESSAGE_TOKEN"
@@ -25,6 +23,7 @@ ENABLE_DISCORD=false
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
+set -a; source ./test/get-new-vrchat-cookie.dev.sh --automated ; set +a
 
 main() {
     stop_updater

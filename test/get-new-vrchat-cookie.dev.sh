@@ -2,13 +2,16 @@
 
 set -euo pipefail
 
-export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=false
-ENABLE_DISCORD_STATUS_MESSAGE=false
-ENABLE_VRCHAT=true
-ENABLE_DISCORD=false
+set +u
+if [[  "$1" != "--automated" ]]; then # setup called when script is used manually on terminal to get a cookie
+    export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=false
+    ENABLE_DISCORD_STATUS_MESSAGE=false
+    ENABLE_VRCHAT=true
+    ENABLE_DISCORD=false
 
-source ./test/source.sh
-source ./test/plural_system_to_test.sh
+    source ./test/source.sh
+fi
+set -u
 
 export BASE_URL="http://localhost:8080"
 
@@ -25,35 +28,42 @@ main() {
 
     provide_2fa_code_for_new_cookie
 
-    echo "Done."
+    echo "VRChat cookie retrieval done."
 }
 
 
 attempt_login_without_cookie() {
-    echo "attempting login without cookie..."
+    echo "VRChat: Attempting login without cookie..."
     VRCHAT_CREDENTIALS="{\"username\":\"$VRCHAT_USERNAME\",\"password\":\"$VRCHAT_PASSWORD\"}"
     RESPONSE="$(
-        curl -v --fail-with-body \
+        curl -s --fail-with-body \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $JWT" \
             -d "$VRCHAT_CREDENTIALS" \
             "$BASE_URL/api/user/platform/vrchat/auth_2fa/request"
     )"
-    echo "Response: $RESPONSE"
+    echo "  Response: $RESPONSE"
     METHOD="$( echo "$RESPONSE" | jq -r .Right.method )"
     TMP_COOKIE="$( echo "$RESPONSE" | jq -r .Right.tmp_cookie )"
-    echo "Method: $METHOD"
-    echo "tmp_cookie: $TMP_COOKIE"
+    echo "  Method: $METHOD"
+    echo "  tmp_cookie: $TMP_COOKIE"
 }
 
 read_2fa_code_from_terminal() {
-    echo "Enter the 2FA code from your auth-app / Email:"
-    read -r TFA_CODE
-    export TFA_CODE
+    if [[ -v VRCHAT_TOTP ]]; then
+        TFA_CODE="$(oathtool --totp --base32 "$VRCHAT_TOTP")"
+        export TFA_CODE
+        echo "  Using generated 2FA code: $TFA_CODE"
+        sleep 2s # sleep a bit to simulate user duration
+    else
+        echo "  Enter the 2FA code from your auth-app / Email:"
+        read -r TFA_CODE
+        export TFA_CODE
+    fi
 }
 
 provide_2fa_code_for_new_cookie() {
-    echo "Providing 2FA code for new cookie ..."
+    echo "VRChat: Providing 2FA code for new cookie ..."
     REQUEST_BODY="{
         \"creds\": $VRCHAT_CREDENTIALS,
         \"code\":{\"inner\":\"$TFA_CODE\"},
@@ -61,16 +71,17 @@ provide_2fa_code_for_new_cookie() {
         \"tmp_cookie\": \"$TMP_COOKIE\"
     }"
     NEW_COOKIE_JSON="$(
-        curl -v --fail-with-body \
+        curl -s --fail-with-body \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $JWT" \
             -d "$REQUEST_BODY" \
             "$BASE_URL/api/user/platform/vrchat/auth_2fa/resolve"
     )"
-    echo "Response: $NEW_COOKIE_JSON"
-    NEW_COOKIE="$(echo "$NEW_COOKIE_JSON" | jq -r .cookie)"
-    echo "Received new VRChat cookie:"
-    echo "$NEW_COOKIE"
+    echo "  Response: $NEW_COOKIE_JSON"
+    VRCHAT_COOKIE="$(echo "$NEW_COOKIE_JSON" | jq -r .cookie)"
+    echo "  Received new VRChat cookie:"
+    echo "  $VRCHAT_COOKIE"
+    export VRCHAT_COOKIE
 }
 
 
