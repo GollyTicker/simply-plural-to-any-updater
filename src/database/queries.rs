@@ -50,14 +50,14 @@ pub async fn get_user(
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
-            discord_pairing_code_expires_at,
+            bridge_pairing_code_expires_at,
             '' AS simply_plural_token,
             '' AS discord_status_message_token,
             '' AS discord_user_id,
             '' AS discord_oauth_access_token,
             '' AS discord_oauth_refresh_token,
-            '' AS discord_pairing_code,
-            '' AS discord_bridge_secret,
+            '' AS bridge_pairing_code,
+            '' AS bridge_secret,
             '' AS vrchat_username,
             '' AS vrchat_password,
             '' AS vrchat_cookie,
@@ -97,9 +97,9 @@ pub async fn set_user_config_secrets(
             enc__discord_user_id = pgp_sym_encrypt($16, $9),
             enc__discord_oauth_access_token = pgp_sym_encrypt($17, $9),
             enc__discord_oauth_refresh_token = pgp_sym_encrypt($18, $9),
-            enc__discord_pairing_code = pgp_sym_encrypt($19, $9),
-            enc__discord_bridge_secret = pgp_sym_encrypt($20, $9),
-            discord_pairing_code_expires_at = $21
+            enc__bridge_pairing_code = pgp_sym_encrypt($19, $9),
+            enc__bridge_secret = pgp_sym_encrypt($20, $9),
+            bridge_pairing_code_expires_at = $21
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -120,9 +120,9 @@ pub async fn set_user_config_secrets(
     .bind(config.discord_user_id.map(|s| s.secret))
     .bind(config.discord_oauth_access_token.map(|s| s.secret))
     .bind(config.discord_oauth_refresh_token.map(|s| s.secret))
-    .bind(config.discord_pairing_code.map(|s| s.secret))
-    .bind(config.discord_bridge_secret.map(|s| s.secret))
-    .bind(config.discord_pairing_code_expires_at)
+    .bind(config.bridge_pairing_code.map(|s| s.secret))
+    .bind(config.bridge_secret.map(|s| s.secret))
+    .bind(config.bridge_pairing_code_expires_at)
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -147,14 +147,14 @@ pub async fn get_user_secrets(
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
-            discord_pairing_code_expires_at,
+            bridge_pairing_code_expires_at,
             pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,
             pgp_sym_decrypt(enc__discord_status_message_token, $2) AS discord_status_message_token,
             pgp_sym_decrypt(enc__discord_user_id, $2) AS discord_user_id,
             pgp_sym_decrypt(enc__discord_oauth_access_token, $2) AS discord_oauth_access_token,
             pgp_sym_decrypt(enc__discord_oauth_refresh_token, $2) AS discord_oauth_refresh_token,
-            pgp_sym_decrypt(enc__discord_pairing_code, $2) AS discord_pairing_code,
-            pgp_sym_decrypt(enc__discord_bridge_secret, $2) AS discord_bridge_secret,
+            pgp_sym_decrypt(enc__bridge_pairing_code, $2) AS bridge_pairing_code,
+            pgp_sym_decrypt(enc__bridge_secret, $2) AS bridge_secret,
             pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,
             pgp_sym_decrypt(enc__vrchat_password, $2) AS vrchat_password,
             pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie,

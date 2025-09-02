@@ -8,6 +8,7 @@ use anyhow::Result;
 use rocket::{serde::json::Json, State};
 use sqlx::PgPool;
 
+#[allow(clippy::needless_pass_by_value)]
 #[get("/api/updaters/status")]
 pub fn get_api_updaters_status(
     shared_updaters: &State<manager::UpdaterManager>,

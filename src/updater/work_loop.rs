@@ -20,7 +20,7 @@ pub async fn run_loop(
     let mut updaters: UserUpdaters =
         platforms::available_updaters(shared_updaters.discord_status_message_available)
             .iter()
-            .map(|platform| (platform.to_owned(), Updater::new(platform.to_owned())))
+            .map(|platform| (platform.to_owned(), Updater::new(platform)))
             .collect();
 
     for u in updaters.values_mut() {

@@ -1,13 +1,11 @@
 use crate::http::HttpResult;
 use crate::users::JwtString;
-use crate::{database, users};
+use crate::{database, plurality, users};
 use anyhow::{anyhow, Result};
-use rand::Rng;
-use rand::{distr::Alphanumeric, rngs::StdRng, SeedableRng};
 use reqwest::Client;
 use rocket::response::content::RawHtml;
 use rocket::serde::json::Json;
-use rocket::State;
+use rocket::{response, State};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::PgPool;
@@ -157,67 +155,96 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
 </html>
 ";
 
-#[post("/api/user/platform/discord/pairing-code")]
-pub async fn post_api_user_discord_pairing_code(
+// --------------------------- TODO: CHECK CODE WHICH HAS BEEN AI-GENERATED -------------------------------
+
+#[derive(Deserialize)]
+pub struct BridgeActivityRequest {
+    pub discord_user_id: String,
+    pub bridge_secret: String,
+}
+
+#[derive(Serialize)]
+pub struct BridgeActivityResponse {
+    pub details: String,
+    pub state: String,
+    pub large_image_url: Option<String>,
+    pub large_image_text: Option<String>,
+    pub small_image_url: Option<String>,
+    pub small_image_text: Option<String>,
+    pub party_current: Option<i32>,
+    pub party_max: Option<i32>,
+    pub button_label: Option<String>,
+    pub button_url: Option<String>,
+}
+
+#[get(
+    "/api/user/platform/discord/fronting-for-rich-presence",
+    data = "<request>"
+)]
+pub async fn get_api_platform_discord_fronting_for_rich_presence(
     db_pool: &State<PgPool>,
-    jwt: users::Jwt,
-    client: &State<reqwest::Client>,
     application_user_secrets: &State<database::ApplicationUserSecrets>,
-) -> HttpResult<Json<String>> {
-    let user_id = jwt.user_id()?;
+    client: &State<reqwest::Client>,
+    request: Json<BridgeActivityRequest>,
+) -> HttpResult<Json<BridgeActivityResponse>> {
+    let all_users = database::get_all_users(db_pool).await?;
 
-    let code = generate_9_digit_apiring_code();
+    for user_id in all_users {
+        let user_secrets =
+            database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
 
-    database::modify_user_secrets(
-        db_pool,
-        &user_id,
-        client,
-        application_user_secrets,
-        |user_with_secrets| {
-            user_with_secrets.discord_pairing_code = Some(code.clone().into());
-            user_with_secrets.discord_pairing_code_expires_at =
-                Some(chrono::Utc::now() + chrono::Duration::minutes(5));
-        },
-    )
-    .await?;
+        let discord_id_matches = user_secrets
+            .discord_user_id
+            .as_ref()
+            .is_some_and(|id| id.secret == request.discord_user_id);
 
-    Ok(Json(code))
-}
+        let bridge_secret_matches = user_secrets
+            .bridge_secret
+            .as_ref()
+            .is_some_and(|s| s.secret == request.bridge_secret);
 
-#[post("/api/user/platform/discord/pair?<pairing_code>")]
-pub async fn post_api_user_discord_pair(
-    db_pool: &State<PgPool>,
-    jwt: users::Jwt,
-    pairing_code: String,
-    application_user_secret: &State<database::ApplicationUserSecrets>,
-) -> HttpResult<Json<String>> {
-    let user_id = jwt.user_id()?;
+        if discord_id_matches && bridge_secret_matches {
+            let (config, _) =
+                users::create_config_with_strong_constraints(&user_id, client, &user_secrets)?;
 
-    let _user_secrets =
-        database::get_user_secrets(db_pool, &user_id, application_user_secret).await?;
+            let fronts = plurality::fetch_fronts(&config).await?;
 
-    // todo. check: user_secrets.discord_pairing_code == request.pairing_code and that code in DB isn't expired in DB.
+            let fronting_format = plurality::FrontingFormat {
+                max_length: None,
+                cleaning: plurality::CleanForPlatform::NoClean,
+                prefix: config.status_prefix.clone(),
+                status_if_no_fronters: config.status_no_fronts.clone(),
+                truncate_names_to_length_if_status_too_long: 1, // todo.
+            };
+            let status_string = plurality::format_fronting_status(&fronting_format, &fronts);
 
-    let bridge_secret = generate_random_secret();
+            let (large_image_url, large_image_text) = if fronts.len() == 1 {
+                (
+                    Some(fronts[0].avatar_url.clone()),
+                    Some(fronts[0].name.clone()),
+                )
+            } else {
+                (None, None)
+            };
 
-    eprintln!("{pairing_code}");
+            let response = BridgeActivityResponse {
+                details: status_string.clone(),
+                state: status_string,
+                large_image_url,
+                large_image_text,
+                small_image_url: None,
+                small_image_text: None,
+                party_current: Some(fronts.len() as i32),
+                party_max: None,
+                button_label: Some("View Fronters".to_string()),
+                button_url: Some(format!("/api/fronting/{user_id}")),
+            };
 
-    // todo. unset discord_pairing code and it's expitation date
-    // todo. set bridge_secret. and save all changes.
+            return Ok(Json(response));
+        }
+    }
 
-    Ok(Json(bridge_secret))
-}
-
-pub fn generate_random_secret() -> String {
-    StdRng::from_os_rng()
-        .sample_iter(&Alphanumeric)
-        .take(64)
-        .map(char::from)
-        .collect()
-}
-
-pub fn generate_9_digit_apiring_code() -> String {
-    let mut rng = rand::rngs::StdRng::from_os_rng();
-    let code: u32 = rng.random_range(100_000_000..1_000_000_000);
-    format!("{code:09}")
+    Err(response::Debug(anyhow!(
+        "Invalid bridge secret or Discord user ID."
+    )))
 }

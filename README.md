@@ -138,7 +138,6 @@ The strategy is to make your Rust code the single source of truth for any data s
   * cheap free tier VMs and docker based deployment?
   * using [free managed postgres](https://www.bytebase.com/blog/postgres-hosting-options-pricing-comparison/) with free tier serverless functions?
   * alternatively a mixture of the above?
-* test vrchat login: user+pwd and user+pwd+2fa
 * make it such that the code can ALSO run in a mobile app.
   * UI should be easily adapted to be running in mobile app in additional to a web-app
   * backend would be mostly in the cloud OR locally on the modile.

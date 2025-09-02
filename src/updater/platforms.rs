@@ -38,7 +38,7 @@ pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
 }
 
 impl Updater {
-    pub fn new(platform: Platform) -> Self {
+    pub fn new(platform: &Platform) -> Self {
         match platform {
             Platform::VRChat => Self::VRChat(Box::new(platforms::VRChatUpdater::new())),
             Platform::Discord => Self::Discord(platforms::DiscordUpdater::new()),

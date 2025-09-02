@@ -8,15 +8,12 @@ use discord_rich_presence::{
 use serde::Deserialize;
 use tokio::time::sleep;
 
-const UPDATE_REPO_OWNER: &str = "GollyTicker";
-const UPDATE_REPO_NAME: &str = "simply-plural-to-any-updater";
-const UPDATE_BIN_NAME: &str = "sp2any-discord-bridge";
-
 #[allow(clippy::unreadable_literal)]
 const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 
 const FRONTING_TEST_IMAGE: &str = "https://ayake.net/cloud/apps/files_sharing/publicpreview/wewER2MaZ4JbXEg?file=/&fileId=28035&x=3424&y=1926&a=true&etag=d150d19707ca3b6ef1470e0853bb7da7";
 
+// todo. add auto-update capabilities.
 // todo. add auto-start capabilities: https://crates.io/crates/auto-launch
 // todo. note, that only a single user account is supported for now.
 
@@ -26,8 +23,10 @@ async fn main() {
         return;
     }
 
+    let () = ensure_bridge_is_paired().await;
+
     loop {
-        match connect_to_discord_ipc().await {
+        match connect_to_discord_ipc() {
             Ok(mut client) => {
                 let e = activity_loop(&mut client).await;
                 eprintln!("Activity loop ended with error: {e}");
@@ -43,48 +42,17 @@ async fn main() {
     }
 }
 
-fn run_update() -> Result<self_update::Status, Box<dyn ::std::error::Error>> {
-    let version = env!("DYNAMIC_VERSION");
-    let mut binding = self_update::backends::github::Update::configure();
-    let builder = binding
-        .repo_owner(UPDATE_REPO_OWNER)
-        .repo_name(UPDATE_REPO_NAME)
-        .bin_name(UPDATE_BIN_NAME)
-        .show_download_progress(true)
-        .current_version(version);
-
-    if version.contains('-') {
-        // todo!()
-        // builder = builder.prerelease(true);
-        ();
-    }
-
-    let status = builder.build()?.update()?;
-    Ok(status)
+const fn needs_restart_after_automatic_update() -> bool {
+    // todo. to be implemented
+    false
 }
 
-fn needs_restart_after_automatic_update() -> bool {
-    eprintln!("Checking for updates...");
-    match run_update() {
-        Ok(status) => {
-            if status.updated() {
-                eprintln!("Update successful! New version: {}", status.version());
-                eprintln!("Restarting after automatic update.");
-                true
-            } else {
-                eprintln!("Already up to date.");
-                false
-            }
-        }
-        Err(e) => {
-            eprintln!("Update failed: {e}");
-            false
-        }
-    }
+// ensure_bridge_is_paired
+async fn ensure_bridge_is_paired() {
+    // todo. continue here
 }
 
 async fn activity_loop(client: &mut DiscordIpcClient) -> Box<dyn Error> {
-    // todo. do startup and pairing protocol here
     loop {
         match set_activity_and_wait(client).await {
             Ok(()) => (),
@@ -95,7 +63,7 @@ async fn activity_loop(client: &mut DiscordIpcClient) -> Box<dyn Error> {
     }
 }
 
-async fn connect_to_discord_ipc() -> Result<DiscordIpcClient, Box<dyn Error>> {
+fn connect_to_discord_ipc() -> Result<DiscordIpcClient, Box<dyn Error>> {
     eprintln!("creating client...");
     let mut client = DiscordIpcClient::new(&DISCORD_SP2ANY_BOT_APPLICATION_ID.to_string())?;
     eprintln!("created. connecting...");
