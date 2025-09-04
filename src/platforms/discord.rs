@@ -29,10 +29,9 @@ impl DiscordUpdater {
             * our server is now trusted to decide what discord rich presence should show.
         3. TODO: User downloads the SP2Any Discord Bridge and runs it.
         4. The discord bridge
-            4.1. DONE: connects to the local discord RPC and gets the local logged in user-id
-            4.2. DONE: connects to our server and let's the server know, that it can set rich presence for this user.
-        5. TODO: Our server generates a 9 digit short-lived pairing code and shows it to the user.
-        6. DONE: User enters the same 9 digit code into the bridge and the bridge sends this code and the user-id to the server.
+            4.1. TODO: connects to the local discord RPC and gets the local logged in user-id
+        5. DONE: Our server generates a 9 digit short-lived pairing code and shows it to the user.
+        6. TODO: User enters the same 9 digit code into the bridge and the bridge sends this code and the user-id to the server.
             * hence establishes trust between the bridge and our server
         7. DONE: Our webserver generates a secret which it stores with this user in the database and also sends to the bridge.
         8. TODO: The bridge stores this secret locally.
