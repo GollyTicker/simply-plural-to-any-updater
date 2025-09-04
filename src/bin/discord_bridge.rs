@@ -17,6 +17,8 @@ const FRONTING_TEST_IMAGE: &str = "https://ayake.net/cloud/apps/files_sharing/pu
 // todo. add auto-start capabilities: https://crates.io/crates/auto-launch
 // todo. note, that only a single user account is supported for now.
 
+// todo. move this to src-tauri application. then make it invoked by the GUI instead of via console
+
 #[tokio::main]
 async fn main() {
     if needs_restart_after_automatic_update() {
