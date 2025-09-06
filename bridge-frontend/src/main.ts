@@ -1,24 +1,33 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import './style.css';
+import { invoke } from '@tauri-apps/api/core';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
+    <h1>Simply Plural Bridge</h1>
+    <div id="login-status">Not logged in</div>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
   </div>
-`
+`;
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const loginForm = document.querySelector<HTMLFormElement>('#login-form');
+const loginStatus = document.querySelector<HTMLDivElement>('#login-status');
+
+loginForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = (document.querySelector<HTMLInputElement>('#email'))?.value;
+  const password = (document.querySelector<HTMLInputElement>('#password'))?.value;
+
+  if (email && password) {
+    try {
+      const token: string = await invoke('login', { email, password });
+      localStorage.setItem('jwt', token);
+      loginStatus!.textContent = 'Logged in!';
+    } catch (error) {
+      loginStatus!.textContent = `Login failed: ${error}`;
+    }
+  }
+});

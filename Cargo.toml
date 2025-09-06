@@ -12,6 +12,8 @@ path = "src/main.rs"
 name = "sp2any-discord-bridge"
 path = "src/bin/discord_bridge.rs"
 
+[lib]
+
 [dependencies]
 sp2any_macros = { path = "sp2any_macros" }
 chrono = { version = "0.4", features = ["serde"] }

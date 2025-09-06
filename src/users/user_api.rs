@@ -75,7 +75,7 @@ impl From<database::UserInfo> for UserInfoUI {
     }
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserLoginCredentials {
     pub email: Email,
     pub password: auth::UserProvidedPassword,

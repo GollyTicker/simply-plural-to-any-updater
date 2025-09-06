@@ -4,7 +4,14 @@ use anyhow::Result;
 pub struct DiscordUpdater {
     pub last_operation_error: Option<String>,
 }
+impl Default for DiscordUpdater {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DiscordUpdater {
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             last_operation_error: None,

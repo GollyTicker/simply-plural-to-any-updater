@@ -9,7 +9,7 @@ use sqlx::FromRow;
 
 use crate::{database, users::jwt};
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserProvidedPassword {
     pub inner: String,
 }

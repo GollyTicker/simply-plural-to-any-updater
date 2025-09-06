@@ -3,16 +3,9 @@ extern crate rocket;
 
 use anyhow::anyhow;
 use anyhow::Result;
-
 use clap::Parser;
 
-mod database;
-mod http;
-mod platforms;
-mod plurality;
-mod setup;
-mod updater;
-mod users;
+use sp2any::{platforms, setup, updater, users};
 
 #[tokio::main]
 async fn main() -> Result<()> {

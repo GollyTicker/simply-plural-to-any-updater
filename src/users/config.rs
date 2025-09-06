@@ -46,6 +46,7 @@ where
     pub vrchat_cookie: Option<Secret>,
 }
 
+#[must_use]
 pub fn default_user_db_entries<S: database::SecretType>() -> UserConfigDbEntries<S> {
     UserConfigDbEntries::<S> {
         status_prefix: Some(String::from("F:")),

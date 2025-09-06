@@ -15,7 +15,14 @@ struct Status {
 pub struct DiscordStatusMessageUpdater {
     pub last_operation_error: Option<String>,
 }
+impl Default for DiscordStatusMessageUpdater {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DiscordStatusMessageUpdater {
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             last_operation_error: None,

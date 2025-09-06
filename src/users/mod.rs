@@ -10,3 +10,4 @@ pub use auth::*;
 pub use config::*;
 pub use jwt::*;
 pub use model::*;
+pub use user_api::*;

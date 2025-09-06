@@ -13,7 +13,14 @@ pub struct VRChatUpdater {
     pub last_operation_error: Option<String>,
     initialized: Option<InitializedUpdater>,
 }
+impl Default for VRChatUpdater {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VRChatUpdater {
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             last_operation_error: None,
