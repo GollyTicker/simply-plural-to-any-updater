@@ -23,23 +23,10 @@ impl DiscordUpdater {
     ) -> Result<()> {
         // todo. we want to control the http requests from the rich resence here and have that status here!
         /*
-        1. DONE: User goes to the SP2Any website and clicks on 'Authorize with Discord' to connect with discord.
-        2. DONE: Our server does OAuth flow with the user with `identify` scope and gets the discord-user-id.
-            https://discord.com/developers/docs/topics/oauth2
-            * our server is now trusted to decide what discord rich presence should show.
-        3. TODO: User downloads the SP2Any Discord Bridge and runs it.
-        4. The discord bridge
-            4.1. TODO: connects to the local discord RPC and gets the local logged in user-id
-        5. DONE: Our server generates a 9 digit short-lived pairing code and shows it to the user.
-        6. TODO: User enters the same 9 digit code into the bridge and the bridge sends this code and the user-id to the server.
-            * hence establishes trust between the bridge and our server
-        7. DONE: Our webserver generates a secret which it stores with this user in the database and also sends to the bridge.
-        8. TODO: The bridge stores this secret locally.
-        9. DONE: The bridge regularly requests the newest rich presence data to be shown from our server.
-            * the bridge always sends received secret for authentication
-            * our server checks this secret for the claimed user-id by the bridge, and
-                sends the new rich presence data, if the secret matches with the corresponding user's stored secret.
-        10. DONE: It is established, that only the sp2any discord bridge running on our users's computer is authorized to make such update requests.
+        TODO: The bridge (where the user is also logged in) connects to the local discord RPC and gets the local logged in user-id.
+        DONE: The bridge regularly requests the newest rich presence data to be shown from our server.
+            * the bridge always sends user auth for authentication
+            * our server checks the auth and sends the new rich presence data
         */
 
         // it seems that we'll have to use a local RPC. I don't see any other option to do this via the remote bot API.
@@ -49,3 +36,11 @@ impl DiscordUpdater {
         Ok(())
     }
 }
+
+/*
+It's probably easier to simply request the user to directly login into the bridge
+rather than doing some complicated pairing protocol which might also be harder to do correctly.
+
+Once a bridge is authenticated, we can simply trust it to do stuff for us.
+
+*/

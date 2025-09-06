@@ -43,8 +43,6 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
                 users::config_api::post_api_user_config,
                 updater::api::get_api_updaters_status,
                 updater::api::post_api_updaters_restart,
-                updater::bridge_api::post_api_user_bridge_pair,
-                updater::bridge_api::post_api_user_bridge_new_pairing_code,
                 platforms::webview_api::get_api_fronting_by_user_id,
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_request,
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_resolve,
