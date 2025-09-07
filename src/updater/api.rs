@@ -17,7 +17,7 @@ pub fn get_api_updaters_status(
     let user_id = jwt.user_id()?;
 
     let updaters_state: work_loop::UserUpdatersStatuses =
-        shared_updaters.get_updaters_state(&user_id)?;
+        shared_updaters.get_updaters_statuses(&user_id)?;
 
     Ok(Json(updaters_state))
 }

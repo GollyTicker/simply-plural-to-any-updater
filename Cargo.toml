@@ -46,8 +46,13 @@ argon2 = "0.5"
 jsonwebtoken = "9.3"
 rand = "0.9"
 sha2 = "0.10"
-rocket = { version = "0.5", features = ["json"] }
+rocket = { version = "0.5", features = ["json", "http2"] }
 discord-rich-presence = { path = "patched/discord-rich-presence" }
-self_update = { version = "0.42", features = ["archive-tar", "archive-zip", "compression-flate2", "compression-zip-deflate"] }
+self_update = { version = "0.42", features = [
+    "archive-tar",
+    "archive-zip",
+    "compression-flate2",
+    "compression-zip-deflate",
+] }
 
 [build-dependencies]

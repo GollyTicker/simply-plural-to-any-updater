@@ -49,6 +49,9 @@ get_user_config_json() {
         \"enable_discord_status_message\": ${ENABLE_DISCORD_STATUS_MESSAGE},
         \"enable_vrchat\": ${ENABLE_VRCHAT},
         \"enable_discord\": ${ENABLE_DISCORD},
+        \"discord_user_id\": { \"secret\": \"invalid\" },
+        \"discord_oauth_access_token\": { \"secret\": \"invalid\" },
+        \"discord_oauth_refresh_token\": { \"secret\": \"invalid\" },
         $SIMPLY_PLURAL_TOKEN_LINE
         $DISCORD_STATUS_MESSAGE_TOKEN_LINE
         $VRCHAT_USERNAME_LINE

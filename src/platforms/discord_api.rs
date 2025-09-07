@@ -1,18 +1,23 @@
 use crate::http::HttpResult;
+use crate::platforms::discord;
 use crate::users::JwtString;
-use crate::{database, plurality, users};
+use crate::{database, updater, users};
 use anyhow::{anyhow, Result};
 use reqwest::Client;
 use rocket::response::content::RawHtml;
-use rocket::serde::json::Json;
 use rocket::{response, State};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::PgPool;
 
+use rocket::response::stream::{Event, EventStream};
+use rocket::tokio::select;
+use rocket::Shutdown;
+
 const DEV_OAUTH_REDIRECT_URL: &str =
     "http://localhost:8080/api/user/platform/discord/oauth/callback";
 
+// todo. this seems obsolete now?
 /* To test this endpoint:
 1. Login into discord in browser
 2. Edit the test setup, such that a user is created, but the tests sleep so that you can manually send requests.
@@ -155,96 +160,39 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
 </html>
 ";
 
-// --------------------------- TODO: CHECK CODE WHICH HAS BEEN AI-GENERATED -------------------------------
+#[get("/api/user/platform/discord/bridge-events")]
+pub async fn get_api_user_platform_discord_bridge_events(
+    jwt: users::Jwt,
+    shared_updaters: &State<updater::UpdaterManager>,
+    mut end: Shutdown,
+) -> Result<EventStream![], response::Debug<anyhow::Error>> {
+    let user_id = jwt.user_id()?;
+    let mut receiver = shared_updaters.subscribe_fronter_channel(&user_id)?;
 
-#[derive(Deserialize)]
-pub struct BridgeActivityRequest {
-    pub discord_user_id: String,
-    pub bridge_secret: String,
-}
-
-#[derive(Serialize)]
-pub struct BridgeActivityResponse {
-    pub details: String,
-    pub state: String,
-    pub large_image_url: Option<String>,
-    pub large_image_text: Option<String>,
-    pub small_image_url: Option<String>,
-    pub small_image_text: Option<String>,
-    pub party_current: Option<i32>,
-    pub party_max: Option<i32>,
-    pub button_label: Option<String>,
-    pub button_url: Option<String>,
-}
-
-#[get(
-    "/api/user/platform/discord/fronting-for-rich-presence",
-    data = "<request>"
-)]
-pub async fn get_api_platform_discord_fronting_for_rich_presence(
-    db_pool: &State<PgPool>,
-    application_user_secrets: &State<database::ApplicationUserSecrets>,
-    client: &State<reqwest::Client>,
-    request: Json<BridgeActivityRequest>,
-) -> HttpResult<Json<BridgeActivityResponse>> {
-    let all_users = database::get_all_users(db_pool).await?;
-
-    for user_id in all_users {
-        let user_secrets =
-            database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
-
-        let discord_id_matches = user_secrets
-            .discord_user_id
-            .as_ref()
-            .is_some_and(|id| id.secret == request.discord_user_id);
-
-        let bridge_secret_matches = user_secrets
-            .bridge_secret
-            .as_ref()
-            .is_some_and(|s| s.secret == request.bridge_secret);
-
-        if discord_id_matches && bridge_secret_matches {
-            let (config, _) =
-                users::create_config_with_strong_constraints(&user_id, client, &user_secrets)?;
-
-            let fronts = plurality::fetch_fronts(&config).await?;
-
-            let fronting_format = plurality::FrontingFormat {
-                max_length: None,
-                cleaning: plurality::CleanForPlatform::NoClean,
-                prefix: config.status_prefix.clone(),
-                status_if_no_fronters: config.status_no_fronts.clone(),
-                truncate_names_to_length_if_status_too_long: 1, // todo.
+    let stream = EventStream! {
+        loop {
+            select! {
+                msg = receiver.recv() => match msg {
+                    Ok(fronters) => {
+                        let rich_presence_result = discord::render_fronts_to_discord_rich_presence(&user_id, fronters).await;
+                        match rich_presence_result {
+                            Ok(rich_presence) => {
+                                yield Event::json(&rich_presence);
+                                eprintln!("{}: Sent rich presence to bridge via SSE...", user_id);
+                            },
+                            Err(err) => {
+                                eprintln!("{}: Error while rendering fronts for discord rich presence. Continueing nonetheless. {}", user_id, err);
+                                continue;
+                            },
+                        }
+                    },
+                    Err(_) => break,
+                },
+                () = &mut end => break,
             };
-            let status_string = plurality::format_fronting_status(&fronting_format, &fronts);
-
-            let (large_image_url, large_image_text) = if fronts.len() == 1 {
-                (
-                    Some(fronts[0].avatar_url.clone()),
-                    Some(fronts[0].name.clone()),
-                )
-            } else {
-                (None, None)
-            };
-
-            let response = BridgeActivityResponse {
-                details: status_string.clone(),
-                state: status_string,
-                large_image_url,
-                large_image_text,
-                small_image_url: None,
-                small_image_text: None,
-                party_current: Some(fronts.len() as i32),
-                party_max: None,
-                button_label: Some("View Fronters".to_string()),
-                button_url: Some(format!("/api/fronting/{user_id}")),
-            };
-
-            return Ok(Json(response));
         }
-    }
+        eprintln!("{}: Ended receiver.", user_id);
+    };
 
-    Err(response::Debug(anyhow!(
-        "Invalid bridge secret or Discord user ID."
-    )))
+    Ok(stream)
 }

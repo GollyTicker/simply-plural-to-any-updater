@@ -93,6 +93,11 @@ provide_2fa_code_for_new_cookie() {
 check_vrc_cookie_works() {
     echo "Checking that VRC Cookie works..."
 
+    if [ ! -v VRCHAT_COOKIE ]; then
+        echo "VRCHAT_COOKIE not defined."
+        return 1
+    fi
+
     RESPONSE="$(curl -s --fail-with-body "https://api.vrchat.cloud/api/1/auth/user" \
         --cookie "$VRCHAT_COOKIE" \
         -u "$VRCHAT_USERNAME:$VRCHAT_PASSWORD" \

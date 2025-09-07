@@ -1,8 +1,9 @@
 name: Run Tests
 
 on:
-  push:
-    branches: '**'
+  # disable tests, because vrchat stuff doesn't work on github
+  # push:
+  #   branches: '**'
   workflow_dispatch:
 
 jobs:

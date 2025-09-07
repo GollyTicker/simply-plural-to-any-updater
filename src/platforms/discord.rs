@@ -1,5 +1,9 @@
-use crate::{plurality, users};
+use crate::{
+    plurality,
+    users::{self, UserId},
+};
 use anyhow::Result;
+use serde::Serialize;
 
 pub struct DiscordUpdater {
     pub last_operation_error: Option<String>,
@@ -28,26 +32,60 @@ impl DiscordUpdater {
         _config: &users::UserConfigForUpdater,
         _fronts: &[plurality::Fronter],
     ) -> Result<()> {
-        // todo. we want to control the http requests from the rich resence here and have that status here!
-        /*
-        TODO: The bridge (where the user is also logged in) connects to the local discord RPC and gets the local logged in user-id.
-        DONE: The bridge regularly requests the newest rich presence data to be shown from our server.
-            * the bridge always sends user auth for authentication
-            * our server checks the auth and sends the new rich presence data
-        */
-
-        // it seems that we'll have to use a local RPC. I don't see any other option to do this via the remote bot API.
-        // We'll have to make a small program locally which runs on the desktops with the users discord clients
-        // AND which supports auto-start (on PC start) AND where users can connect to the SP2Any website.
-
+        // fronts are send to fronter_channel automatically by updater work loop
         Ok(())
     }
 }
 
-/*
-It's probably easier to simply request the user to directly login into the bridge
-rather than doing some complicated pairing protocol which might also be harder to do correctly.
+#[derive(Serialize)]
+pub struct DiscordRichPresence {
+    pub details: String,
+    pub state: String,
+    pub large_image_url: Option<String>,
+    pub large_image_text: Option<String>,
+    pub small_image_url: Option<String>,
+    pub small_image_text: Option<String>,
+    pub party_current: Option<i32>,
+    pub party_max: Option<i32>,
+    pub button_label: Option<String>,
+    pub button_url: Option<String>,
+}
 
-Once a bridge is authenticated, we can simply trust it to do stuff for us.
+pub async fn render_fronts_to_discord_rich_presence(
+    user_id: &UserId,
+    fronters: Vec<plurality::Fronter>,
+) -> Result<DiscordRichPresence> {
+    let fronting_format = plurality::FrontingFormat {
+        max_length: None,
+        cleaning: plurality::CleanForPlatform::NoClean,
+        prefix: "F:".to_owned(), // todo. config.status_prefix.clone(),
+        status_if_no_fronters: "none?".to_owned(), // config.status_no_fronts.clone(),
+        truncate_names_to_length_if_status_too_long: 1, // todo.
+    };
+    let status_string = plurality::format_fronting_status(&fronting_format, &fronters);
 
-*/
+    let (large_image_url, large_image_text) = if fronters.len() == 1 {
+        // todo. put something else here
+        (
+            Some(fronters[0].avatar_url.clone()),
+            Some(fronters[0].name.clone()),
+        )
+    } else {
+        (None, None)
+    };
+
+    let response = DiscordRichPresence {
+        details: status_string.clone(),
+        state: status_string,
+        large_image_url,
+        large_image_text,
+        small_image_url: None,
+        small_image_text: None,
+        party_current: Some(fronters.len() as i32),
+        party_max: None,
+        button_label: Some("View Fronters".to_string()),
+        button_url: Some(format!("/api/fronting/{user_id}")), //todo.
+    };
+
+    Ok(response)
+}

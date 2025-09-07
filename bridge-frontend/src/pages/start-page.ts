@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import router from '../router';
+import type { JwtString } from '../types';
 
 export function renderStartPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -9,9 +10,9 @@ export function renderStartPage() {
     </div>
   `;
 
-  invoke('login_with_stored_credentials')
+  invoke<JwtString>('login_with_stored_credentials')
     .then(token => {
-      localStorage.setItem('jwt', token as string);
+      localStorage.setItem('jwt', JSON.stringify(token));
       router.navigate('/status');
     })
     .catch(error => {

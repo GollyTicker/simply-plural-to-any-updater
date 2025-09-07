@@ -32,15 +32,11 @@ where
     pub enable_discord_status_message: Option<bool>,
     pub enable_vrchat: Option<bool>,
 
-    pub bridge_pairing_code_expires_at: Option<chrono::DateTime<chrono::Utc>>,
-
     pub simply_plural_token: Option<Secret>,
     pub discord_status_message_token: Option<Secret>,
     pub discord_user_id: Option<Secret>,
     pub discord_oauth_access_token: Option<Secret>,
     pub discord_oauth_refresh_token: Option<Secret>,
-    pub bridge_pairing_code: Option<Secret>,
-    pub bridge_secret: Option<Secret>,
     pub vrchat_username: Option<Secret>,
     pub vrchat_password: Option<Secret>,
     pub vrchat_cookie: Option<Secret>,
@@ -77,15 +73,12 @@ pub struct UserConfigForUpdater {
     pub enable_discord: bool,
     pub enable_discord_status_message: bool,
     pub enable_vrchat: bool,
-    pub bridge_pairing_code_expires_at: Option<chrono::DateTime<chrono::Utc>>,
 
     pub simply_plural_token: database::Decrypted,
     pub discord_status_message_token: database::Decrypted,
     pub discord_user_id: database::Decrypted,
     pub discord_oauth_access_token: database::Decrypted,
     pub discord_oauth_refresh_token: database::Decrypted,
-    pub bridge_pairing_code: database::Decrypted,
-    pub bridge_secret: database::Decrypted,
     pub vrchat_username: database::Decrypted,
     pub vrchat_password: database::Decrypted,
     pub vrchat_cookie: database::Decrypted,
@@ -140,7 +133,6 @@ where
         enable_discord,
         enable_discord_status_message,
         enable_vrchat,
-        bridge_pairing_code_expires_at: local_config_with_defaults.bridge_pairing_code_expires_at,
         discord_base_url: if enable_discord_status_message {
             String::from("https://discord.com")
         } else {
@@ -166,12 +158,6 @@ where
             local_config_with_defaults,
             discord_oauth_refresh_token
         )?,
-        bridge_pairing_code: config_value_if!(
-            enable_discord,
-            local_config_with_defaults,
-            bridge_pairing_code
-        )?,
-        bridge_secret: config_value_if!(enable_discord, local_config_with_defaults, bridge_secret)?,
         vrchat_username: config_value_if!(
             enable_vrchat,
             local_config_with_defaults,
@@ -226,7 +212,6 @@ mod tests {
             enable_discord: Some(true),
             enable_discord_status_message: Some(true),
             enable_vrchat: Some(false),
-            bridge_pairing_code_expires_at: None,
             simply_plural_token: Some(Decrypted {
                 secret: "sp_token_123".to_string(),
             }),
@@ -241,12 +226,6 @@ mod tests {
             }),
             discord_oauth_refresh_token: Some(Decrypted {
                 secret: "discord_oauth_refresh_token".to_string(),
-            }),
-            bridge_pairing_code: Some(Decrypted {
-                secret: "123456789".to_string(),
-            }),
-            bridge_secret: Some(Decrypted {
-                secret: "bridge_secret".to_string(),
             }),
             vrchat_username: None,
             vrchat_password: None,
@@ -264,7 +243,6 @@ mod tests {
   "enable_discord": true,
   "enable_discord_status_message": true,
   "enable_vrchat": false,
-  "bridge_pairing_code_expires_at": null,
   "simply_plural_token": {
     "secret": "sp_token_123"
   },
@@ -279,12 +257,6 @@ mod tests {
   },
   "discord_oauth_refresh_token": {
     "secret": "discord_oauth_refresh_token"
-  },
-  "bridge_pairing_code": {
-    "secret": "123456789"
-  },
-  "bridge_secret": {
-    "secret": "bridge_secret"
   },
   "vrchat_username": null,
   "vrchat_password": null,

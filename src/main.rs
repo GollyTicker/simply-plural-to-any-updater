@@ -40,7 +40,7 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_request,
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_resolve,
                 platforms::discord_api::get_api_auth_discord_callback,
-                platforms::discord_api::get_api_platform_discord_fronting_for_rich_presence,
+                platforms::discord_api::get_api_user_platform_discord_bridge_events,
             ],
         )
         .launch()

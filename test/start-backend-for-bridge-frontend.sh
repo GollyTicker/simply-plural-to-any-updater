@@ -9,16 +9,18 @@ set -euo pipefail
 export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=false
 ENABLE_DISCORD_STATUS_MESSAGE=false
 ENABLE_VRCHAT=false
-ENABLE_DISCORD=false
+ENABLE_DISCORD=true
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
 
 main() {
+    ./release/cargo-build.sh
+    set_system_fronts_set "A"
     start_backend
-
-    echo "Waiting for ^C..."
-    sleep 3h
+    
+    echo "Showing logs... Abort with ^C to stop backend."
+    docker logs -f sp2any-api
 }
 
 export BASE_URL="http://localhost:8080"

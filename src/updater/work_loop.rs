@@ -32,7 +32,7 @@ pub async fn run_loop(
     let statues = get_statuses(&updaters, &config);
     log_error_and_continue(
         "update statues",
-        shared_updaters.set_updater_state(&config.user_id, statues),
+        shared_updaters.set_updater_statuses(&config.user_id, statues),
     );
 
     loop {
@@ -41,12 +41,15 @@ pub async fn run_loop(
             Utc::now().format("%Y-%m-%d %H:%M:%S")
         );
 
-        log_error_and_continue("Updater Logic", loop_logic(&config, &mut updaters).await);
+        log_error_and_continue(
+            "Updater Logic",
+            loop_logic(&config, &mut updaters, &shared_updaters).await,
+        );
 
         let statues = get_statuses(&updaters, &config);
         log_error_and_continue(
             "update statues",
-            shared_updaters.set_updater_state(&config.user_id, statues),
+            shared_updaters.set_updater_statuses(&config.user_id, statues),
         );
 
         eprintln!(
@@ -71,6 +74,7 @@ fn get_statuses(
 async fn loop_logic(
     config: &users::UserConfigForUpdater,
     updaters: &mut UserUpdaters,
+    shared_updaters: &manager::UpdaterManager,
 ) -> Result<()> {
     let fronts = plurality::fetch_fronts(config).await?;
 
@@ -82,6 +86,8 @@ async fn loop_logic(
             );
         }
     }
+
+    shared_updaters.send_fronter_channel_update(&config.user_id, fronts)?;
 
     Ok(())
 }
