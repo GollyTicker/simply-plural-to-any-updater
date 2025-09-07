@@ -58,7 +58,7 @@ impl UpdaterManager {
         let mut locked_task = self.tasks.lock().map_err(|e| anyhow!(e.to_string()))?;
 
         eprintln!("Aborting updater {user_id}");
-        let _ = locked_task.get(user_id).map(tokio::task::JoinHandle::abort);
+        locked_task.get(user_id).map(tokio::task::JoinHandle::abort);
 
         let owned_self = self.to_owned();
         let new_task = tokio::spawn(async move {

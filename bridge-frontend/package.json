@@ -23,5 +23,8 @@
     "typescript": "~5.9.2",
     "vite": "^7.1.4",
     "webdriverio": "^9.19.2"
+  },
+  "dependencies": {
+    "navigo": "^8.11.1"
   }
 }

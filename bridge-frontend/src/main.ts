@@ -1,34 +1,14 @@
 import './style.css';
-import { invoke } from '@tauri-apps/api/core';
+import router from './router';
+import { renderLoginPage } from './pages/login-page';
+import { renderStatusPage } from './pages/status-page';
+import { renderStartPage } from './pages/start-page';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <h1>Simply Plural Bridge</h1>
-    <div id="login-status">Not logged in</div>
-    <form id="login-form">
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Login</button>
-    </form>
-  </div>
-`;
-
-const loginForm = document.querySelector<HTMLFormElement>('#login-form');
-const loginStatus = document.querySelector<HTMLDivElement>('#login-status');
-
-loginForm?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = (document.querySelector<HTMLInputElement>('#email'))?.value;
-  const password = (document.querySelector<HTMLInputElement>('#password'))?.value;
-  loginStatus!.textContent = "Logging in ..."
-
-  if (email && password) {
-    try {
-      const token: string = await invoke('login', { email, password });
-      localStorage.setItem('jwt', token);
-      loginStatus!.textContent = 'Logged in!';
-    } catch (error) {
-      loginStatus!.textContent = `Login failed: ${error}`;
-    }
-  }
-});
+router
+  .on('/', renderStartPage)
+  .on('/login', renderLoginPage)
+  .on('/status', renderStatusPage)
+  .on('*', () => {
+    router.navigate('/');
+  })
+  .resolve();

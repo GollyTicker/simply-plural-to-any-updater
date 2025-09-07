@@ -37,7 +37,7 @@ impl sqlx::Type<Postgres> for Encrypted {
 
 impl<'r> Decode<'r, Postgres> for Encrypted {
     fn decode(value: postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
-        let _ = <String as Decode<Postgres>>::decode(value)?;
+        <String as Decode<Postgres>>::decode(value)?;
         Ok(Self {})
     }
 }
