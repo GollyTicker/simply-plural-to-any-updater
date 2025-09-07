@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use discord_rich_presence::{
-    activity::{Assets, Button, Party},
+    activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
     DiscordIpc, DiscordIpcClient,
 };
 use serde::Deserialize;
@@ -42,8 +42,8 @@ async fn activity_loop(
     let mut receiver = channel.subscribe();
     loop {
         let update_result = match receiver.recv().await {
-            Ok(discord_presence) => set_activity(client, discord_presence).await,
-            Err(broadcast::error::RecvError::Closed) => clear_activity(client).await,
+            Ok(discord_presence) => set_activity(client, &discord_presence),
+            Err(broadcast::error::RecvError::Closed) => clear_activity(client),
             Err(broadcast::error::RecvError::Lagged(_)) => Ok(()),
         };
 
@@ -56,13 +56,19 @@ async fn activity_loop(
     }
 }
 
-async fn set_activity(
+fn set_activity(
     client: &mut DiscordIpcClient,
-    discord_presence: platforms::DiscordRichPresence,
+    discord_presence: &platforms::DiscordRichPresence,
 ) -> Result<()> {
     let DiscordRichPresence {
+        activity_type,
+        status_display_type,
         details,
+        details_url,
         state,
+        state_url,
+        start_time,
+        end_time,
         large_image_url,
         large_image_text,
         small_image_url,
@@ -73,30 +79,69 @@ async fn set_activity(
         button_url,
     } = discord_presence.clone();
 
-    let mut activity = discord_rich_presence::activity::Activity::new();
-    activity = activity.details(details.as_str());
-    activity = activity.state(state.as_str());
+    let mut activity = Activity::new();
 
-    let mut assets = Assets::new();
-    if let Some(url) = large_image_url.as_ref() {
-        assets = assets.large_image(url);
+    if let Some(activity_type) = activity_type_from(activity_type as u8) {
+        activity = activity.activity_type(activity_type);
     }
-    if let Some(text) = large_image_text.as_ref() {
-        assets = assets.large_text(text);
+
+    if let Some(status_display_type) = status_display_type_from(status_display_type as u8) {
+        activity = activity.status_display_type(status_display_type);
     }
-    if let Some(url) = small_image_url.as_ref() {
-        assets = assets.small_image(url);
+
+    // timestamps
+    let mut timestamps = Timestamps::new();
+    if let Some(start) = start_time {
+        timestamps = timestamps.start(start);
     }
-    if let Some(text) = small_image_text.as_ref() {
-        assets = assets.small_text(text);
+    if let Some(end) = end_time {
+        timestamps = timestamps.end(end);
     }
+    activity = activity.timestamps(timestamps);
+
+    // state
+    if let Some(state) = state.as_ref() {
+        activity = activity.state(state);
+    }
+    if let Some(url) = state_url.as_ref() {
+        activity = activity.state_url(url);
+    }
+
+    // details
+    if let Some(details) = details.as_ref() {
+        activity = activity.details(details);
+    }
+    if let Some(url) = details_url.as_ref() {
+        activity = activity.details_url(url);
+    }
+
+    // assets
+    let assets = {
+        let mut assets = Assets::new();
+        if let Some(url) = large_image_url.as_ref() {
+            assets = assets.large_image(url);
+        }
+        if let Some(text) = large_image_text.as_ref() {
+            assets = assets.large_text(text);
+        }
+        if let Some(url) = small_image_url.as_ref() {
+            assets = assets.small_image(url);
+        }
+        if let Some(text) = small_image_text.as_ref() {
+            assets = assets.small_text(text);
+        }
+        assets
+    };
     activity = activity.assets(assets);
 
+    // party
     if let (Some(party_current), Some(party_max)) = (party_current, party_max) {
         activity = activity.party(Party::new().size([party_current, party_max]));
     } else if let Some(party_current) = party_current {
         activity = activity.party(Party::new().size([party_current, 0]));
     }
+
+    // buttom
     if let (Some(button_label), Some(button_url)) = (button_label.as_ref(), button_url.as_ref()) {
         activity = activity.buttons(vec![Button::new(button_label, button_url)]);
     }
@@ -108,7 +153,7 @@ async fn set_activity(
     Ok(())
 }
 
-async fn clear_activity(client: &mut DiscordIpcClient) -> Result<()> {
+fn clear_activity(client: &mut DiscordIpcClient) -> Result<()> {
     eprintln!("Clearing activity ...");
     let () = client.clear_activity()?;
     Ok(())
@@ -120,7 +165,7 @@ fn connect_to_discord_ipc() -> Result<DiscordIpcClient> {
     eprintln!("created. connecting...");
     let ready: ReadyResponse = serde_json::from_value(client.connect()?)?;
     let user = ready.data.user;
-    eprintln!("connected to user: {user:?}");
+    eprintln!("connected to user: {}", user.id);
     Ok(client)
 }
 
@@ -137,4 +182,24 @@ struct ReadyResponseData {
 #[derive(Clone, Deserialize, Debug)]
 struct DiscordUser {
     pub id: String,
+}
+
+const fn activity_type_from(u: u8) -> Option<ActivityType> {
+    match u {
+        0 => Some(ActivityType::Playing),
+        2 => Some(ActivityType::Listening),
+        3 => Some(ActivityType::Watching),
+        4 => Some(ActivityType::Custom),
+        5 => Some(ActivityType::Competing),
+        _ => None,
+    }
+}
+
+const fn status_display_type_from(u: u8) -> Option<StatusDisplayType> {
+    match u {
+        0 => Some(StatusDisplayType::Name),
+        1 => Some(StatusDisplayType::State),
+        2 => Some(StatusDisplayType::Details),
+        _ => None,
+    }
 }

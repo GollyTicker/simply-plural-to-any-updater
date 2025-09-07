@@ -162,12 +162,18 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
 
 #[allow(clippy::needless_pass_by_value)]
 #[get("/api/user/platform/discord/bridge-events")]
-pub fn get_api_user_platform_discord_bridge_events(
+pub async fn get_api_user_platform_discord_bridge_events(
     jwt: users::Jwt,
-    shared_updaters: &State<updater::UpdaterManager>,
     mut shutdown: Shutdown,
+    shared_updaters: &State<updater::UpdaterManager>,
+    db_pool: &State<PgPool>,
+    client: &State<reqwest::Client>,
+    application_user_secrets: &State<database::ApplicationUserSecrets>,
 ) -> Result<EventStream![], response::Debug<anyhow::Error>> {
     let user_id = jwt.user_id()?;
+    let config = database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
+    let (config, _) = users::create_config_with_strong_constraints(&user_id, client, &config)?;
+
     let mut receiver = shared_updaters.subscribe_fronter_channel(&user_id)?;
 
     let stream = EventStream! {
@@ -175,7 +181,7 @@ pub fn get_api_user_platform_discord_bridge_events(
             select! {
                 msg = receiver.recv() => match msg {
                     Ok(fronters) => {
-                        if let Some(ev) = send_fronters_to_bridge(&user_id, fronters) {
+                        if let Some(ev) = send_fronters_to_bridge(&user_id, fronters, &config) {
                             yield ev;
                         }
                     },
@@ -190,8 +196,12 @@ pub fn get_api_user_platform_discord_bridge_events(
     Ok(stream)
 }
 
-fn send_fronters_to_bridge(user_id: &UserId, fronters: Vec<plurality::Fronter>) -> Option<Event> {
-    let rich_presence_result = discord::render_fronts_to_discord_rich_presence(user_id, fronters);
+fn send_fronters_to_bridge(
+    user_id: &UserId,
+    fronters: Vec<plurality::Fronter>,
+    config: &users::UserConfigForUpdater,
+) -> Option<Event> {
+    let rich_presence_result = discord::render_fronts_to_discord_rich_presence(fronters, config);
 
     match rich_presence_result {
         Ok(rich_presence) => {

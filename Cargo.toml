@@ -43,5 +43,6 @@ jsonwebtoken = "9.3"
 rand = "0.9"
 sha2 = "0.10"
 rocket = { version = "0.5", features = ["json", "http2"] }
+strum = "0.27.2"
 
 [build-dependencies]
