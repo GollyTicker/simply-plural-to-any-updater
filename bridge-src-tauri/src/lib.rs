@@ -40,7 +40,8 @@ async fn subscribe_to_bridge_channel_anyhow(
     app: tauri::AppHandle,
     jwt: users::JwtString,
 ) -> Result<()> {
-    let base_url = env::var("SP2ANY_BASE_URL").unwrap_or(DEFAULT_SP2ANY_BASE_URL.to_owned());
+    let base_url =
+        env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
     let sse_url = format!("{base_url}/api/user/platform/discord/bridge-events");
 
     let client = reqwest::Client::new();
@@ -51,7 +52,7 @@ async fn subscribe_to_bridge_channel_anyhow(
     )?;
 
     let background_task = tauri::async_runtime::spawn(async move {
-        eprintln!("Starting SSE listener on {}", sse_url);
+        eprintln!("Starting SSE listener on {sse_url}");
         while let Some(event) = event_source.next().await {
             match event {
                 Ok(sse::Event::Open) => eprintln!("SSE: Connected."),
@@ -61,7 +62,7 @@ async fn subscribe_to_bridge_channel_anyhow(
                         message.id, message.event, message.data
                     );
                 }
-                Err(err) => eprintln!("SSE: Error: {}…", err),
+                Err(err) => eprintln!("SSE: Error: {err}…"),
             }
         }
     });
@@ -102,7 +103,8 @@ async fn login_anyhow(creds: UserCredentials) -> Result<users::JwtString> {
     };
 
     let client = reqwest::Client::new();
-    let base_url = env::var("SP2ANY_BASE_URL").unwrap_or(DEFAULT_SP2ANY_BASE_URL.to_owned());
+    let base_url =
+        env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
     let login_url = format!("{}{}", base_url, "/api/user/login");
 
     eprintln!("Attempting login: {login_url} with {}", &creds.email);

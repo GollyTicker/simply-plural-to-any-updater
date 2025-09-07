@@ -74,7 +74,7 @@ pub async fn set_user_config_secrets(
     application_user_secret: &secrets::ApplicationUserSecrets,
 ) -> Result<()> {
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
-    
+
     let _: Option<UserConfigDbEntries<secrets::Decrypted>> = sqlx::query_as(
         "UPDATE users
         SET

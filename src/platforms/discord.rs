@@ -27,12 +27,13 @@ impl DiscordUpdater {
         Ok(())
     }
 
+    #[allow(clippy::unused_async)]
     pub async fn update_fronting_status(
         &self,
         _config: &users::UserConfigForUpdater,
         _fronts: &[plurality::Fronter],
     ) -> Result<()> {
-        // fronts are send to fronter_channel automatically by updater work loop
+        // fronts are sent to fronter_channel automatically by updater work loop
         Ok(())
     }
 }
@@ -51,7 +52,8 @@ pub struct DiscordRichPresence {
     pub button_url: Option<String>,
 }
 
-pub async fn render_fronts_to_discord_rich_presence(
+#[allow(clippy::needless_pass_by_value)]
+pub fn render_fronts_to_discord_rich_presence(
     user_id: &UserId,
     fronters: Vec<plurality::Fronter>,
 ) -> Result<DiscordRichPresence> {

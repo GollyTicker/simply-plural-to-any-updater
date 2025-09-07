@@ -1,7 +1,7 @@
 use crate::http::HttpResult;
 use crate::platforms::discord;
-use crate::users::JwtString;
-use crate::{database, updater, users};
+use crate::users::{JwtString, UserId};
+use crate::{database, plurality, updater, users};
 use anyhow::{anyhow, Result};
 use reqwest::Client;
 use rocket::response::content::RawHtml;
@@ -160,11 +160,12 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
 </html>
 ";
 
+#[allow(clippy::needless_pass_by_value)]
 #[get("/api/user/platform/discord/bridge-events")]
-pub async fn get_api_user_platform_discord_bridge_events(
+pub fn get_api_user_platform_discord_bridge_events(
     jwt: users::Jwt,
     shared_updaters: &State<updater::UpdaterManager>,
-    mut end: Shutdown,
+    mut shutdown: Shutdown,
 ) -> Result<EventStream![], response::Debug<anyhow::Error>> {
     let user_id = jwt.user_id()?;
     let mut receiver = shared_updaters.subscribe_fronter_channel(&user_id)?;
@@ -174,25 +175,32 @@ pub async fn get_api_user_platform_discord_bridge_events(
             select! {
                 msg = receiver.recv() => match msg {
                     Ok(fronters) => {
-                        let rich_presence_result = discord::render_fronts_to_discord_rich_presence(&user_id, fronters).await;
-                        match rich_presence_result {
-                            Ok(rich_presence) => {
-                                yield Event::json(&rich_presence);
-                                eprintln!("{}: Sent rich presence to bridge via SSE...", user_id);
-                            },
-                            Err(err) => {
-                                eprintln!("{}: Error while rendering fronts for discord rich presence. Continueing nonetheless. {}", user_id, err);
-                                continue;
-                            },
+                        if let Some(ev) = send_fronters_to_bridge(&user_id, fronters) {
+                            yield ev;
                         }
                     },
                     Err(_) => break,
                 },
-                () = &mut end => break,
+                () = &mut shutdown => break,
             };
         }
         eprintln!("{}: Ended receiver.", user_id);
     };
 
     Ok(stream)
+}
+
+fn send_fronters_to_bridge(user_id: &UserId, fronters: Vec<plurality::Fronter>) -> Option<Event> {
+    let rich_presence_result = discord::render_fronts_to_discord_rich_presence(user_id, fronters);
+
+    match rich_presence_result {
+        Ok(rich_presence) => {
+            eprintln!("{user_id}: Sending rich presence to bridge via SSE...");
+            Some(Event::json(&rich_presence))
+        }
+        Err(err) => {
+            eprintln!("{user_id}: Error while rendering fronts for discord rich presence. Continueing nonetheless. {err}");
+            None
+        }
+    }
 }
