@@ -20,6 +20,7 @@ loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = (document.querySelector<HTMLInputElement>('#email'))?.value;
   const password = (document.querySelector<HTMLInputElement>('#password'))?.value;
+  loginStatus!.textContent = "Logging in ..."
 
   if (email && password) {
     try {

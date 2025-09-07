@@ -2,9 +2,9 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "SP2Any Bridge",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "sp2any.bridge",
   "build": {
-    "frontendDist": "../bridge-frontend",
+    "frontendDist": "../bridge-frontend/dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "cd ../bridge-frontend && npm run dev",
     "beforeBuildCommand": "cd ../bridge-frontend && npm run build"

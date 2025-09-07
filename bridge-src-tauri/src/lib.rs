@@ -2,6 +2,8 @@ use std::env;
 
 use sp2any::users;
 
+const DEFAULT_SP2ANY_BASE_URL: &str = "https://sp2any.io";
+
 #[tauri::command]
 async fn login(email: String, password: String) -> Result<users::JwtString, String> {
     let login_creds = users::UserLoginCredentials {
@@ -10,7 +12,7 @@ async fn login(email: String, password: String) -> Result<users::JwtString, Stri
     };
 
     let client = reqwest::Client::new();
-    let base_url = env::var("SP2ANY_BASE_URL").map_err(|e| e.to_string())?;
+    let base_url = env::var("SP2ANY_BASE_URL").unwrap_or(DEFAULT_SP2ANY_BASE_URL.to_owned());
     let login_url = format!("{}{}", base_url, "/api/user/login");
 
     let res = client
