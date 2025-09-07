@@ -76,7 +76,7 @@ impl Updater {
     pub const fn enabled(&self, config: &users::UserConfigForUpdater) -> bool {
         match self {
             Self::VRChat(_) => config.enable_vrchat,
-            Self::Discord(_) => todo!(),
+            Self::Discord(_) => config.enable_discord,
             Self::DiscordStatusMessage(_) => config.enable_discord_status_message,
         }
     }
