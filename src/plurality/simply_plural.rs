@@ -64,14 +64,18 @@ fn filter_frontables_by_front_entries(
     front_entries: Vec<FrontEntry>,
     frontables: Vec<Fronter>,
 ) -> Vec<Fronter> {
-    let fronter_ids: Vec<String> = front_entries
-        .iter()
-        .map(|e| e.content.member.clone())
-        .collect();
-
     let fronters: Vec<Fronter> = frontables
-        .into_iter()
-        .filter(|f| fronter_ids.contains(&f.id))
+        .iter()
+        .filter_map(|f| {
+            front_entries
+                .iter()
+                .find(|fe| fe.content.member == f.id)
+                .map(|fe| {
+                    let mut fronter_with_start_time = f.clone();
+                    fronter_with_start_time.start_time = Some(fe.content.start_time);
+                    fronter_with_start_time
+                })
+        })
         .collect();
 
     fronters

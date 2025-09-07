@@ -29,6 +29,8 @@ set_system_fronts_set() {
 set_to_front() {
     FRONTER_ID="$1"
     FRONT_ID="$(openssl rand -hex 12)" # produces valid 24 hexdec digits
+    UNIX_MILLIS_CURRENT="$(date +%s%3N)"
+    UNIX_MILLIS_5_MIN_AGO="$((UNIX_MILLIS_CURRENT - 5*60*1000))"
     curl --silent --fail-with-body -L "https://api.apparyllis.com/v1/frontHistory/$FRONT_ID" \
         -H 'Content-Type: application/json' \
         -H "Authorization: $SPS_API_WRITE_TOKEN" \
@@ -36,7 +38,7 @@ set_to_front() {
             \"customStatus\": \"\",
             \"custom\": false,
             \"live\": true,
-            \"startTime\": 0,
+            \"startTime\": $UNIX_MILLIS_5_MIN_AGO,
             \"member\": \"$FRONTER_ID\"
         }" > /dev/null
     echo "Set member/custom-front $FRONTER_ID to front (id: $FRONT_ID)."

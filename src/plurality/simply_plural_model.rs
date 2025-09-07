@@ -36,6 +36,7 @@ pub struct Fronter {
     pub name: String,
     pub avatar_url: String,
     pub vrchat_status_name: Option<String>,
+    pub start_time: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl Fronter {
@@ -66,6 +67,7 @@ impl From<CustomFront> for Fronter {
             name: cf.content.name,
             avatar_url: cf.content.avatar_url,
             vrchat_status_name: None,
+            start_time: None,
         }
     }
 }
@@ -109,6 +111,7 @@ impl From<Member> for Fronter {
             name: m.content.name,
             avatar_url: m.content.avatar_url,
             vrchat_status_name,
+            start_time: None,
         }
     }
 }

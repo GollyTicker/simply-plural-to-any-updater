@@ -29,6 +29,7 @@ fn mock_member_content(name: &str, vrchat_status_name: &str) -> Fronter {
         } else {
             Some(vrchat_status_name.to_owned())
         },
+        start_time: None,
     }
 }
 

@@ -99,6 +99,12 @@ pub fn render_fronts_to_discord_rich_presence(
     };
     let long_fronters_string = plurality::format_fronting_status(&long_format, &fronters);
 
+    let most_recent_fronting_change: Option<i64> = fronters
+        .iter()
+        .filter_map(|f| f.start_time)
+        .max()
+        .map(|dt| dt.timestamp());
+
     let response = DiscordRichPresence {
         activity_type: DiscordActivityType::Playing,
         status_display_type: DiscordStatusDisplayType::Details,
@@ -106,8 +112,8 @@ pub fn render_fronts_to_discord_rich_presence(
         details_url: Some(REPOSITORY_URL.to_owned()), // // future: link to fronting web url
         state: Some(long_fronters_string),
         state_url: None,
-        start_time: None, // future: ideally allow user to show fronter change timestamp.
-        end_time: None,   // we can't predict when the fronting will stop
+        start_time: most_recent_fronting_change,
+        end_time: None,        // we can't predict when the fronting will stop
         large_image_url: None, // future: populate these fields.
         large_image_text: None,
         small_image_url: None,
