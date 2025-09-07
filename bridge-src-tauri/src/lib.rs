@@ -1,14 +1,22 @@
+mod discord_bridge;
+
 use anyhow::{anyhow, Result};
 use directories::ProjectDirs;
 use futures::stream::StreamExt;
 use reqwest_eventsource as sse;
 use serde::{Deserialize, Serialize};
+use sp2any::platforms;
 use sp2any::users;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
 use tauri::async_runtime::{JoinHandle, Mutex};
 use tauri::Manager;
+use tokio::sync::broadcast;
+
+// todo. add auto-update capabilities.
+// todo. add auto-start capabilities: https://crates.io/crates/auto-launch
+// todo. note, that only a single user account is supported for now.
 
 const DEFAULT_SP2ANY_BASE_URL: &str = "https://sp2any.io";
 
@@ -24,6 +32,17 @@ fn get_credentials_path() -> Result<PathBuf> {
     let data_dir = proj_dirs.data_local_dir();
     fs::create_dir_all(data_dir)?;
     Ok(data_dir.join("credentials.json"))
+}
+
+#[tauri::command]
+async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
+    let channel = app
+        .state::<broadcast::Sender<platforms::DiscordRichPresence>>()
+        .inner()
+        .clone();
+    tauri::async_runtime::spawn(async move {
+        discord_bridge::discord_ipc_loop(channel).await;
+    });
 }
 
 #[tauri::command]
@@ -51,7 +70,9 @@ async fn subscribe_to_bridge_channel_anyhow(
             .header("Authorization", format!("Bearer {}", jwt.inner)),
     )?;
 
+    let app2 = app.clone();
     let background_task = tauri::async_runtime::spawn(async move {
+        let sender = app2.state::<broadcast::Sender<platforms::DiscordRichPresence>>();
         eprintln!("Starting SSE listener on {sse_url}");
         while let Some(event) = event_source.next().await {
             match event {
@@ -61,6 +82,9 @@ async fn subscribe_to_bridge_channel_anyhow(
                         "SSE: Message. id='{}', type='{}', data='{}'",
                         message.id, message.event, message.data
                     );
+                    if let Ok(rich_presence) = serde_json::from_str(&message.data) {
+                        let _ = sender.send(rich_presence);
+                    }
                 }
                 Err(err) => eprintln!("SSE: Error: {err}…"),
             }
@@ -177,9 +201,11 @@ pub fn run() -> Result<()> {
             store_credentials,
             login_with_stored_credentials,
             stop_and_clear_credentials,
-            subscribe_to_bridge_channel
+            subscribe_to_bridge_channel,
+            initiate_discord_rpc_loop
         ])
         .manage(new_background_task_container())
+        .manage(broadcast::channel::<platforms::DiscordRichPresence>(1).0)
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(

@@ -10,6 +10,8 @@ export function renderStartPage() {
     </div>
   `;
 
+  initiate_discord_rpc_loop();
+
   invoke<JwtString>('login_with_stored_credentials')
     .then(token => {
       localStorage.setItem('jwt', JSON.stringify(token));
@@ -20,3 +22,13 @@ export function renderStartPage() {
       router.navigate('/login');
     });
 }
+
+async function initiate_discord_rpc_loop() {
+  try {
+    await invoke('initiate_discord_rpc_loop');
+    console.log('Connected to Discord RPC ...');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
