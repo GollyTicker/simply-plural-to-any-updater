@@ -3,6 +3,7 @@ use crate::http::HttpResult;
 use crate::users::auth;
 use crate::users::jwt;
 use crate::users::model::{Email, UserId};
+use rocket::http;
 use rocket::response;
 use rocket::{serde::json::Json, State};
 use serde::Deserialize;
@@ -26,15 +27,18 @@ pub async fn post_api_user_login(
     db_pool: &State<PgPool>,
     jwt_app_secret: &State<jwt::ApplicationJwtSecret>,
     credentials: Json<UserLoginCredentials>,
-) -> HttpResult<Json<jwt::JwtString>> {
-    let user_id = database::get_user_id(db_pool, credentials.email.clone()).await?;
+) -> Result<Json<jwt::JwtString>, (http::Status, String)> {
+    let user_id = database::get_user_id(db_pool, credentials.email.clone())
+        .await
+        .map_err(|e| (http::Status::Forbidden, e.to_string()))?;
 
     let user_info = database::get_user_info(db_pool, user_id)
         .await
-        .map_err(response::Debug)?;
+        .map_err(|e| (http::Status::InternalServerError, e.to_string()))?;
 
     let jwt_string =
-        auth::verify_password_and_create_token(&credentials.password, &user_info, jwt_app_secret)?;
+        auth::verify_password_and_create_token(&credentials.password, &user_info, jwt_app_secret)
+            .map_err(|e| (http::Status::Forbidden, e.to_string()))?;
 
     Ok(Json(jwt_string))
 }

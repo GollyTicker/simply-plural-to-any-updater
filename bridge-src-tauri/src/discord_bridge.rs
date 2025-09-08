@@ -22,13 +22,11 @@ pub async fn discord_ipc_loop(channel: broadcast::Sender<platforms::DiscordRichP
         match connect_to_discord_ipc() {
             Ok(mut client) => {
                 let e = activity_loop(&mut client, channel.clone()).await;
-                eprintln!("Activity loop ended with error: {e}");
-                eprintln!("Reconnecting in 5s...");
+                log::warn!("Activity loop ended with error. Will reconnect in 5s. Error: {e}");
                 sleep(Duration::from_secs(5)).await;
             }
             Err(e) => {
-                eprintln!("Error when connecting: {e}");
-                eprintln!("Retrying in 5s...");
+                log::warn!("Discord IPC Connection failed. Will retry in 5s. Error: {e}");
                 sleep(Duration::from_secs(5)).await;
             }
         }
@@ -41,10 +39,14 @@ async fn activity_loop(
 ) -> anyhow::Error {
     let mut receiver = channel.subscribe();
     loop {
+        log::info!("Waiting for SP2Any backend events...");
         let update_result = match receiver.recv().await {
             Ok(discord_presence) => set_activity(client, &discord_presence),
             Err(broadcast::error::RecvError::Closed) => clear_activity(client),
-            Err(broadcast::error::RecvError::Lagged(_)) => Ok(()),
+            Err(broadcast::error::RecvError::Lagged(n)) => {
+                log::warn!("Lagged by {n}");
+                Ok(())
+            }
         };
 
         match update_result {
@@ -146,7 +148,7 @@ fn set_activity(
         activity = activity.buttons(vec![Button::new(button_label, button_url)]);
     }
 
-    eprintln!("Setting activity: {discord_presence:?}");
+    log::info!("Setting activity: {discord_presence:?}");
 
     let () = client.set_activity(activity)?;
 
@@ -154,18 +156,17 @@ fn set_activity(
 }
 
 fn clear_activity(client: &mut DiscordIpcClient) -> Result<()> {
-    eprintln!("Clearing activity ...");
+    log::info!("Clearing activity ...");
     let () = client.clear_activity()?;
     Ok(())
 }
 
 fn connect_to_discord_ipc() -> Result<DiscordIpcClient> {
-    eprintln!("creating client...");
     let mut client = DiscordIpcClient::new(&DISCORD_SP2ANY_BOT_APPLICATION_ID.to_string());
-    eprintln!("created. connecting...");
+    log::info!("Connecting to Discord IPC Client...");
     let ready: ReadyResponse = serde_json::from_value(client.connect()?)?;
     let user = ready.data.user;
-    eprintln!("connected to user: {}", user.id);
+    log::info!("Connected to user: {}", user.id);
     Ok(client)
 }
 

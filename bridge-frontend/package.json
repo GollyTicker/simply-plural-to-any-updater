@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "e2e:note": "YOU MUST BUILD bridge-src-tauri BEFORE invoking the below e2e test.",
-    "e2e": "wdio run ./wdio.conf.js"
+    "e2e:note": "YOU MUST BUILD bridge-src-tauri BEFORE invoking the below e2e test. YOU MUST START the backend in the tests folder as well.",
+    "e2e": "export SP2ANY_BASE_URL=http://localhost:8080 && export SP2ANY_DATA_DIR=\"$(realpath \"$PWD/../test/tmp\")\" && rm -rv \"$SP2ANY_DATA_DIR\"; wdio run ./wdio.conf.js"
   },
   "devDependencies": {
     "@tauri-apps/api": "^2.8.0",
@@ -25,6 +25,8 @@
     "webdriverio": "^9.19.2"
   },
   "dependencies": {
+    "@tauri-apps/plugin-log": "^2.7.0",
     "navigo": "^8.11.1"
   }
 }
+ 

@@ -19,6 +19,7 @@ use tokio::sync::broadcast;
 // todo. note, that only a single user account is supported for now.
 
 const DEFAULT_SP2ANY_BASE_URL: &str = "https://sp2any.io";
+const MEGABYTES: u128 = 10^6;
 
 #[derive(Serialize, Deserialize)]
 struct UserCredentials {
@@ -26,16 +27,29 @@ struct UserCredentials {
     password: String,
 }
 
-fn get_credentials_path() -> Result<PathBuf> {
+fn get_data_dir() -> Result<PathBuf> {
     let proj_dirs = ProjectDirs::from("io", "sp2any", "sp2any.bridge")
-        .ok_or_else(|| anyhow!("Failed to get project directories"))?;
-    let data_dir = proj_dirs.data_local_dir();
-    fs::create_dir_all(data_dir)?;
+        .ok_or_else(|| anyhow!("Failed to get project directories"))
+        .map(|p| p.data_local_dir().to_path_buf());
+
+    let data_dir = env::var("SP2ANY_DATA_DIR")
+        .map(PathBuf::from)
+        .or(proj_dirs)?;
+
+    log::debug!("Data dir: {}", data_dir.to_string_lossy());
+
+    Ok(data_dir)
+}
+
+fn get_credentials_path() -> Result<PathBuf> {
+    let data_dir = get_data_dir()?;
+    fs::create_dir_all(&data_dir)?;
     Ok(data_dir.join("credentials.json"))
 }
 
 #[tauri::command]
 async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
+    log::debug!("initiate_discord_rpc_loop");
     let channel = app
         .state::<broadcast::Sender<platforms::DiscordRichPresence>>()
         .inner()
@@ -50,6 +64,7 @@ async fn subscribe_to_bridge_channel(
     app: tauri::AppHandle,
     jwt: users::JwtString,
 ) -> Result<(), String> {
+    log::debug!("subscribe_to_bridge_channel");
     subscribe_to_bridge_channel_anyhow(app, jwt)
         .await
         .map_err(|e| e.to_string())
@@ -63,6 +78,8 @@ async fn subscribe_to_bridge_channel_anyhow(
         env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
     let sse_url = format!("{base_url}/api/user/platform/discord/bridge-events");
 
+    log::info!("Subscribing to SSE at {sse_url}");
+
     let client = reqwest::Client::new();
     let mut event_source: sse::EventSource = sse::EventSource::new(
         client
@@ -73,20 +90,17 @@ async fn subscribe_to_bridge_channel_anyhow(
     let app2 = app.clone();
     let background_task = tauri::async_runtime::spawn(async move {
         let sender = app2.state::<broadcast::Sender<platforms::DiscordRichPresence>>();
-        eprintln!("Starting SSE listener on {sse_url}");
+        log::info!("Starting SSE listener on {sse_url}");
         while let Some(event) = event_source.next().await {
             match event {
-                Ok(sse::Event::Open) => eprintln!("SSE: Connected."),
+                Ok(sse::Event::Open) => log::info!("SSE: Connected."),
                 Ok(sse::Event::Message(message)) => {
-                    eprintln!(
-                        "SSE: Message. id='{}', type='{}', data='{}'",
-                        message.id, message.event, message.data
-                    );
+                    log::info!("SSE: Message: '{}'", message.data);
                     if let Ok(rich_presence) = serde_json::from_str(&message.data) {
                         let _ = sender.send(rich_presence);
                     }
                 }
-                Err(err) => eprintln!("SSE: Error: {err}…"),
+                Err(err) => log::warn!("SSE: Error: {err}..."),
             }
         }
     });
@@ -106,6 +120,7 @@ fn new_background_task_container() -> Mutex<Option<JoinHandle<()>>> {
 }
 
 async fn abort_background_task(app: tauri::AppHandle) -> () {
+    log::debug!("abort_background_task");
     let state = app.state::<Mutex<Option<JoinHandle<()>>>>();
     let mut locked_task = state.lock().await;
     if let Some(handle) = locked_task.take() {
@@ -115,6 +130,7 @@ async fn abort_background_task(app: tauri::AppHandle) -> () {
 
 #[tauri::command]
 async fn login(creds: UserCredentials) -> Result<users::JwtString, String> {
+    log::debug!("login");
     login_anyhow(creds).await.map_err(|e| e.to_string())
 }
 
@@ -131,7 +147,7 @@ async fn login_anyhow(creds: UserCredentials) -> Result<users::JwtString> {
         env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
     let login_url = format!("{}{}", base_url, "/api/user/login");
 
-    eprintln!("Attempting login: {login_url} with {}", &creds.email);
+    log::info!("Attempting login: {login_url} with {}", &creds.email);
 
     let jwt_string = client
         .post(login_url)
@@ -142,7 +158,7 @@ async fn login_anyhow(creds: UserCredentials) -> Result<users::JwtString> {
         .json::<users::JwtString>()
         .await?;
 
-    eprintln!("Login successful for {}", &creds.email);
+    log::info!("Login successful for {}", &creds.email);
 
     Ok(jwt_string)
 }
@@ -151,21 +167,23 @@ fn set_user_credentials(creds: &UserCredentials) -> Result<()> {
     let path = get_credentials_path()?;
     let json = serde_json::to_string(creds)?;
     fs::write(path, json)?;
-    eprintln!("Stored credentials for {}", &creds.email);
+    log::info!("Stored credentials for {}", &creds.email);
     Ok(())
 }
 
 #[tauri::command]
 async fn store_credentials(creds: UserCredentials) -> Result<(), String> {
+    log::debug!("store_credentials");
     set_user_credentials(&creds).map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
 async fn login_with_stored_credentials() -> Result<users::JwtString, String> {
+    log::debug!("login_with_stored_credentials");
     let creds = get_user_credentials().map_err(|e| e.to_string())?;
     let jwt_string = login(creds).await?;
-    eprintln!("Logged in with stored credentials.");
+    log::info!("Logged in with stored credentials.");
     Ok(jwt_string)
 }
 
@@ -173,14 +191,14 @@ fn get_user_credentials() -> Result<UserCredentials> {
     let path = get_credentials_path()?;
     let json = fs::read_to_string(path)?;
     let creds: UserCredentials = serde_json::from_str(&json)?;
-    eprintln!("Retrieved credentials for {}", &creds.email);
+    log::info!("Retrieved credentials for {}", &creds.email);
     Ok(creds)
 }
 
 #[tauri::command]
 async fn stop_and_clear_credentials(app: tauri::AppHandle) -> Result<(), String> {
+    log::debug!("stop_and_clear_credentials");
     abort_background_task(app).await;
-
     clear_user_credentials().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -190,11 +208,27 @@ fn clear_user_credentials() -> Result<()> {
     if path.exists() {
         fs::remove_file(path)?;
     }
-    eprintln!("Cleared credentials.");
+    log::info!("Cleared credentials.");
     Ok(())
 }
 
 pub fn run() -> Result<()> {
+    let logs_dir = get_data_dir()?.join("logs");
+
+    let logging_plugin = tauri_plugin_log::Builder::default()
+        .level(tauri_plugin_log::log::LevelFilter::Debug)
+        .target(tauri_plugin_log::Target::new(
+            tauri_plugin_log::TargetKind::Webview,
+        ))
+        .target(tauri_plugin_log::Target::new(
+            tauri_plugin_log::TargetKind::Folder {
+                path: logs_dir,
+                file_name: None,
+            },
+        ))
+        .max_file_size(10 * MEGABYTES)
+        .build();
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             login,
@@ -207,13 +241,7 @@ pub fn run() -> Result<()> {
         .manage(new_background_task_container())
         .manage(broadcast::channel::<platforms::DiscordRichPresence>(1).0)
         .setup(|app| {
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
-            }
+            app.handle().plugin(logging_plugin)?;
             Ok(())
         })
         .run(tauri::generate_context!())

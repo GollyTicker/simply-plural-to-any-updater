@@ -1,11 +1,10 @@
 import os from 'os';
 import path from 'path';
-import { spawn, spawnSync } from 'child_process';
-import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 
 // ==================================== v custom config for this project v
 
-const PATH_TO_DEV_BINARY = '../bridge-src-tauri/target/release/sp2any-bridge';
+const PATH_TO_DEV_BINARY = '../bridge-src-tauri/target/debug/sp2any-bridge';
 
 // ==================================== v coptied from tauri v2 webdriverio docs v with minor modifications
 // modifications: changed path to binary + don't build tauri here but require us to build it ourselves before explicitly.

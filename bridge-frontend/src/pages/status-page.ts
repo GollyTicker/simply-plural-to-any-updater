@@ -17,7 +17,7 @@ export function renderStatusPage() {
     try {
       await invoke('stop_and_clear_credentials');
     } catch (e) {
-      console.error("Failed to stop and clear credentials", e)
+      console.warn("Failed to stop and clear credentials", e)
     }
     router.navigate('/');
   });
@@ -35,7 +35,7 @@ async function subscribe_to_bridge_channel() {
     await invoke('subscribe_to_bridge_channel', { jwt });
     bridgeStatus().textContent = 'Connected to SP2Any and receiving updates...';
   } catch (e) {
-    console.error(e);
+    console.warn(e);
     bridgeStatus().textContent = `Failed to connect to SP2Any: ${e}`;
   }
 }

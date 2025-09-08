@@ -3,29 +3,51 @@ import { expect, $ } from '@wdio/globals'
 const TEST_EMAIL = "test@example.com";
 const TEST_PASSWORD = "m?3yp%&wdS+";
 
+async function notLoggedIn() {
+    await expect($('#login-status')).toHaveText("Not logged in")
+}
+
+async function login(password?: string) {
+    await $('#email').setValue(TEST_EMAIL)
+    await $('#password').setValue(password ?? TEST_PASSWORD)
+
+    await $('button[type="submit"]').click()
+}
+
+async function logout() {
+    await $('#logout-button').click()
+}
+
+async function loggedInAndConnected() {
+    await expect($('#bridge-status')).toHaveText("Connected to SP2Any and receiving updates...")
+}
+
 describe('sp2any-bridge login flow', () => {
-  it('should be intially not logged in', async () => {
-    const elem = $('#login-status')
-    await expect(elem).toHaveText("Not logged in")
-  })
+    it('should be intially not logged in', async () => {
+        await notLoggedIn()
+    })
 
-  it('can be logged in', async () => {
-    await $('#email').setValue(TEST_EMAIL)
-    await $('#password').setValue(TEST_PASSWORD)
+    it('can then be logged in to receive updates', async () => {
+        await login()
+        await loggedInAndConnected()
+    })
 
-    await $('button[type="submit"]').click()
+    it('can then be logged out and disconnected', async () => {
+        await logout()
+        await notLoggedIn()
+    })
 
-    const loginStatus = $('#login-status')
-    await expect(loginStatus).toHaveText("Logged in!")
-  })
+    it('automatically re-logins after reload if logged in before', async () => {
+        await login()
+        await loggedInAndConnected()
+        await browser.reloadSession()
+        await loggedInAndConnected()
+    })
 
-  it('cannot be logged in with wrong password', async () => {
-    await $('#email').setValue(TEST_EMAIL)
-    await $('#password').setValue(TEST_PASSWORD + ".")
+    it('should show an error for wrong password', async () => {
+        await logout()
+        await login("wrong password")
 
-    await $('button[type="submit"]').click()
-
-    const loginStatus = $('#login-status')
-    await expect(loginStatus).toHaveText("Logged in!")
-  })
+        await expect($('#login-status')).toHaveText("Invalid login. Please try again.")
+    })
 })

@@ -27,10 +27,13 @@ export function renderLoginPage() {
       try {
         let creds = { email, password };
         await invoke('store_credentials', { creds });
-        loginStatus!.textContent = 'Logged in!';
-        router.navigate('/');
-      } catch (error) {
-        loginStatus!.textContent = `Login failed: ${error}`;
+        await invoke('login_with_stored_credentials');
+        router.navigate('/'); // let the start page login again
+      } catch (error: any) {
+        console.warn(error);
+        let original_error_text: string = error.toString();
+        let user_friendly = original_error_text.includes("403 Forbidden") ? "Invalid login. Please try again." : `Login failed: ${original_error_text}`;
+        loginStatus!.textContent = user_friendly;
       }
     }
   });

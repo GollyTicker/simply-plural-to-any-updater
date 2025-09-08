@@ -5,8 +5,8 @@ import type { JwtString } from '../types';
 export function renderStartPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
-      <h1>Welcome</h1>
-      <div>Trying to login...</div>
+      <h1>Login</h1>
+      <div>Logging in...</div>
     </div>
   `;
 
@@ -18,7 +18,7 @@ export function renderStartPage() {
       router.navigate('/status');
     })
     .catch(error => {
-      console.error('Failed to login with stored credentials:', error);
+      console.warn('Failed to login with stored credentials:', error);
       router.navigate('/login');
     });
 }
@@ -28,7 +28,7 @@ async function initiate_discord_rpc_loop() {
     await invoke('initiate_discord_rpc_loop');
     console.log('Connected to Discord RPC ...');
   } catch (e) {
-    console.error(e);
+    console.warn(e);
   }
 }
 
