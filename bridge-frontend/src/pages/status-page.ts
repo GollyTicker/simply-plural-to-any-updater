@@ -5,7 +5,7 @@ import type { JwtString } from '../types';
 export function renderStatusPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
-      <h1>Bridge</h1>
+      <h1>Status</h1>
       <div id="bridge-status">Connecting to SP2Any Server ...</div>
       <button id="logout-button">Disconnect and Logout</button>
     </div>

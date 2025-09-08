@@ -4,7 +4,7 @@ import router from '../router';
 export function renderLoginPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
-      <h1>Simply Plural Bridge</h1>
+      <h1>Login</h1>
       <div id="login-status">Not logged in</div>
       <form id="login-form">
         <input type="email" id="email" placeholder="Email" required />

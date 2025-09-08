@@ -5,7 +5,7 @@ import type { JwtString } from '../types';
 export function renderStartPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
-      <h1>SP2Any Bridge</h1>
+      <h1>Welcome</h1>
       <div>Trying to login...</div>
     </div>
   `;
