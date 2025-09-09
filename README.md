@@ -1,6 +1,13 @@
 # clippy/rustc bug
 
-**Error**
+## How to reproduce
+
+* ensure rust toolchain via rustup installed
+* run `cargo build` to check, that code indeed compiles
+* run `cargo clippy --allow-dirty --fix` to produce the error below
+
+## Error
+
 ```
 warning: failed to automatically apply fixes suggested by rustc to crate `blabla`
 
@@ -80,9 +87,3 @@ warning: `blabla` (bin "blabla" test) generated 1 warning (1 duplicate)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.67s
 ```
 
-
-**How to reproduce**
-
-* ensure rust toolchain via rustup installed
-* run `cargo build` to check, that code indeed compiles
-* run `./lint.sh` to produce the above error
