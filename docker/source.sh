@@ -9,7 +9,7 @@ await() {
 
     SECONDS=0 # increments automatically
     set +e
-    until docker logs "$CONTAINER" 2>&1 | grep -q "$QUERY"; do
+    until (LOGS="$(docker logs "$CONTAINER" 2>&1 || true)"; echo "$LOGS" | grep -q "$QUERY") ; do
         sleep 1
         echo -n "$SECONDS, "
 

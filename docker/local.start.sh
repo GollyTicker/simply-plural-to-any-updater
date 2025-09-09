@@ -19,4 +19,4 @@ $COMPOSE up -d
 
 await sp2any-api "Rocket has launched from"
 
-await sp2any-frontend "start worker processes"
+await sp2any-entrypoint "start worker processes"

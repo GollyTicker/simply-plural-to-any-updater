@@ -1,6 +1,5 @@
 <template>
   <div>
-    <discord-auth-button />
     <h1>Updaters Status</h1>
     <ul>
       <li v-for="upt in updaters" :key="upt.updater">
@@ -11,7 +10,6 @@
 </template>
 
 <script setup lang="ts">
-import DiscordAuthButton from './DiscordAuthButton.vue';
 
 import { ref, onMounted, onUnmounted, type Ref } from 'vue';
 function invoke(_1: string, _2: any = undefined) {

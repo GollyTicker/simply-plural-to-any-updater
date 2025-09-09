@@ -4,9 +4,9 @@ set -euo pipefail
 
 source test/source.sh
 
-./steps/21-bridge-frontend-tauri-build.sh
+./steps/13-frontend-npm-build.sh
 
 echo "Checking that backend is running..."
 await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
 
-(cd bridge-frontend && npm run e2e)
+(cd frontend && npm run e2e)

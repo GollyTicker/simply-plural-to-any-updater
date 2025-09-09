@@ -1,7 +1,7 @@
 services:
 
-  sp2any-frontend:
-    container_name: sp2any-frontend
+  sp2any-entrypoint:
+    container_name: sp2any-entrypoint
     build:
       dockerfile: docker/frontend.Dockerfile
       context: ..
