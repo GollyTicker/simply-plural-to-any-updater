@@ -15,7 +15,7 @@ source ./test/source.sh
 source ./test/plural_system_to_test.sh
 
 main() {
-    ./steps/10-backend-cargo-build.sh
+    ./steps/12-backend-cargo-build.sh
     set_system_fronts_set "A"
     start_backend
     

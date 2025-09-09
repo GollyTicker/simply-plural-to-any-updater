@@ -80,7 +80,7 @@ Prerequisites:
 * Rust toolchain (ideally via rustup)
 * `cargo install sqlx-cli`
 
-Build: `./steps/10-backend-cargo-build.sh`
+Build: `./steps/12-backend-cargo-build.sh`
 
 Lint and Format: `./steps/10-lint.sh`
 

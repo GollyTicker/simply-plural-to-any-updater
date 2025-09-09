@@ -12,7 +12,7 @@ source ./test/plural_system_to_test.sh
 main() {
     stop_webserver
 
-    ./steps/10-backend-cargo-build.sh
+    ./steps/12-backend-cargo-build.sh
 
     start_webserver
 
