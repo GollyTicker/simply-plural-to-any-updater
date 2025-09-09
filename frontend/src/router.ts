@@ -1,11 +1,13 @@
 
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from './components/Home.vue';
+import Start from './components/Start.vue';
+import Status from './components/Status.vue';
 import Config from './components/Config.vue';
 import DiscordAuthButton from './components/DiscordAuthButton.vue';
 
 const routes: any = [
-  { path: '/', component: Home },
+  { path: '/', component: Start },
+  { path: '/status', component: Status },
   { path: '/config', component: Config },
   { path: '/discord-oauth', compoment: DiscordAuthButton }
 ];
