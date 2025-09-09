@@ -43,7 +43,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: sp2any
     volumes:
-      - ./../db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./../release/db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - sp2any-data:/var/lib/postgresql/data
     restart: "on-failure:2"
     network_mode: host

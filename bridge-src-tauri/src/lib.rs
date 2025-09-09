@@ -5,8 +5,7 @@ use directories::ProjectDirs;
 use futures::stream::StreamExt;
 use reqwest_eventsource as sse;
 use serde::{Deserialize, Serialize};
-use sp2any::platforms;
-use sp2any::users;
+use sp2any::for_discord_bridge;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -51,7 +50,7 @@ fn get_credentials_path() -> Result<PathBuf> {
 async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
     log::debug!("initiate_discord_rpc_loop");
     let channel = app
-        .state::<broadcast::Sender<platforms::DiscordRichPresence>>()
+        .state::<broadcast::Sender<for_discord_bridge::DiscordRichPresence>>()
         .inner()
         .clone();
     tauri::async_runtime::spawn(async move {
@@ -62,7 +61,7 @@ async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
 #[tauri::command]
 async fn subscribe_to_bridge_channel(
     app: tauri::AppHandle,
-    jwt: users::JwtString,
+    jwt: for_discord_bridge::JwtString,
 ) -> Result<(), String> {
     log::debug!("subscribe_to_bridge_channel");
     subscribe_to_bridge_channel_anyhow(app, jwt)
@@ -72,7 +71,7 @@ async fn subscribe_to_bridge_channel(
 
 async fn subscribe_to_bridge_channel_anyhow(
     app: tauri::AppHandle,
-    jwt: users::JwtString,
+    jwt: for_discord_bridge::JwtString,
 ) -> Result<()> {
     let base_url =
         env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
@@ -89,7 +88,7 @@ async fn subscribe_to_bridge_channel_anyhow(
 
     let app2 = app.clone();
     let background_task = tauri::async_runtime::spawn(async move {
-        let sender = app2.state::<broadcast::Sender<platforms::DiscordRichPresence>>();
+        let sender = app2.state::<broadcast::Sender<for_discord_bridge::DiscordRichPresence>>();
         log::info!("Starting SSE listener on {sse_url}");
         while let Some(event) = event_source.next().await {
             match event {
@@ -129,15 +128,15 @@ async fn abort_background_task(app: tauri::AppHandle) -> () {
 }
 
 #[tauri::command]
-async fn login(creds: UserCredentials) -> Result<users::JwtString, String> {
+async fn login(creds: UserCredentials) -> Result<for_discord_bridge::JwtString, String> {
     log::debug!("login");
     login_anyhow(creds).await.map_err(|e| e.to_string())
 }
 
-async fn login_anyhow(creds: UserCredentials) -> Result<users::JwtString> {
-    let login_creds = users::UserLoginCredentials {
+async fn login_anyhow(creds: UserCredentials) -> Result<for_discord_bridge::JwtString> {
+    let login_creds = for_discord_bridge::UserLoginCredentials {
         email: creds.email.clone().into(),
-        password: users::UserProvidedPassword {
+        password: for_discord_bridge::UserProvidedPassword {
             inner: creds.password.clone(),
         },
     };
@@ -155,7 +154,7 @@ async fn login_anyhow(creds: UserCredentials) -> Result<users::JwtString> {
         .send()
         .await?
         .error_for_status()?
-        .json::<users::JwtString>()
+        .json::<for_discord_bridge::JwtString>()
         .await?;
 
     log::info!("Login successful for {}", &creds.email);
@@ -179,7 +178,7 @@ async fn store_credentials(creds: UserCredentials) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn login_with_stored_credentials() -> Result<users::JwtString, String> {
+async fn login_with_stored_credentials() -> Result<for_discord_bridge::JwtString, String> {
     log::debug!("login_with_stored_credentials");
     let creds = get_user_credentials().map_err(|e| e.to_string())?;
     let jwt_string = login(creds).await?;
@@ -239,7 +238,7 @@ pub fn run() -> Result<()> {
             initiate_discord_rpc_loop
         ])
         .manage(new_background_task_container())
-        .manage(broadcast::channel::<platforms::DiscordRichPresence>(1).0)
+        .manage(broadcast::channel::<for_discord_bridge::DiscordRichPresence>(1).0)
         .setup(|app| {
             app.handle().plugin(logging_plugin)?;
             Ok(())

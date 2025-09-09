@@ -6,7 +6,7 @@ use discord_rich_presence::{
     DiscordIpc, DiscordIpcClient,
 };
 use serde::Deserialize;
-use sp2any::platforms::{self, DiscordRichPresence};
+use sp2any::for_discord_bridge;
 use tokio::{
     sync::broadcast::{self},
     time::sleep,
@@ -17,7 +17,7 @@ use tokio::{
 #[allow(clippy::unreadable_literal)]
 const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 
-pub async fn discord_ipc_loop(channel: broadcast::Sender<platforms::DiscordRichPresence>) {
+pub async fn discord_ipc_loop(channel: broadcast::Sender<for_discord_bridge::DiscordRichPresence>) {
     loop {
         match connect_to_discord_ipc() {
             Ok(mut client) => {
@@ -35,7 +35,7 @@ pub async fn discord_ipc_loop(channel: broadcast::Sender<platforms::DiscordRichP
 
 async fn activity_loop(
     client: &mut DiscordIpcClient,
-    channel: broadcast::Sender<platforms::DiscordRichPresence>,
+    channel: broadcast::Sender<for_discord_bridge::DiscordRichPresence>,
 ) -> anyhow::Error {
     let mut receiver = channel.subscribe();
     loop {
@@ -60,9 +60,9 @@ async fn activity_loop(
 
 fn set_activity(
     client: &mut DiscordIpcClient,
-    discord_presence: &platforms::DiscordRichPresence,
+    discord_presence: &for_discord_bridge::DiscordRichPresence,
 ) -> Result<()> {
-    let DiscordRichPresence {
+    let for_discord_bridge::DiscordRichPresence {
         activity_type,
         status_display_type,
         details,

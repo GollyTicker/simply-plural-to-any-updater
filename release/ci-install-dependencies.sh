@@ -28,11 +28,11 @@ sudo apt install -y webkit2gtk-driver
 
 # patch discord-rich-presence
 echo "Patching discord-rich-presence..."
-rm -rf patched/discord-rich-presence
-git clone https://github.com/vionya/discord-rich-presence patched/discord-rich-presence
-( cd patched/discord-rich-presence && git -c advice.detachedHead=false checkout 1.0.0 )
-patch patched/discord-rich-presence/src/activity.rs < patched/activity.rs.patch
-patch patched/discord-rich-presence/src/discord_ipc.rs < patched/discord_ipc.rs.patch
+rm -rf release/patched/discord-rich-presence
+git clone https://github.com/vionya/discord-rich-presence release/patched/discord-rich-presence
+( cd release/patched/discord-rich-presence && git -c advice.detachedHead=false checkout 1.0.0 )
+patch release/patched/discord-rich-presence/src/activity.rs < release/patched/activity.rs.patch
+patch release/patched/discord-rich-presence/src/discord_ipc.rs < release/patched/discord_ipc.rs.patch
 echo "Patch OK!"
 
 

@@ -2,14 +2,14 @@ use anyhow::{anyhow, Result};
 use sqlx::FromRow;
 use std::time::Duration;
 
-use crate::{config_value, config_value_if, database, users::model::UserId};
+use crate::{
+    config_value, config_value_if,
+    database::{self, SecretType},
+    users::model::UserId,
+};
 use serde::{Deserialize, Serialize};
 
-use sp2any_macros::WithOptionDefaults;
-
-#[derive(
-    Default, Debug, Clone, Serialize, Deserialize, WithOptionDefaults, FromRow, PartialEq, Eq,
-)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq)]
 pub struct UserConfigDbEntries<Secret, Constraints = database::InvalidConstraints>
 where
     Secret: database::SecretType,
@@ -42,20 +42,73 @@ where
     pub vrchat_cookie: Option<Secret>,
 }
 
-#[must_use]
-pub fn default_user_db_entries<S: database::SecretType>() -> UserConfigDbEntries<S> {
-    UserConfigDbEntries::<S> {
-        status_prefix: Some(String::from("F:")),
-        status_no_fronts: Some(String::from("none?")),
-        status_truncate_names_to: Some(3),
-        wait_seconds: Some(60),
-        enable_discord: Some(false),
-        enable_discord_status_message: Some(false),
-        enable_vrchat: Some(false),
-        ..Default::default()
+impl<S: SecretType> UserConfigDbEntries<S> {
+    #[must_use]
+    pub fn with_defaults(&self) -> Self {
+        let defaults: Self = Self::default();
+        Self {
+            wait_seconds: self.wait_seconds.or(defaults.wait_seconds),
+            system_name: self.system_name.clone().or(defaults.system_name),
+            status_prefix: self.status_prefix.clone().or(defaults.status_prefix),
+            status_no_fronts: self.status_no_fronts.clone().or(defaults.status_no_fronts),
+            status_truncate_names_to: self
+                .status_truncate_names_to
+                .or(defaults.status_truncate_names_to),
+            enable_discord: self.enable_discord.or(defaults.enable_discord),
+            enable_discord_status_message: self
+                .enable_discord_status_message
+                .or(defaults.enable_discord_status_message),
+            enable_vrchat: self.enable_vrchat.or(defaults.enable_vrchat),
+            simply_plural_token: self
+                .simply_plural_token
+                .clone()
+                .or(defaults.simply_plural_token),
+            discord_status_message_token: self
+                .discord_status_message_token
+                .clone()
+                .or(defaults.discord_status_message_token),
+            discord_user_id: self.discord_user_id.clone().or(defaults.discord_user_id),
+            discord_oauth_access_token: self
+                .discord_oauth_access_token
+                .clone()
+                .or(defaults.discord_oauth_access_token),
+            discord_oauth_refresh_token: self
+                .discord_oauth_refresh_token
+                .clone()
+                .or(defaults.discord_oauth_refresh_token),
+            vrchat_username: self.vrchat_username.clone().or(defaults.vrchat_username),
+            vrchat_password: self.vrchat_password.clone().or(defaults.vrchat_password),
+            vrchat_cookie: self.vrchat_cookie.clone().or(defaults.vrchat_cookie),
+            valid_constraints: self.valid_constraints.clone(), // Constraints are not defaulted
+        }
     }
 }
 
+impl<S: SecretType> Default for UserConfigDbEntries<S> {
+    fn default() -> Self {
+        Self {
+            status_prefix: Some(String::from("F:")),
+            status_no_fronts: Some(String::from("none?")),
+            status_truncate_names_to: Some(3),
+            wait_seconds: Some(60),
+            enable_discord: Some(false),
+            enable_discord_status_message: Some(false),
+            enable_vrchat: Some(false),
+            valid_constraints: None,
+            system_name: None,
+            simply_plural_token: None,
+            discord_status_message_token: None,
+            discord_user_id: None,
+            discord_oauth_access_token: None,
+            discord_oauth_refresh_token: None,
+            vrchat_username: None,
+            vrchat_password: None,
+            vrchat_cookie: None,
+        }
+    }
+}
+
+/* Never convert this back into a DB entry, as it contains defaults which should not be persisted into the DB. */
 pub struct UserConfigForUpdater {
     pub client: reqwest::Client,
     pub user_id: UserId,
@@ -116,7 +169,7 @@ where
     eprintln!("Loading config ...");
 
     let db_config = database::downgrade(db_config);
-    let local_config_with_defaults = db_config.with_option_defaults(default_user_db_entries());
+    let local_config_with_defaults = db_config.with_defaults();
 
     let enable_discord = config_value!(local_config_with_defaults, enable_discord)?;
     let enable_discord_status_message =

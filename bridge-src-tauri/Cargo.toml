@@ -24,5 +24,5 @@ sp2any = { path = ".." }
 directories = "5"
 reqwest-eventsource = "0.6"
 futures = "0.3"
-discord-rich-presence = { path = "../patched/discord-rich-presence" }
+discord-rich-presence = { path = "../release/patched/discord-rich-presence" }
 chrono = "0.4"

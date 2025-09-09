@@ -4798,7 +4798,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "sp2any_macros",
  "sqlx",
  "strum",
  "strum_macros",
@@ -4826,14 +4825,6 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-log",
  "tokio",
-]
-
-[[package]]
-name = "sp2any_macros"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn 2.0.106",
 ]
 
 [[package]]
