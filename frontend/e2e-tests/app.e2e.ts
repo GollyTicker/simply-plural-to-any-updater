@@ -6,9 +6,9 @@ import { env } from 'process';
 const TEST_EMAIL = "test@example.com";
 const TEST_PASSWORD = "m?3yp%&wdS+";
 
-// async function notLoggedIn() {
-//     await expect($('#login-status')).toHaveText("Not logged in")
-// }
+async function notLoggedIn() {
+    await expect($('button[type="submit"]')).toHaveText("Login")
+}
 
 // async function login(password?: string) {
 //     await $('#email').setValue(TEST_EMAIL)
@@ -28,7 +28,7 @@ const TEST_PASSWORD = "m?3yp%&wdS+";
 describe('sp2any-bridge login flow', () => {
     it('should be intially not logged in', async () => {
         await browser.url(env.SP2ANY_BASE_URL!)
-        await expect($('div h1')).toHaveText('Updaters Status')
+        await notLoggedIn()
     })
 
     // it('can then be logged in to receive updates', async () => {
