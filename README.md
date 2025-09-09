@@ -3,6 +3,7 @@
 ## How to reproduce
 
 * ensure rust toolchain via rustup installed
+  * error is on stable but not on nightly toolchain
 * run `cargo build` to check, that code indeed compiles
 * run `cargo clippy --allow-dirty --fix` to produce the error below
 
