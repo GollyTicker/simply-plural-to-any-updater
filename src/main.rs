@@ -1,7 +1,8 @@
 use std::convert::Infallible;
 
 fn main() -> Result<(), Infallible> {
-  Ok(log::info!("something")) // ERROR
+  let _: () = log::info!("something");
+  Ok(()) // ERROR
   // Ok(println!("something")) // OK
   // Ok(()) // OK
 }
