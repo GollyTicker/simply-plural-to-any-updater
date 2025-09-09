@@ -5,7 +5,7 @@ use crate::updater::{manager, work_loop};
 use crate::users;
 use crate::users::UserId;
 use anyhow::Result;
-use rocket::{serde::json::Json, State};
+use rocket::{State, serde::json::Json};
 use sqlx::PgPool;
 
 #[allow(clippy::needless_pass_by_value)]

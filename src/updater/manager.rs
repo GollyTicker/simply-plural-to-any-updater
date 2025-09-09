@@ -3,7 +3,7 @@ use crate::setup;
 use crate::updater::work_loop;
 use crate::users;
 use crate::users::UserId;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::sync::broadcast;

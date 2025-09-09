@@ -5,7 +5,7 @@ use crate::users::jwt;
 use crate::users::model::{Email, UserId};
 use rocket::http;
 use rocket::response;
-use rocket::{serde::json::Json, State};
+use rocket::{State, serde::json::Json};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::PgPool;

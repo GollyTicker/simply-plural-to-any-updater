@@ -1,7 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2, PasswordHash, PasswordVerifier,
+    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 
 use serde::{Deserialize, Serialize};

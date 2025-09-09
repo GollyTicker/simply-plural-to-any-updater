@@ -1,11 +1,12 @@
 use crate::users::model::UserId;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{EncodingKey, Header, encode};
 use rocket::{
+    Request, State,
     http::Status,
     request::{FromRequest, Outcome},
-    response, Request, State,
+    response,
 };
 use serde::{Deserialize, Serialize};
 

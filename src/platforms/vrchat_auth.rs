@@ -4,10 +4,10 @@ use crate::platforms::vrchat_auth_types::{
 };
 use crate::users;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use either::Either;
-use reqwest::cookie::{self, CookieStore};
 use reqwest::Url;
+use reqwest::cookie::{self, CookieStore};
 use std::str::FromStr;
 use std::sync::Arc;
 use vrchatapi::{

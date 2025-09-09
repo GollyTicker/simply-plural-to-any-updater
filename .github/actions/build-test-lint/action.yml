@@ -49,13 +49,13 @@ runs:
     - name: Install prerequisites
       shell: bash
       if: ${{ inputs.SKIP_SETUP }} == 'false'
-      run: ./release/ci-install-dependencies.sh
+      run: ./steps/03-install-dependencies.sh
 
     - name: Build
       shell: bash
       if: ${{ inputs.SKIP_TESTS }} == 'false'
       run: |
-        ./release/cargo-build.sh
+        ./steps/10-backend-cargo-build.sh
 
     - name: Unit tests
       shell: bash
@@ -106,5 +106,5 @@ runs:
       shell: bash
       if: ${{ inputs.SKIP_TESTS }} == 'false'
       run: |
-        ./release/lint.sh
+        ./steps/10-lint.sh
         git diff --exit-code

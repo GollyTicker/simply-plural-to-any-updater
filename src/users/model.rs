@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use sqlx::{types::Uuid, FromRow};
+use sqlx::{FromRow, types::Uuid};
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type)]
 pub struct Email {

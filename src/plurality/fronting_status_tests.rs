@@ -1,6 +1,6 @@
 use crate::plurality::{
-    clean_name_for_vrchat_status, format_fronting_status, CleanForPlatform, Fronter,
-    FrontingFormat, VRCHAT_MAX_ALLOWED_STATUS_LENGTH,
+    CleanForPlatform, Fronter, FrontingFormat, VRCHAT_MAX_ALLOWED_STATUS_LENGTH,
+    clean_name_for_vrchat_status, format_fronting_status,
 };
 
 fn mock_formatter_for_tests(

@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate rocket;
 
-use anyhow::anyhow;
 use anyhow::Result;
+use anyhow::anyhow;
 use clap::Parser;
 
 use sp2any::{platforms, setup, updater, users};

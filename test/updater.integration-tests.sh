@@ -23,7 +23,7 @@ set -a; source ./test/ensure-vrchat-cookie-available.dev.sh --automated ; set +a
 
 main() {
     stop_updater
-    ./release/cargo-build.sh
+    ./steps/10-backend-cargo-build.sh
 
 
     set_system_fronts_set "A"

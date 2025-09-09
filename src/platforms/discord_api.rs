@@ -2,17 +2,17 @@ use crate::http::HttpResult;
 use crate::platforms::discord;
 use crate::users::{JwtString, UserId};
 use crate::{database, plurality, updater, users};
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use reqwest::Client;
 use rocket::response::content::RawHtml;
-use rocket::{response, State};
+use rocket::{State, response};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::PgPool;
 
+use rocket::Shutdown;
 use rocket::response::stream::{Event, EventStream};
 use rocket::tokio::select;
-use rocket::Shutdown;
 
 const DEV_OAUTH_REDIRECT_URL: &str =
     "http://localhost:8080/api/user/platform/discord/oauth/callback";
@@ -209,7 +209,9 @@ fn send_fronters_to_bridge(
             Some(Event::json(&rich_presence))
         }
         Err(err) => {
-            eprintln!("{user_id}: Error while rendering fronts for discord rich presence. Continueing nonetheless. {err}");
+            eprintln!(
+                "{user_id}: Error while rendering fronts for discord rich presence. Continueing nonetheless. {err}"
+            );
             None
         }
     }

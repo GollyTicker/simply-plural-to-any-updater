@@ -12,7 +12,7 @@ lint() {
 }
 
 
-rustfmt --edition 2021 src/**.rs bridge-src-tauri/**.rs
+rustfmt --edition 2024 src/**.rs bridge-src-tauri/**.rs
 
 lint
 (cd bridge-src-tauri && lint)

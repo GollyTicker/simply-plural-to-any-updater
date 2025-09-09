@@ -1,9 +1,10 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*' # Trigger on tags starting with v (e.g. v1.0)
+  # disabled until further notice
+  # push:
+  #   tags:
+  #     - 'v*' # Trigger on tags starting with v (e.g. v1.0)
 
 jobs:
   release:
@@ -28,12 +29,12 @@ jobs:
         VRCHAT_COOKIE: ${{ secrets.VRCHAT_COOKIE }}
 
     - name: Run build script
-      run: "./release/release-build.sh"
+      run: "./steps/build-release.sh"
 
     - name: Generate changelog
       id: changelog
       run: |
-        ./release/generate-changelog.sh "${{ github.ref_name }}" RELEASE_NOTES.md
+        ./steps/40-generate-changelog.sh "${{ github.ref_name }}" RELEASE_NOTES.md
         echo "notes_file=RELEASE_NOTES.md" >> $GITHUB_OUTPUT
         
         IS_PRERELEASE="$( [[ "${{ github.ref_name }}" == *"-"* ]] && echo "true" || echo "false" )"

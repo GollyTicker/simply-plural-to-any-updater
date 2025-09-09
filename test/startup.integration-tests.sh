@@ -27,7 +27,7 @@ set -a; source ./test/ensure-vrchat-cookie-available.dev.sh --automated ; set +a
 
 main() {
     stop_updater
-    ./release/cargo-build.sh
+    ./steps/10-backend-cargo-build.sh
 
 
     setup_sp_rest_failure

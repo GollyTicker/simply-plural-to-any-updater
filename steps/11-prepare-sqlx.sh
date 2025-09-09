@@ -16,7 +16,7 @@ export DATABASE_URL="postgres://postgres:postgres@localhost:5432/sp2any"
 
 rm -v .sqlx/*.json || true
 
-./release/cargo-build.sh
+./steps/12-backend-cargo-build.sh
 
 cargo sqlx prepare
 
@@ -25,6 +25,6 @@ cargo sqlx prepare
 unset DATABASE_URL
 
 # this build should use the prepared queries now
-./release/cargo-build.sh
+./steps/12-backend-cargo-build.sh
 
 echo "Refreshed SQLx prepare."

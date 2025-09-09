@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{error::BoxDynError, postgres, Decode, FromRow, Postgres};
+use sqlx::{Decode, FromRow, Postgres, error::BoxDynError, postgres};
 
 #[derive(Clone)]
 pub struct UserSecretsDecryptionKey {

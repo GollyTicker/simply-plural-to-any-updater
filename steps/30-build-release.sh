@@ -41,7 +41,7 @@ build_binaries() {
 
     for target in "${TARGETS[@]}"; do
         echo "[$target] "
-        ./release/cargo-build.sh --release --target "$target"
+        ./steps/10-backend-cargo-build.sh --release --target "$target"
         echo "[$target] Cargo build successful."
 
         # Determine PLATFORM and .exe suffix based on the target triple

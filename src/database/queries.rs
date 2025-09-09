@@ -1,9 +1,9 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use sha2::{Digest, Sha256};
 use sqlx::{FromRow, PgPool};
 
 use crate::{
-    database::{constraints, secrets, Decrypted, ValidConstraints},
+    database::{Decrypted, ValidConstraints, constraints, secrets},
     users::{self, Email, UserConfigDbEntries, UserId},
 };
 

@@ -17,7 +17,7 @@ export BASE_URL="http://localhost:8080"
 
 main() {
     stop_updater
-    ./release/cargo-build.sh
+    ./steps/10-backend-cargo-build.sh
     ./docker/local.start.sh > docker/logs/start.log 2>&1
 
     if check_vrc_cookie_works ; then

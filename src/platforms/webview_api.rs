@@ -4,8 +4,8 @@ use crate::plurality;
 use crate::users;
 use crate::users::UserId;
 use rocket::{
-    response::{self, content::RawHtml},
     State,
+    response::{self, content::RawHtml},
 };
 use sqlx::PgPool;
 

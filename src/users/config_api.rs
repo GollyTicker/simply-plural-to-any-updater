@@ -2,7 +2,7 @@ use crate::database;
 use crate::http::HttpResult;
 use crate::users::config;
 use crate::users::jwt;
-use rocket::{serde::json::Json, State};
+use rocket::{State, serde::json::Json};
 use sqlx::PgPool;
 
 #[get("/api/user/config")]

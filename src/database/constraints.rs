@@ -1,4 +1,4 @@
-use sqlx::{error::BoxDynError, postgres, Decode, FromRow, Postgres};
+use sqlx::{Decode, FromRow, Postgres, error::BoxDynError, postgres};
 
 use crate::{database::secrets, users::UserConfigDbEntries};
 use anyhow::anyhow;
