@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::{platforms, plurality, users};
 
+// NOTE: specta::Type is manually exported in bindings
 #[derive(Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
 pub enum Platform {
     VRChat,
@@ -10,6 +11,7 @@ pub enum Platform {
     DiscordStatusMessage,
 }
 
+// NOTE: specta::Type is manually exported in bindings
 #[derive(Clone, Serialize, strum_macros::Display)]
 pub enum UpdaterStatus {
     Inactive,
@@ -23,6 +25,7 @@ pub enum Updater {
     DiscordStatusMessage(platforms::DiscordStatusMessageUpdater),
 }
 
+#[must_use]
 pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
     let mut platforms = vec![Platform::VRChat];
 
@@ -38,6 +41,7 @@ pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
 }
 
 impl Updater {
+    #[must_use]
     pub fn new(platform: &Platform) -> Self {
         match platform {
             Platform::VRChat => Self::VRChat(Box::default()),
@@ -48,6 +52,7 @@ impl Updater {
         }
     }
 
+    #[must_use]
     pub const fn platform(&self) -> Platform {
         match self {
             Self::VRChat(_) => Platform::VRChat,
@@ -56,6 +61,7 @@ impl Updater {
         }
     }
 
+    #[must_use]
     pub fn status(&self, config: &users::UserConfigForUpdater) -> UpdaterStatus {
         if self.enabled(config) {
             self.last_operation_error()
@@ -73,6 +79,7 @@ impl Updater {
         }
     }
 
+    #[must_use]
     pub const fn enabled(&self, config: &users::UserConfigForUpdater) -> bool {
         match self {
             Self::VRChat(_) => config.enable_vrchat,

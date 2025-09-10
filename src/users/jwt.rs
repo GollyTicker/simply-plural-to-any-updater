@@ -9,6 +9,7 @@ use rocket::{
     response,
 };
 use serde::{Deserialize, Serialize};
+use specta;
 
 #[derive(Clone)]
 pub struct ApplicationJwtSecret {
@@ -41,7 +42,7 @@ impl Claims {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, specta::Type)]
 pub struct JwtString {
     pub inner: String,
 }

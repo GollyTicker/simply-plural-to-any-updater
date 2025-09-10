@@ -8,6 +8,7 @@ use rocket::response;
 use rocket::{State, serde::json::Json};
 use serde::Deserialize;
 use serde::Serialize;
+use specta;
 use sqlx::PgPool;
 
 #[post("/api/user/register", data = "<credentials>")]
@@ -79,7 +80,7 @@ impl From<database::UserInfo> for UserInfoUI {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, specta::Type)]
 pub struct UserLoginCredentials {
     pub email: Email,
     pub password: auth::UserProvidedPassword,

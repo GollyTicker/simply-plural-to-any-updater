@@ -8,6 +8,7 @@ use anyhow::Result;
 use chrono::Utc;
 
 pub type CancleableUpdater = tokio::task::JoinHandle<()>;
+// NOTE: specta::Type is manually exported in bindings
 pub type UserUpdatersStatuses = HashMap<Platform, UpdaterStatus>;
 type UserUpdaters = HashMap<Platform, Updater>;
 

@@ -2,5 +2,18 @@
     "rust-analyzer.linkedProjects": [
         "Cargo.toml",
         "bridge-src-tauri/Cargo.toml"
-    ]
+    ],
+    "files.exclude": {
+        "**/.git/**": true,
+        "**/tmp/**": true,
+        "**/target/**": true
+    },
+    "search.exclude": {
+        "**/target/**": true,
+        "**/tmp/**": true
+    },
+    "files.watcherExclude": {
+        "**/target/**": true,
+        "**/tmp/**": true
+    }
 }

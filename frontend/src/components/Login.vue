@@ -3,7 +3,7 @@
     <h1>Login</h1>
     <form @submit.prevent="login" class="login-form">
       <div class="form-group">
-        <label for="email" >Email</label>
+        <label for="email">Email</label>
         <input type="email" id="email" v-model="email" />
       </div>
       <div class="form-group">
@@ -18,22 +18,31 @@
 
 <script setup lang="ts">
 defineProps({
-
 })
-import { ref } from 'vue';
-import router from '@/router';
 
-const email = ref('');
-const password = ref('');
-const error = ref('');
+import { ref, type Ref } from 'vue';
+import router from '@/router';
+import type { UserLoginCredentials } from '@/sp2any.bindings';
+import { sp2any_api } from '@/sp2any_api';
+
+const email: Ref<string> = ref('');
+const password: Ref<string> = ref('');
+const error: Ref<string> = ref('');
 
 const login = async () => {
-  if (email.value === 'test@example.com' && password.value === 'password') {
-    error.value = '';
+  const creds = {
+    email: { inner: email.value },
+    password: { inner: password.value },
+  } as UserLoginCredentials;
+
+  try {
+    await sp2any_api.login(creds);
     console.log('Login successful!');
+    error.value = '';
     router.push('/status');
-  } else {
+  } catch (err) {
     error.value = 'Invalid credentials';
+    console.error('Login failed:', err);
   }
 };
 </script>

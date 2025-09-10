@@ -27,9 +27,9 @@ defineProps<{
   
 }>()
 
-import { ref } from "vue";
+import { ref, type Ref } from "vue";
 
-const jwt = ref("");
+const jwt: Ref<string> = ref("");
 
 const authorizeWithDiscord = () => {
   if (!jwt.value) {

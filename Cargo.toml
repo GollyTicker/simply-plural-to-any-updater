@@ -8,6 +8,10 @@ rust-version = "1.87.0"
 name = "sp2any"
 path = "src/main.rs"
 
+[[bin]]
+name = "ts-bindings"
+path = "src/bin/ts-bindings.rs"
+
 [lib]
 
 [dependencies]
@@ -43,5 +47,8 @@ rand = "0.9"
 sha2 = "0.10"
 rocket = { version = "0.5", features = ["json", "http2"] }
 strum = "0.27"
+specta = { version = "1", features = ["serde", "typescript", "export"] }
+specta-typescript = "0"
+rocket_cors = { version = "0", default-features = false }
 
 [build-dependencies]

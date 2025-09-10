@@ -4,3 +4,4 @@ mod platforms;
 mod work_loop;
 
 pub use manager::*;
+pub use platforms::*;

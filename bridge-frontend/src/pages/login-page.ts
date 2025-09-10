@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import router from '../router';
+import type { UserLoginCredentials } from '../sp2any.bindings';
 
 export function renderLoginPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -25,7 +26,7 @@ export function renderLoginPage() {
 
     if (email && password) {
       try {
-        let creds = { email, password };
+        let creds: UserLoginCredentials = { email: { inner: email }, password: { inner: password } };
         await invoke('store_credentials', { creds });
         await invoke('login_with_stored_credentials');
         router.navigate('/'); // let the start page login again

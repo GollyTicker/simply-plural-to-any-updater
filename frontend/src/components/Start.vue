@@ -12,7 +12,6 @@ defineProps<{
 }>()
 
 onMounted(() => {
-  console.log("sdhsdf")
   router.push('/login');
 })
 </script>

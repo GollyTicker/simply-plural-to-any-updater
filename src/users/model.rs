@@ -1,9 +1,10 @@
 use std::{fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
+use specta;
 use sqlx::{FromRow, types::Uuid};
 
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type, specta::Type)]
 pub struct Email {
     pub inner: String,
 }

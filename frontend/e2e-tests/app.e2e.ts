@@ -10,20 +10,20 @@ async function notLoggedIn() {
     await expect($('button[type="submit"]')).toHaveText("Login")
 }
 
-// async function login(password?: string) {
-//     await $('#email').setValue(TEST_EMAIL)
-//     await $('#password').setValue(password ?? TEST_PASSWORD)
+async function login(password?: string) {
+    await $('#email').setValue(TEST_EMAIL)
+    await $('#password').setValue(password ?? TEST_PASSWORD)
 
-//     await $('button[type="submit"]').click()
-// }
+    await $('button[type="submit"]').click()
+}
 
 // async function logout() {
 //     await $('#logout-button').click()
 // }
 
-// async function loggedInAndConnected() {
-//     await expect($('#bridge-status')).toHaveText("Connected to SP2Any and receiving updates...")
-// }
+async function loggedInAndConnected() {
+    await expect($('#status-page-title')).toHaveText("Updaters Status")
+}
 
 describe('sp2any-bridge login flow', () => {
     it('should be intially not logged in', async () => {
@@ -31,10 +31,10 @@ describe('sp2any-bridge login flow', () => {
         await notLoggedIn()
     })
 
-    // it('can then be logged in to receive updates', async () => {
-    //     await login()
-    //     await loggedInAndConnected()
-    // })
+    it('can then be logged in to see updater status', async () => {
+        await login()
+        await loggedInAndConnected()
+    })
 
     // it('can then be logged out and disconnected', async () => {
     //     await logout()

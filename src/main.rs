@@ -43,6 +43,7 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
                 platforms::discord_api::get_api_user_platform_discord_bridge_events,
             ],
         )
+        .attach(setup.cors_policy)
         .launch()
         .await
         .map_err(|e| anyhow!(e))?;

@@ -6,7 +6,6 @@ source test/source.sh
 
 ./steps/21-bridge-frontend-tauri-build.sh
 
-echo "Checking that backend is running..."
-await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+echo "! Test assumes that sp2any-api is running !"
 
 (cd bridge-frontend && npm run e2e)

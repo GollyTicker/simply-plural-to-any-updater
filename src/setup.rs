@@ -4,6 +4,7 @@ use crate::updater;
 use crate::users;
 use anyhow::Result;
 use clap::Parser;
+use rocket::http::Method;
 use sqlx::postgres;
 use std::time::Duration;
 
@@ -34,6 +35,27 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
 
     let shared_updaters = updater::UpdaterManager::new(cli_args);
 
+    let allowed_origins = rocket_cors::AllowedOrigins::All;
+    let allowed_methods = vec![
+        Method::Get,
+        Method::Post,
+        Method::Options,
+        Method::Put,
+        Method::Head,
+    ]
+    .into_iter()
+    .map(From::from)
+    .collect();
+
+    let cors_policy = rocket_cors::CorsOptions {
+        allowed_origins,
+        allowed_methods,
+        allowed_headers: rocket_cors::AllowedHeaders::All,
+        allow_credentials: true,
+        ..Default::default()
+    }
+    .to_cors()?;
+
     Ok(ApplicationSetup {
         db_pool,
         client,
@@ -41,6 +63,7 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
         application_user_secrets,
         shared_updaters,
         discord_oauth_secrets,
+        cors_policy,
     })
 }
 
@@ -77,4 +100,5 @@ pub struct ApplicationSetup {
     pub application_user_secrets: database::ApplicationUserSecrets,
     pub shared_updaters: updater::UpdaterManager,
     pub discord_oauth_secrets: platforms::discord_api::ApplicationDiscordOAuthSecrets,
+    pub cors_policy: rocket_cors::Cors,
 }

@@ -115,19 +115,6 @@ Update the dependencies.
 
 ## TODOs
 
-### Typesafe API calls
-
-Here is a concise summary of the specta approach for automatically keeping your Rust and TypeScript types consistent.
-
-The strategy is to make your Rust code the single source of truth for any data structures shared with the frontend.
-
-* Annotate Rust Types: In your Rust code, you find the structs and enums that are sent to the frontend (like LocalJsonConfigV2 and UpdaterState). You then add #[derive(specta::Type)] to them.
-* Add a Build Script: You create a build.rs file in your project's root. This script uses the specta-typescript library to find all the types you annotated.
-* Generate TypeScript: When you compile your Rust project with cargo build, the build script automatically runs. It generates a TypeScript file (e.g., frontend/src/bindings.ts) containing the TypeScript equivalent of your Rust types.
-* Use in Frontend: In your frontend code, you import the types from this auto-generated bindings.ts file. This allows you to use them in your fetch requests and component logic, guaranteeing that the frontend's understanding of the data structure always matches the backend's definition.
-
-### TODO
-
 * add status not only for updaters but also for SP itself.
 * Add automatic sync to PluralKit
 * complete migration to webapp
@@ -147,6 +134,7 @@ The strategy is to make your Rust code the single source of truth for any data s
   * add link to Discord Server
   * add link to KoFi and ask for kind donations
   * add link to source code
+* make sure, that during production, only my own domains are allowed and not localhost or so.
 
 #### User Feedback
 * sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK

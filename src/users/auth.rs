@@ -5,11 +5,12 @@ use argon2::{
 };
 
 use serde::{Deserialize, Serialize};
+use specta;
 use sqlx::FromRow;
 
 use crate::{database, users::jwt};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, specta::Type)]
 pub struct UserProvidedPassword {
     pub inner: String,
 }

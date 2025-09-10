@@ -4,7 +4,6 @@ use anyhow::{anyhow, Result};
 use directories::ProjectDirs;
 use futures::stream::StreamExt;
 use reqwest_eventsource as sse;
-use serde::{Deserialize, Serialize};
 use sp2any::for_discord_bridge;
 use std::env;
 use std::fs;
@@ -19,12 +18,6 @@ use tokio::sync::broadcast;
 
 const DEFAULT_SP2ANY_BASE_URL: &str = "https://sp2any.io";
 const MEGABYTES: u128 = 10^6;
-
-#[derive(Serialize, Deserialize)]
-struct UserCredentials {
-    email: String,
-    password: String,
-}
 
 fn get_data_dir() -> Result<PathBuf> {
     let proj_dirs = ProjectDirs::from("io", "sp2any", "sp2any.bridge")
@@ -128,50 +121,43 @@ async fn abort_background_task(app: tauri::AppHandle) -> () {
 }
 
 #[tauri::command]
-async fn login(creds: UserCredentials) -> Result<for_discord_bridge::JwtString, String> {
+async fn login(creds: for_discord_bridge::UserLoginCredentials) -> Result<for_discord_bridge::JwtString, String> {
     log::debug!("login");
     login_anyhow(creds).await.map_err(|e| e.to_string())
 }
 
-async fn login_anyhow(creds: UserCredentials) -> Result<for_discord_bridge::JwtString> {
-    let login_creds = for_discord_bridge::UserLoginCredentials {
-        email: creds.email.clone().into(),
-        password: for_discord_bridge::UserProvidedPassword {
-            inner: creds.password.clone(),
-        },
-    };
-
+async fn login_anyhow(creds: for_discord_bridge::UserLoginCredentials) -> Result<for_discord_bridge::JwtString> {
     let client = reqwest::Client::new();
     let base_url =
         env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
     let login_url = format!("{}{}", base_url, "/api/user/login");
 
-    log::info!("Attempting login: {login_url} with {}", &creds.email);
+    log::info!("Attempting login: {login_url} with {:?}", &creds.email);
 
     let jwt_string = client
         .post(login_url)
-        .json(&login_creds)
+        .json(&creds)
         .send()
         .await?
         .error_for_status()?
         .json::<for_discord_bridge::JwtString>()
         .await?;
 
-    log::info!("Login successful for {}", &creds.email);
+    log::info!("Login successful for {:?}", &creds.email);
 
     Ok(jwt_string)
 }
 
-fn set_user_credentials(creds: &UserCredentials) -> Result<()> {
+fn set_user_credentials(creds: &for_discord_bridge::UserLoginCredentials) -> Result<()> {
     let path = get_credentials_path()?;
     let json = serde_json::to_string(creds)?;
     fs::write(path, json)?;
-    log::info!("Stored credentials for {}", &creds.email);
+    log::info!("Stored credentials for {:?}", &creds.email);
     Ok(())
 }
 
 #[tauri::command]
-async fn store_credentials(creds: UserCredentials) -> Result<(), String> {
+async fn store_credentials(creds: for_discord_bridge::UserLoginCredentials) -> Result<(), String> {
     log::debug!("store_credentials");
     set_user_credentials(&creds).map_err(|e| e.to_string())?;
     Ok(())
@@ -186,11 +172,11 @@ async fn login_with_stored_credentials() -> Result<for_discord_bridge::JwtString
     Ok(jwt_string)
 }
 
-fn get_user_credentials() -> Result<UserCredentials> {
+fn get_user_credentials() -> Result<for_discord_bridge::UserLoginCredentials> {
     let path = get_credentials_path()?;
     let json = fs::read_to_string(path)?;
-    let creds: UserCredentials = serde_json::from_str(&json)?;
-    log::info!("Retrieved credentials for {}", &creds.email);
+    let creds: for_discord_bridge::UserLoginCredentials = serde_json::from_str(&json)?;
+    log::info!("Retrieved credentials for {:?}", &creds.email);
     Ok(creds)
 }
 

@@ -2,8 +2,8 @@
   <div id="app">
     <nav>
       <div id="app-header">
-        <img src="/favicon.png" alt="logo" />
-        <h1 class="title">SP2Any</h1>
+          <img src="/favicon.png" alt="logo" />
+          <h1 class="title">SP2Any</h1>
       </div>
       <div>
         | <router-link to="/status">Status</router-link>
@@ -20,7 +20,8 @@
 
 <style scoped>
 #app {
-  padding-top: 60px; /* Add padding to prevent content from overlapping with the nav bar */
+  padding-top: 60px;
+  /* Add padding to prevent content from overlapping with the nav bar */
 }
 
 nav {
@@ -69,5 +70,4 @@ nav a:hover {
   font-weight: 700;
   margin: 0;
 }
-
 </style>
