@@ -5,10 +5,13 @@ use anyhow::Result;
 use anyhow::anyhow;
 use clap::Parser;
 
+use sp2any::license;
 use sp2any::{platforms, setup, updater, users};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    println!("{}", license::info_text());
+
     let cli_args = setup::CliArgs::parse();
 
     let app_setup = setup::application_setup(&cli_args).await?;

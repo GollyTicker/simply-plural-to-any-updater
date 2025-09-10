@@ -8,6 +8,4 @@ source test/source.sh
 
 echo "! Test assumes that sp2any-api is running !"
 
-# TODO. FIX ME. It actually doesn't use the frontend build outside of the docker! We want to use that!
-
 (cd frontend && npm run e2e)

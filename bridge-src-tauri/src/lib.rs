@@ -5,6 +5,7 @@ use directories::ProjectDirs;
 use futures::stream::StreamExt;
 use reqwest_eventsource as sse;
 use sp2any::for_discord_bridge;
+use sp2any::license;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -198,6 +199,8 @@ fn clear_user_credentials() -> Result<()> {
 }
 
 pub fn run() -> Result<()> {
+    println!("{}", license::info_text());
+
     let logs_dir = get_data_dir()?.join("logs");
 
     let logging_plugin = tauri_plugin_log::Builder::default()

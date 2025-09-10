@@ -1,0 +1,6 @@
+❤️ ~ Thank you for using SP2Any ~ ❤️
+This is free software under the copyleft GNU Affero General Public License.
+
+SP2Any © 2025 by Ayake / GollyTicker
+
+More info at https://github.com/GollyTicker/simply-plural-to-any-updater/blob/main/COPYING

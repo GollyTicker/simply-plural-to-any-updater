@@ -3,6 +3,7 @@ import router from './router';
 import { renderLoginPage } from './pages/login-page';
 import { renderStatusPage } from './pages/status-page';
 import { renderStartPage } from './pages/start-page';
+import { renderLicenseInfo } from './license';
 
 import { attachConsole } from '@tauri-apps/plugin-log';
 await attachConsole(); // show tauri backend logs in console
@@ -15,3 +16,5 @@ router
     router.navigate('/');
   })
   .resolve();
+
+renderLicenseInfo();
