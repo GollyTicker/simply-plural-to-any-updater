@@ -4,7 +4,7 @@ on:
   # disabled until further notice
   push:
     tags:
-      - '' # 'v*' # Trigger on tags starting with v (e.g. v1.0)
+      - 'never' # 'v*' # Trigger on tags starting with v (e.g. v1.0)
 
 jobs:
   release:
