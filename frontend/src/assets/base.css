@@ -36,6 +36,8 @@
   --section-gap: 160px;
 
   --color-primary: hsl(153, 47%, 49%);
+  --color-secondary: hsl(175, 83%, 31%);
+  --color-warn: hsl(39, 95%, 36%);
 }
 
 @media (prefers-color-scheme: dark) {

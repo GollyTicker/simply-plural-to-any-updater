@@ -142,6 +142,11 @@ The strategy is to make your Rust code the single source of truth for any data s
   * UI should be easily adapted to be running in mobile app in additional to a web-app
   * backend would be mostly in the cloud OR locally on the modile.
   * database needs to support both postgres and SQLite, since the database will be different based on mobile vs. cloud
+* On UI:
+  * add quick and easy feedback field
+  * add link to Discord Server
+  * add link to KoFi and ask for kind donations
+  * add link to source code
 
 #### User Feedback
 * sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
