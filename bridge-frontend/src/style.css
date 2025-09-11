@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #242424;
-  background-color: rgba(255, 255, 255, 0.87);
+  color: black;
+  background-color: white;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,19 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
   min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 h1 {
@@ -40,17 +33,7 @@ h1 {
   text-align: center;
   padding-top: 3rem;
   padding-bottom: 0.5rem;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em #3178c6aa);
+  flex-grow: 1;
 }
 
 button {
@@ -60,37 +43,18 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: azure;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 
 button:hover {
-  border-color: green;
+  background-color: lightskyblue;
 }
 
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-
-  a:hover {
-    color: green;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
-
-  #app-header .title {
-    color: #213547;
-  }
 }
 
 #login-form {
@@ -114,11 +78,14 @@ button:focus-visible {
 
 #app-header {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   z-index: 10;
+  background-color: lightcyan;
+  padding: 0.5rem;
 }
 
 #app-header img {
@@ -134,7 +101,8 @@ button:focus-visible {
 
 footer {
   text-align: center;
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   color: darkslategray;
-  margin: 0.8rem;
+  background-color: lightcyan;
+  padding: 0.8rem;
 }

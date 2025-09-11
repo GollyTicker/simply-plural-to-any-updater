@@ -5,7 +5,7 @@ edition = "2024"
 rust-version = "1.87.0"
 
 [lib]
-name = "app_lib"
+name = "sp2any_bridge"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

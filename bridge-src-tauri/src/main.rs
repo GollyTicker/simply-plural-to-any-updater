@@ -4,5 +4,5 @@
 use anyhow::Result;
 
 fn main() -> Result<()> {
-  app_lib::run()
+  sp2any_bridge::run()
 }
