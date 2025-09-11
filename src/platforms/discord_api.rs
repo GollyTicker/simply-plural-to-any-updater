@@ -1,6 +1,7 @@
 
 use crate::communication::HttpResult;
 use crate::platforms::discord;
+use crate::updater::{Platform, UpdaterStatus};
 use crate::users::JwtString;
 use crate::{database, updater, users};
 use anyhow::{Result, anyhow};
@@ -180,6 +181,8 @@ pub async fn get_api_user_platform_discord_bridge_events(
 
     let mut fronting_channel = shared_updaters.subscribe_fronter_channel(&user_id)?;
 
+    let mut foreign_status_channel = shared_updaters.get_foreign_status_channel(&user_id)?;
+
     // todo. add channel here to finish propagating the statuses to the shared updater and then to the UI.
     // let notify_status = move |user_id: &UserId, s: updater::UpdaterStatus| -> Result<()> {
     //     let mut map = HashMap::new();
@@ -208,7 +211,6 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                                 continue;
                                             }
                                         };
-                                        // notify_status(&user_id, updater::UpdaterStatus::Running);
                                         yield ws::Message::Text(payload);
                                     }
                                     Err(err) => {
@@ -228,6 +230,8 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                 break;
                             },
                             Some(Ok(message)) => {
+                                // todo. read and forward status here.
+                                foreign_status_channel.send(Some((Platform::Discord, UpdaterStatus::Running)));
                                 eprintln!("what is this? {message:?}");
                             },
                             Some(Err(s)) => {

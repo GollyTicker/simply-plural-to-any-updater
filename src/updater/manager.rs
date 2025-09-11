@@ -1,5 +1,5 @@
 use crate::plurality::{self};
-use crate::updater::work_loop;
+use crate::updater::{self, work_loop};
 use crate::users;
 use crate::users::UserId;
 use crate::{communication, setup};
@@ -11,12 +11,14 @@ type SharedMutable<T> = Arc<Mutex<T>>;
 type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
 
 type FronterChannel = communication::FireAndForgetChannel<Vec<plurality::Fronter>>;
+type ForeignStatusChannel = communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>;
 
 #[derive(Clone)]
 pub struct UpdaterManager {
     pub tasks: ThreadSafePerUser<work_loop::CancleableUpdater>,
     pub statuses: ThreadSafePerUser<work_loop::UserUpdatersStatuses>,
     pub fronter_channel: ThreadSafePerUser<FronterChannel>,
+    pub foreign_managed_status_channel: ThreadSafePerUser<ForeignStatusChannel>,
     pub discord_status_message_available: bool,
 }
 
@@ -28,6 +30,7 @@ impl UpdaterManager {
             statuses: Arc::new(Mutex::new(HashMap::new())),
             fronter_channel: Arc::new(Mutex::new(HashMap::new())),
             discord_status_message_available: cli_args.discord_status_message_updater_available,
+            foreign_managed_status_channel: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -62,6 +65,22 @@ impl UpdaterManager {
         eprintln!("{user_id}: Send fronter update to {receiver_count} receivers.");
 
         Ok(())
+    }
+
+    pub fn get_foreign_status_channel(
+        &self,
+        user_id: &UserId,
+    ) -> Result<communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>> {
+        let locked = self
+            .foreign_managed_status_channel
+            .lock()
+            .map_err(|e| anyhow!(e.to_string()))?;
+
+        let specific_channel = locked
+            .get(user_id)
+            .ok_or_else(|| anyhow!("No foreign status channel found for {}", user_id))?;
+
+        Ok(specific_channel.clone())
     }
 
     pub fn get_updaters_statuses(
@@ -107,6 +126,7 @@ impl UpdaterManager {
         locked_task.get(user_id).map(tokio::task::JoinHandle::abort);
 
         let () = self.recreate_fronter_channel(user_id)?;
+        let () = self.recreate_foreign_status_channel(user_id)?;
         let () = self.recreate_updater_statuses(user_id)?;
 
         let owned_self = self.to_owned();
@@ -122,6 +142,14 @@ impl UpdaterManager {
 
     fn recreate_fronter_channel(&self, user_id: &UserId) -> Result<()> {
         self.fronter_channel
+            .lock()
+            .map_err(|e| anyhow!(e.to_string()))?
+            .insert(user_id.to_owned(), communication::fire_and_forget_channel()); // old value dropped
+        Ok(())
+    }
+
+    fn recreate_foreign_status_channel(&self, user_id: &UserId) -> Result<()> {
+        self.foreign_managed_status_channel
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
             .insert(user_id.to_owned(), communication::fire_and_forget_channel()); // old value dropped
