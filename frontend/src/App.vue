@@ -5,13 +5,13 @@
           <img src="/favicon.png" alt="logo" />
           <h1 class="title">SP2Any</h1>
       </div>
-      <div>
-        | <router-link to="/status">Status</router-link>
-        | <router-link to="/config">Settings</router-link>
+      <div class="nav-links-container">
+        <router-link to="/status">Status</router-link>
+        <router-link to="/config">Settings</router-link>
         <!-- re-include, when needed: <router-link to="/discord-oauth">Discord OAuth</router-link> -->
       </div>
     </nav>
-    <router-view />
+    <router-view class="content"/>
     <footer>
       <LicenseInfo />
     </footer>
@@ -26,10 +26,15 @@ import LicenseInfo from './components/LicenseInfo.vue';
 #app-container {
   padding-top: 60px;
   /* Add padding to prevent content from overlapping with the nav bar */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 nav {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -43,18 +48,27 @@ nav {
   align-items: center;
 }
 
-nav a {
+.nav-links-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-links-container a {
   font-weight: bold;
-  color: #2c3e50;
   text-decoration: none;
   padding: 0.5em 1em;
   border: 1px solid transparent;
   border-radius: 0.25rem;
+  color: black;
+  background-color: var(--color-background-mute);
 }
 
 nav a:hover {
   color: var(--color-primary);
-  background-color: var(--color-background-mute);
 }
 
 #app-header {
@@ -75,12 +89,17 @@ nav a:hover {
   margin: 0;
 }
 
+.content {
+  max-width: 1280px;
+  margin: 0;
+}
+
 footer {
   margin-top: auto;
   padding: 1rem;
   text-align: center;
-  font-size: 0.8rem;
   color: darkslategray;
+  background-color: azure;
 }
 
 </style>
