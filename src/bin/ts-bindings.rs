@@ -15,8 +15,7 @@ const DESTINATION: &str = "./frontend/src/sp2any.bindings.ts";
 fn main() -> Result<()> {
     println!("Exporting to {DESTINATION}...");
     let conf = &ExportConfiguration::default();
-    let defs = vec![
-        export::<Email>(conf)?,
+    let defs = [export::<Email>(conf)?,
         export::<UserProvidedPassword>(conf)?,
         export::<UserLoginCredentials>(conf)?,
         export::<JwtString>(conf)?,
@@ -25,9 +24,8 @@ fn main() -> Result<()> {
         "export type UserUpdatersStatuses = { [p in Platform]?: UpdaterStatus }".to_owned(),
         format!(
             "export const LICENSE_INFO_SHORT_HTML: string = \"{}\"",
-            license::info_short_html().replace("\"", "\\\"")
-        ),
-    ];
+            license::info_short_html().replace('"', "\\\"")
+        )];
     fs::write(DESTINATION, defs.join("\n"))?;
     println!("Done.");
     Ok(())

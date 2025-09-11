@@ -1,18 +1,18 @@
-use crate::http::HttpResult;
+
+use crate::communication::HttpResult;
 use crate::platforms::discord;
-use crate::users::{JwtString, UserId};
-use crate::{database, plurality, updater, users};
+use crate::users::JwtString;
+use crate::{database, updater, users};
 use anyhow::{Result, anyhow};
 use reqwest::Client;
+use rocket::futures::{SinkExt, StreamExt};
 use rocket::response::content::RawHtml;
 use rocket::{State, response};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::PgPool;
 
-use rocket::Shutdown;
-use rocket::response::stream::{Event, EventStream};
-use rocket::tokio::select;
+use rocket_ws as ws;
 
 const DEV_OAUTH_REDIRECT_URL: &str =
     "http://localhost:8080/api/user/platform/discord/oauth/callback";
@@ -160,59 +160,88 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
 </html>
 ";
 
+/// This websocket stream sends text messages of the type DiscordRichPresence and
+/// receives messages of the type UpdaterStatus.
 #[allow(clippy::needless_pass_by_value)]
 #[get("/api/user/platform/discord/bridge-events")]
 pub async fn get_api_user_platform_discord_bridge_events(
     jwt: users::Jwt,
-    mut shutdown: Shutdown,
+    ws: ws::WebSocket,
     shared_updaters: &State<updater::UpdaterManager>,
     db_pool: &State<PgPool>,
     client: &State<reqwest::Client>,
     application_user_secrets: &State<database::ApplicationUserSecrets>,
-) -> Result<EventStream![], response::Debug<anyhow::Error>> {
+) -> Result<ws::Stream!['static], response::Debug<anyhow::Error>> {
     let user_id = jwt.user_id()?;
     let config = database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
     let (config, _) = users::create_config_with_strong_constraints(&user_id, client, &config)?;
 
-    let mut receiver = shared_updaters.subscribe_fronter_channel(&user_id)?;
+    // todo. if discord is not enabled, then send the appropriate flags.
 
-    let stream = EventStream! {
-        loop {
-            select! {
-                msg = receiver.recv() => match msg {
-                    Ok(fronters) => {
-                        if let Some(ev) = send_fronters_to_bridge(&user_id, fronters, &config) {
-                            yield ev;
+    let mut fronting_channel = shared_updaters.subscribe_fronter_channel(&user_id)?;
+
+    // todo. add channel here to finish propagating the statuses to the shared updater and then to the UI.
+    // let notify_status = move |user_id: &UserId, s: updater::UpdaterStatus| -> Result<()> {
+    //     let mut map = HashMap::new();
+    //     map.insert(updater::Platform::Discord, s);
+    //     shared_updaters.notify_updater_statuses(user_id, map)
+    // };
+
+    let stream = {
+        ws::Stream! { ws =>
+            let mut ws = ws.fuse();
+            let user_id = user_id.clone();
+
+            loop {
+                tokio::select! {
+                    fronters_msg = fronting_channel.recv() => {
+                        match fronters_msg {
+                            Some(fronters) => {
+                                let rich_presence_result = discord::render_fronts_to_discord_rich_presence(fronters, &config);
+                                match rich_presence_result {
+                                    Ok(rich_presence) => {
+                                        eprintln!("{user_id}: Sending rich presence to bridge via WebSocket...");
+                                        let payload = match rocket::serde::json::to_string(&rich_presence) {
+                                            Ok(p) => p,
+                                            Err(e) => {
+                                                eprintln!("{user_id}: Failed to serialize rich presence: {e}");
+                                                continue;
+                                            }
+                                        };
+                                        // notify_status(&user_id, updater::UpdaterStatus::Running);
+                                        yield ws::Message::Text(payload);
+                                    }
+                                    Err(err) => {
+                                        eprintln!(
+                                            "{user_id}: Error while rendering fronts for discord rich presence. Continuing nonetheless. {err}"
+                                        );
+                                    }
+                                }
+                            },
+                            None => break, // shared updater closed?
                         }
                     },
-                    Err(_) => break,
-                },
-                () = &mut shutdown => break,
-            };
+                    message = ws.next() => {
+                        match message {
+                            Some(Ok(ws::Message::Close(_))) => {
+                                eprintln!("ended ws stream");
+                                break;
+                            },
+                            Some(Ok(message)) => {
+                                eprintln!("what is this? {message:?}");
+                            },
+                            Some(Err(s)) => {
+                                eprintln!("some error: {s:?}");
+                                break
+                            }, // client disconnected
+                            None => break, // client disconnected
+                        }
+                    }
+                }
+            }
+            eprintln!("{user_id}: Ended WebSocket stream.");
         }
-        eprintln!("{}: Ended receiver.", user_id);
     };
 
     Ok(stream)
-}
-
-fn send_fronters_to_bridge(
-    user_id: &UserId,
-    fronters: Vec<plurality::Fronter>,
-    config: &users::UserConfigForUpdater,
-) -> Option<Event> {
-    let rich_presence_result = discord::render_fronts_to_discord_rich_presence(fronters, config);
-
-    match rich_presence_result {
-        Ok(rich_presence) => {
-            eprintln!("{user_id}: Sending rich presence to bridge via SSE...");
-            Some(Event::json(&rich_presence))
-        }
-        Err(err) => {
-            eprintln!(
-                "{user_id}: Error while rendering fronts for discord rich presence. Continueing nonetheless. {err}"
-            );
-            None
-        }
-    }
 }

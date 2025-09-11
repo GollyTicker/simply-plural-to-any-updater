@@ -1,5 +1,5 @@
 use anyhow::Result;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{platforms, plurality, users};
 
@@ -12,7 +12,7 @@ pub enum Platform {
 }
 
 // NOTE: specta::Type is manually exported in bindings
-#[derive(Clone, Serialize, strum_macros::Display)]
+#[derive(Clone, Serialize, Deserialize, strum_macros::Display)]
 pub enum UpdaterStatus {
     Inactive,
     Running,
@@ -26,7 +26,7 @@ pub enum Updater {
 }
 
 #[must_use]
-pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
+pub fn sp2any_server_updaters(discord_status_message: bool) -> Vec<Platform> {
     let mut platforms = vec![Platform::VRChat];
 
     if discord_status_message {
@@ -34,10 +34,28 @@ pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
     }
 
     for p in platforms.iter().by_ref() {
-        eprintln!("Available platform: {p}");
+        let foreign_managed_text = if p.foreign_managed() {
+            "(foreign managed; hence excluded)"
+        } else {
+            ""
+        };
+        eprintln!("Platform: {p} {foreign_managed_text}");
     }
 
+    platforms.retain(|p| !p.foreign_managed());
+
     platforms
+}
+
+impl Platform {
+    /// Returns true, if the updating of this target is managed not by the `SP2Any` server.
+    #[must_use] pub const fn foreign_managed(&self) -> bool {
+        match self {
+            Self::VRChat => false,
+            Self::Discord => true,
+            Self::DiscordStatusMessage => false,
+        }
+    }
 }
 
 impl Updater {

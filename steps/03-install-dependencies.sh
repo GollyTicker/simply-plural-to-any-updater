@@ -34,7 +34,7 @@ echo "Patching discord-rich-presence..."
 PATCHED="target/discord-rich-presence-patched"
 rm -rf "$PATCHED" || true
 git clone https://github.com/vionya/discord-rich-presence "$PATCHED"
-( cd "$PATCHED" && git -c advice.detachedHead=false checkout 1.0.0 )
+( cd "$PATCHED" && VERSION="$(git tag | tail -n 1)" && echo "Using '$VERSION'" && git -c advice.detachedHead=false checkout "$VERSION" )
 patch "$PATCHED/src/activity.rs" < steps/discord-rich-presence.activity.rs.patch
 patch "$PATCHED/src/discord_ipc.rs" < steps/discord-rich-presence.discord_ipc.rs.patch
 echo "Patch OK!"

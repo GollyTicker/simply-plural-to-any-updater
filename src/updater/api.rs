@@ -1,5 +1,5 @@
+use crate::communication::HttpResult;
 use crate::database;
-use crate::http::HttpResult;
 use crate::setup;
 use crate::updater::{manager, work_loop};
 use crate::users;

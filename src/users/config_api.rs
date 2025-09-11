@@ -1,5 +1,5 @@
+use crate::communication::HttpResult;
 use crate::database;
-use crate::http::HttpResult;
 use crate::users::config;
 use crate::users::jwt;
 use rocket::{State, serde::json::Json};

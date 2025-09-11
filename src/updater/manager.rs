@@ -1,17 +1,16 @@
 use crate::plurality::{self};
-use crate::setup;
 use crate::updater::work_loop;
 use crate::users;
 use crate::users::UserId;
+use crate::{communication, setup};
 use anyhow::{Result, anyhow};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use tokio::sync::broadcast;
 
 type SharedMutable<T> = Arc<Mutex<T>>;
 type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
 
-type FronterChannel = broadcast::Sender<Vec<plurality::Fronter>>;
+type FronterChannel = communication::FireAndForgetChannel<Vec<plurality::Fronter>>;
 
 #[derive(Clone)]
 pub struct UpdaterManager {
@@ -35,7 +34,7 @@ impl UpdaterManager {
     pub fn subscribe_fronter_channel(
         &self,
         user_id: &UserId,
-    ) -> Result<broadcast::Receiver<Vec<plurality::Fronter>>> {
+    ) -> Result<communication::LatestReceiver<Vec<plurality::Fronter>>> {
         let receiver = self
             .fronter_channel
             .lock()
@@ -58,8 +57,7 @@ impl UpdaterManager {
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
             .ok_or_else(|| anyhow!("No fronter channel found for  {}", user_id))?
-            .send(fronters)
-            .unwrap_or(0); // Err happens, if no receivers had subscribed
+            .send(fronters);
 
         eprintln!("{user_id}: Send fronter update to {receiver_count} receivers.");
 
@@ -79,15 +77,20 @@ impl UpdaterManager {
             .to_owned())
     }
 
-    pub fn set_updater_statuses(
+    pub fn notify_updater_statuses(
         &self,
         user_id: &UserId,
         updater_state: work_loop::UserUpdatersStatuses,
     ) -> Result<()> {
-        self.statuses
-            .lock()
-            .map_err(|e| anyhow!(e.to_string()))?
-            .insert(user_id.to_owned(), updater_state);
+        let mut locked = self.statuses.lock().map_err(|e| anyhow!(e.to_string()))?;
+
+        let statuses = locked
+            .get_mut(user_id)
+            .ok_or_else(|| anyhow!("shouldn't happen. no statuses for user."))?;
+
+        for (p, new_status) in updater_state {
+            statuses.insert(p, new_status);
+        }
 
         Ok(())
     }
@@ -104,6 +107,7 @@ impl UpdaterManager {
         locked_task.get(user_id).map(tokio::task::JoinHandle::abort);
 
         let () = self.recreate_fronter_channel(user_id)?;
+        let () = self.recreate_updater_statuses(user_id)?;
 
         let owned_self = self.to_owned();
         let new_task = tokio::spawn(async move {
@@ -120,7 +124,16 @@ impl UpdaterManager {
         self.fronter_channel
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
-            .insert(user_id.to_owned(), broadcast::channel(1).0); // old value dropped
+            .insert(user_id.to_owned(), communication::fire_and_forget_channel()); // old value dropped
+        Ok(())
+    }
+
+    fn recreate_updater_statuses(&self, user_id: &UserId) -> Result<()> {
+        self.statuses
+            .lock()
+            .map_err(|e| anyhow!(e.to_string()))?
+            .insert(user_id.to_owned(), HashMap::new());
+
         Ok(())
     }
 }

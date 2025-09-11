@@ -1,5 +1,5 @@
+use crate::communication::HttpResult;
 use crate::database;
-use crate::http::HttpResult;
 use crate::users::auth;
 use crate::users::jwt;
 use crate::users::model::{Email, UserId};

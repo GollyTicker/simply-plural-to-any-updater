@@ -19,7 +19,7 @@ pub async fn run_loop(
     eprintln!("Running Updater ...");
 
     let mut updaters: UserUpdaters =
-        platforms::available_updaters(shared_updaters.discord_status_message_available)
+        platforms::sp2any_server_updaters(shared_updaters.discord_status_message_available)
             .iter()
             .map(|platform| (platform.to_owned(), Updater::new(platform)))
             .collect();
@@ -33,7 +33,7 @@ pub async fn run_loop(
     let statues = get_statuses(&updaters, &config);
     log_error_and_continue(
         "update statues",
-        shared_updaters.set_updater_statuses(&config.user_id, statues),
+        shared_updaters.notify_updater_statuses(&config.user_id, statues),
     );
 
     loop {
@@ -50,7 +50,7 @@ pub async fn run_loop(
         let statues = get_statuses(&updaters, &config);
         log_error_and_continue(
             "update statues",
-            shared_updaters.set_updater_statuses(&config.user_id, statues),
+            shared_updaters.notify_updater_statuses(&config.user_id, statues),
         );
 
         eprintln!(

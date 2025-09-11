@@ -1,68 +1,81 @@
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use discord_rich_presence::{
-    activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
     DiscordIpc, DiscordIpcClient,
+    activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
 };
 use serde::Deserialize;
-use sp2any::for_discord_bridge;
-use tokio::{
-    sync::broadcast::{self},
-    time::sleep,
+use sp2any::{
+    for_discord_bridge::{DiscordRichPresence, FireAndForgetChannel},
+    updater::{self},
 };
+use tokio::time::sleep;
+
+use crate::never;
 
 // note. tell users they may need to activate rich presence sharing in their activity privacy settings. they can also customize it per server.
 
 #[allow(clippy::unreadable_literal)]
 const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 
-pub async fn discord_ipc_loop(channel: broadcast::Sender<for_discord_bridge::DiscordRichPresence>) {
+pub async fn discord_ipc_loop(
+    rich_presence_channel: FireAndForgetChannel<DiscordRichPresence>,
+    updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
+) -> never::Never {
     loop {
-        match connect_to_discord_ipc() {
+        let error = match connect_to_discord_ipc() {
             Ok(mut client) => {
-                let e = activity_loop(&mut client, channel.clone()).await;
-                log::warn!("Activity loop ended with error. Will reconnect in 5s. Error: {e}");
-                sleep(Duration::from_secs(5)).await;
+                let err = never::get_err(
+                    activity_loop(
+                        &mut client,
+                        rich_presence_channel.clone(),
+                        updater_status_channel.clone(),
+                    )
+                    .await,
+                );
+                log::warn!("Activity loop ended with error. Will reconnect in 5s. Error: {err}");
+                err
             }
-            Err(e) => {
-                log::warn!("Discord IPC Connection failed. Will retry in 5s. Error: {e}");
-                sleep(Duration::from_secs(5)).await;
+            Err(err) => {
+                log::warn!("Discord IPC Connection failed. Will retry in 5s. Error: {err}");
+                err
             }
-        }
+        };
+        updater_status_channel.send(updater::UpdaterStatus::Error(format!(
+            "Discord RPC disconnected: {error}"
+        )));
+        sleep(Duration::from_secs(5)).await;
     }
 }
 
 async fn activity_loop(
     client: &mut DiscordIpcClient,
-    channel: broadcast::Sender<for_discord_bridge::DiscordRichPresence>,
-) -> anyhow::Error {
-    let mut receiver = channel.subscribe();
+    rich_presence_channel: FireAndForgetChannel<DiscordRichPresence>,
+    updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
+) -> Result<never::Never> {
+    let mut receiver = rich_presence_channel.subscribe();
     loop {
         log::info!("Waiting for SP2Any backend events...");
-        let update_result = match receiver.recv().await {
-            Ok(discord_presence) => set_activity(client, &discord_presence),
-            Err(broadcast::error::RecvError::Closed) => clear_activity(client),
-            Err(broadcast::error::RecvError::Lagged(n)) => {
-                log::warn!("Lagged by {n}");
-                Ok(())
-            }
-        };
-
-        match update_result {
-            Ok(()) => (),
-            Err(e) => {
-                return e;
-            }
+        // todo. we need to receive a proper end of the discord rich presence here and clear activity
+        if let Some(discord_presence) = receiver.recv().await {
+            set_activity(client, &discord_presence)?;
+            updater_status_channel.send(updater::UpdaterStatus::Running);
+        } else {
+            clear_activity(client)?;
+            // updater status sending handled by caller
+            return Err(anyhow!(
+                "receiver in activity loop: sender websocket thread closed."
+            ));
         }
     }
 }
 
 fn set_activity(
     client: &mut DiscordIpcClient,
-    discord_presence: &for_discord_bridge::DiscordRichPresence,
+    discord_presence: &DiscordRichPresence,
 ) -> Result<()> {
-    let for_discord_bridge::DiscordRichPresence {
+    let DiscordRichPresence {
         activity_type,
         status_display_type,
         details,

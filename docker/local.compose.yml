@@ -6,7 +6,7 @@ services:
       dockerfile: docker/frontend.Dockerfile
       context: ..
     volumes:
-      - ./nginx.conf.template:/etc/nginx/templates/nginx.conf.template
+      - ./template.nginx.conf:/etc/nginx/templates/nginx.conf.template
       - ./../frontend/dist:/usr/share/nginx/html
     environment:
       NGINX_HOST: localhost

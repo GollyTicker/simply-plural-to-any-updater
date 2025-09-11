@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import router from '../router';
 import type { JwtString } from '../sp2any.bindings';
+import { listen } from '@tauri-apps/api/event';
 
 export function renderStatusPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -39,3 +40,7 @@ async function subscribe_to_bridge_channel() {
     bridgeStatus().textContent = `Failed to connect to SP2Any: ${e}`;
   }
 }
+
+listen<string>("notify_user_on_status", event => {
+  bridgeStatus().textContent = event.payload;
+})
