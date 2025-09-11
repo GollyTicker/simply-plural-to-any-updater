@@ -1,5 +1,5 @@
 use crate::plurality::{self};
-use crate::updater::{self, work_loop};
+use crate::updater::{self, UpdaterStatus, work_loop};
 use crate::users;
 use crate::users::UserId;
 use crate::{communication, setup};
@@ -113,6 +113,7 @@ impl UpdaterManager {
             .ok_or_else(|| anyhow!("shouldn't happen. no statuses for user."))?;
 
         for (p, new_status) in updater_state {
+            eprintln!("Setting updater status: {user_id} {p} {new_status}");
             statuses.insert(p, new_status);
         }
 
@@ -127,19 +128,25 @@ impl UpdaterManager {
     ) -> Result<()> {
         let mut locked_task = self.tasks.lock().map_err(|e| anyhow!(e.to_string()))?;
 
-        eprintln!("Aborting updater {user_id}");
-        locked_task.get(user_id).map(tokio::task::JoinHandle::abort);
+        eprintln!("Aborting updaters {user_id}");
+        locked_task
+            .get(user_id)
+            .take()
+            .map(|updaters| updaters.iter().map(tokio::task::JoinHandle::abort));
 
         let () = self.recreate_fronter_channel(user_id)?;
-        let () = self.recreate_foreign_status_channel(user_id)?;
+        let foreign_status_updater_task = self.recreate_foreign_status_channel(user_id)?;
         let () = self.recreate_updater_statuses(user_id)?;
 
         let owned_self = self.to_owned();
-        let new_task = tokio::spawn(async move {
+        let work_loop_task = tokio::spawn(async move {
             work_loop::run_loop(config, owned_self).await;
         });
 
-        locked_task.insert(user_id.clone(), new_task);
+        locked_task.insert(
+            user_id.clone(),
+            vec![work_loop_task, foreign_status_updater_task],
+        );
         eprintln!("Restarted updater {user_id}");
 
         Ok(())
@@ -153,19 +160,59 @@ impl UpdaterManager {
         Ok(())
     }
 
-    fn recreate_foreign_status_channel(&self, user_id: &UserId) -> Result<()> {
+    fn recreate_foreign_status_channel(
+        &self,
+        user_id: &UserId,
+    ) -> Result<tokio::task::JoinHandle<()>> {
+        let new_channel = communication::fire_and_forget_channel();
+
         self.foreign_managed_status_channel
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
-            .insert(user_id.to_owned(), communication::fire_and_forget_channel()); // old value dropped
-        Ok(())
+            .insert(user_id.to_owned(), new_channel.clone()); // old value dropped
+
+        let user_id = user_id.clone();
+        let owned_self = self.clone();
+        let mut receiver = new_channel.subscribe();
+        let foreign_status_updater = tokio::spawn(async move {
+            loop {
+                match receiver.recv().await {
+                    Some(status) => {
+                        match owned_self
+                            .notify_updater_statuses(&user_id, HashMap::from_iter(status))
+                        {
+                            Ok(_) => eprintln!("foreign status update ok."),
+                            Err(err) => {
+                                eprintln!("ending receiver due to foreign status update err {err}");
+                                break;
+                            }
+                        }
+                    }
+                    None => {
+                        eprintln!("foreign status updater sender dropped. terminating receiver.");
+                        break;
+                    }
+                }
+            }
+        });
+
+        Ok(foreign_status_updater)
     }
 
     fn recreate_updater_statuses(&self, user_id: &UserId) -> Result<()> {
+        let initially_disabled_status =
+            updater::available_updaters(self.discord_status_message_available)
+                .into_iter()
+                .map(|p| (p, UpdaterStatus::Disabled));
+        // todo. we should add status Unknown here because Disabled is only when it's intentionally disabled!
+
         self.statuses
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
-            .insert(user_id.to_owned(), HashMap::new());
+            .insert(
+                user_id.to_owned(),
+                HashMap::from_iter(initially_disabled_status),
+            );
 
         Ok(())
     }

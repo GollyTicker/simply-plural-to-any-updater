@@ -20,7 +20,7 @@ fn main() -> Result<()> {
         export::<UserLoginCredentials>(conf)?,
         export::<JwtString>(conf)?,
         "export type Platform = \"VRChat\" | \"Discord\" | \"DiscordStatusMessage\"".to_owned(),
-        "export type UpdaterStatus = \"Inactive\" | \"Running\" | { \"Error\": string }".to_owned(),
+        "export type UpdaterStatus = \"Disabled\" | \"Running\" | { \"Error\": string }".to_owned(),
         "export type UserUpdatersStatuses = { [p in Platform]?: UpdaterStatus }".to_owned(),
         format!(
             "export const LICENSE_INFO_SHORT_HTML: string = \"{}\"",

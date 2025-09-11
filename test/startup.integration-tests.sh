@@ -54,7 +54,7 @@ main() {
     start_updater
     check_updater_has_no_errors
     check_updater_loop_continues
-    check_updater "DiscordStatusMessage" "Inactive"
+    check_updater "DiscordStatusMessage" "Disabled"
     check_updater "VRChat" "Running"
     reset_changed_variables
 
@@ -65,7 +65,7 @@ main() {
     check_updater_has_no_errors
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
-    check_updater "VRChat" "Inactive"
+    check_updater "VRChat" "Disabled"
     reset_changed_variables
 
 

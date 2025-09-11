@@ -5,6 +5,7 @@
       <div v-for="(status, name) in updaters" :key="name" class="status-item">
         <span class="service-name">{{ name }}</span>
         <span :class="['status-badge', 'status-' + statusKind(status!).toLowerCase()]">{{ statusKind(status!) }}</span>
+        <span class="status-info">{{ statusInfo(status!) }}</span>
       </div>
     </div>
   </div>
@@ -22,9 +23,17 @@ let refreshViewIntervalTimer: number | undefined = undefined;
 
 function statusKind(status: UpdaterStatus): string {
   switch (status) {
-    case 'Inactive': return status;
+    case 'Disabled': return status;
     case 'Running': return status;
-    default: return "Error";
+    default: return "Error"; // note. how to make this as future-proof as rust matches?
+  }
+}
+
+function statusInfo(status: UpdaterStatus): string {
+  switch (status) {
+    case 'Disabled': return "";
+    case 'Running': return "";
+    default: return status.Error; // note. how to make this as future-proof as rust matches?
   }
 }
 
@@ -88,7 +97,7 @@ onUnmounted(() => {
   color: white;
 }
 
-.status-inactive {
+.status-disabled {
   background-color: gray;
   color: white;
 }

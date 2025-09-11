@@ -9,12 +9,13 @@ pub enum Platform {
     VRChat,
     Discord,
     DiscordStatusMessage,
+    // when adding a new platform, don't forget to add it to the available_updaters.
 }
 
 // NOTE: specta::Type is manually exported in bindings
 #[derive(Clone, Serialize, Deserialize, strum_macros::Display)]
 pub enum UpdaterStatus {
-    Inactive,
+    Disabled,
     Running,
     Error(String),
 }
@@ -25,24 +26,29 @@ pub enum Updater {
     DiscordStatusMessage(platforms::DiscordStatusMessageUpdater),
 }
 
-#[must_use]
-pub fn sp2any_server_updaters(discord_status_message: bool) -> Vec<Platform> {
-    let mut platforms = vec![Platform::VRChat];
+pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
+    let mut platforms = vec![Platform::VRChat, Platform::Discord];
 
     if discord_status_message {
         platforms.push(Platform::DiscordStatusMessage);
     }
 
     for p in platforms.iter().by_ref() {
-        let foreign_managed_text = if p.foreign_managed() {
-            "(foreign managed; hence excluded)"
-        } else {
-            ""
-        };
-        eprintln!("Platform: {p} {foreign_managed_text}");
+        eprintln!("Available Platform: {p}");
     }
 
+    platforms
+}
+
+#[must_use]
+pub fn sp2any_server_updaters(discord_status_message: bool) -> Vec<Platform> {
+    let mut platforms = available_updaters(discord_status_message);
+
     platforms.retain(|p| !p.foreign_managed());
+
+    for p in platforms.iter().by_ref() {
+        eprintln!("Available Platform (managed): {p}");
+    }
 
     platforms
 }
@@ -85,7 +91,7 @@ impl Updater {
             self.last_operation_error()
                 .map_or(UpdaterStatus::Running, |e| UpdaterStatus::Error(e.clone()))
         } else {
-            UpdaterStatus::Inactive
+            UpdaterStatus::Disabled
         }
     }
 
