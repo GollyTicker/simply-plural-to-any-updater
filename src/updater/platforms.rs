@@ -49,11 +49,11 @@ pub fn sp2any_server_updaters(discord_status_message: bool) -> Vec<Platform> {
 
 impl Platform {
     /// Returns true, if the updating of this target is managed not by the `SP2Any` server.
-    #[must_use] pub const fn foreign_managed(&self) -> bool {
+    #[must_use]
+    pub const fn foreign_managed(&self) -> bool {
         match self {
-            Self::VRChat => false,
             Self::Discord => true,
-            Self::DiscordStatusMessage => false,
+            Self::DiscordStatusMessage | Self::VRChat => false,
         }
     }
 }

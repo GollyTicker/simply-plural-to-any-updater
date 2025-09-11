@@ -105,27 +105,37 @@ async fn subscribe_to_bridge_channel_anyhow(
         let updater_status_channel = app2.state::<FireAndForgetChannel<updater::UpdaterStatus>>();
         let mut updater_status_receiver = updater_status_channel.subscribe();
         log::info!("WS: Starting sender");
-        while let Some(status) = updater_status_receiver.recv().await {
-            let json = match serde_json::to_string(&status) {
-                Ok(x) => x,
-                Err(err) => {
-                    log::warn!("Serde serialisation error: {err}");
-                    continue;
-                }
-            };
-            match ws_send.send(Message::Text(json.into())).await {
-                Ok(()) => (),
-                Err(err) => {
-                    log::warn!("WS: Closing. Error sending updater status: {err}");
-                    let _ = ws_send.close().await; // we don't care for errors while closing
-                    notify_user_on_status(
-                        &app2,
-                        format!("Ending connection to SP2Any. Some problem happened: {err}"),
-                    );
-                    break;
-                }
+        loop {
+            let m = updater_status_receiver.recv().await;
+            match m {
+                Some(status) => {
+                    let json = match serde_json::to_string(&status) {
+                        Ok(x) => x,
+                        Err(err) => {
+                            log::warn!("Serde serialisation error: {err}");
+                            continue;
+                        }
+                    };
+                    log::info!("WS: Sending status: {json}");
+                    match ws_send.send(Message::Text(json.into())).await {
+                        Ok(()) => log::info!("WS: Sent status."),
+                        Err(err) => {
+                            log::warn!("WS: Closing. Error sending updater status: {err}");
+                            let _ = ws_send.close().await; // we don't care for errors while closing
+                            notify_user_on_status(
+                                &app2,
+                                format!(
+                                    "Ending connection to SP2Any. Some problem happened: {err}"
+                                ),
+                            );
+                            break;
+                        }
+                    }
+                },
+                None => break,
             }
         }
+        log::warn!("update status receiver channel returned None?");
         // end of while okay here. we haven't implemented websocket re-connection yet
     });
     register_background_task(app.clone(), forwarder_task).await;

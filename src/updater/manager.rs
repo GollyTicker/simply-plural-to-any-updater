@@ -11,7 +11,8 @@ type SharedMutable<T> = Arc<Mutex<T>>;
 type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
 
 type FronterChannel = communication::FireAndForgetChannel<Vec<plurality::Fronter>>;
-type ForeignStatusChannel = communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>;
+type ForeignStatusChannel =
+    communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>;
 
 #[derive(Clone)]
 pub struct UpdaterManager {
@@ -67,10 +68,13 @@ impl UpdaterManager {
         Ok(())
     }
 
+    #[allow(clippy::significant_drop_tightening)]
     pub fn get_foreign_status_channel(
         &self,
         user_id: &UserId,
-    ) -> Result<communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>> {
+    ) -> Result<
+        communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>,
+    > {
         let locked = self
             .foreign_managed_status_channel
             .lock()
@@ -96,6 +100,7 @@ impl UpdaterManager {
             .to_owned())
     }
 
+    #[allow(clippy::significant_drop_tightening)]
     pub fn notify_updater_statuses(
         &self,
         user_id: &UserId,
