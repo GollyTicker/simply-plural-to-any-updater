@@ -131,7 +131,6 @@ impl UpdaterManager {
         eprintln!("Aborting updaters {user_id}");
         locked_task
             .get(user_id)
-            .take()
             .map(|updaters| updaters.iter().map(tokio::task::JoinHandle::abort));
 
         let () = self.recreate_fronter_channel(user_id)?;
@@ -176,22 +175,17 @@ impl UpdaterManager {
         let mut receiver = new_channel.subscribe();
         let foreign_status_updater = tokio::spawn(async move {
             loop {
-                match receiver.recv().await {
-                    Some(status) => {
-                        match owned_self
-                            .notify_updater_statuses(&user_id, HashMap::from_iter(status))
-                        {
-                            Ok(_) => eprintln!("foreign status update ok."),
-                            Err(err) => {
-                                eprintln!("ending receiver due to foreign status update err {err}");
-                                break;
-                            }
+                if let Some(status) = receiver.recv().await {
+                    match owned_self.notify_updater_statuses(&user_id, HashMap::from_iter(status)) {
+                        Ok(()) => eprintln!("foreign status update ok."),
+                        Err(err) => {
+                            eprintln!("ending receiver due to foreign status update err {err}");
+                            break;
                         }
                     }
-                    None => {
-                        eprintln!("foreign status updater sender dropped. terminating receiver.");
-                        break;
-                    }
+                } else {
+                    eprintln!("foreign status updater sender dropped. terminating receiver.");
+                    break;
                 }
             }
         });
@@ -203,16 +197,14 @@ impl UpdaterManager {
         let initially_disabled_status =
             updater::available_updaters(self.discord_status_message_available)
                 .into_iter()
-                .map(|p| (p, UpdaterStatus::Disabled));
+                .map(|p| (p, UpdaterStatus::Disabled))
+                .collect();
         // todo. we should add status Unknown here because Disabled is only when it's intentionally disabled!
 
         self.statuses
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
-            .insert(
-                user_id.to_owned(),
-                HashMap::from_iter(initially_disabled_status),
-            );
+            .insert(user_id.to_owned(), initially_disabled_status);
 
         Ok(())
     }

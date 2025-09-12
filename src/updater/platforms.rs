@@ -26,6 +26,7 @@ pub enum Updater {
     DiscordStatusMessage(platforms::DiscordStatusMessageUpdater),
 }
 
+#[must_use]
 pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
     let mut platforms = vec![Platform::VRChat, Platform::Discord];
 
