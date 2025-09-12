@@ -60,7 +60,7 @@ async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
         .inner()
         .clone();
     tauri::async_runtime::spawn(async move {
-        discord_bridge::discord_ipc_loop(rich_presence_channel, updater_status_channel).await;
+        discord_bridge::discord_ipc_loop(&app, rich_presence_channel, updater_status_channel).await;
     });
 }
 
@@ -154,7 +154,7 @@ async fn subscribe_to_bridge_channel_anyhow(
                         .inspect(|_| {
                             notify_user_on_status(
                                 &app2,
-                                "Connected to SP2Any and making updates...",
+                                "Connected to SP2Any and receiving updates...",
                             );
                         })
                         .inspect_err(|e| {
@@ -205,7 +205,7 @@ async fn register_background_task(app: tauri::AppHandle, handle: JoinHandle<()>)
     state.lock().await.push(handle);
 }
 
-fn notify_user_on_status<S: Into<String>>(app: &tauri::AppHandle, value: S) {
+pub fn notify_user_on_status<S: Into<String>>(app: &tauri::AppHandle, value: S) {
     let _ = app.emit("notify_user_on_status", value.into());
     // we don't care about the success.
 }

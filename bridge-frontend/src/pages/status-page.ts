@@ -7,7 +7,7 @@ export function renderStatusPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
       <h1>Status</h1>
-      <div id="bridge-status">Connecting to SP2Any Server ...</div>
+      <div id="bridge-status">Connecting to SP2Any Server and local Discord client ...</div>
       <button id="logout-button">Disconnect and Logout</button>
     </div>
   `;

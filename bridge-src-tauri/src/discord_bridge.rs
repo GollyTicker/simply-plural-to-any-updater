@@ -12,7 +12,7 @@ use sp2any::{
 };
 use tokio::time::sleep;
 
-use crate::never;
+use crate::{never, notify_user_on_status};
 
 // note. tell users they may need to activate rich presence sharing in their activity privacy settings. they can also customize it per server.
 
@@ -20,6 +20,7 @@ use crate::never;
 const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 
 pub async fn discord_ipc_loop(
+    app: &tauri::AppHandle,
     rich_presence_channel: FireAndForgetChannel<DiscordRichPresence>,
     updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
 ) -> never::Never {
@@ -28,6 +29,7 @@ pub async fn discord_ipc_loop(
             Ok(mut client) => {
                 let err = never::get_err(
                     activity_loop(
+                        app,
                         &mut client,
                         rich_presence_channel.clone(),
                         updater_status_channel.clone(),
@@ -45,11 +47,13 @@ pub async fn discord_ipc_loop(
         updater_status_channel.send(updater::UpdaterStatus::Error(format!(
             "Discord RPC disconnected: {error}"
         )));
+        notify_user_on_status(app, format!("Discord RPC disconnected: {error}"));
         sleep(Duration::from_secs(5)).await;
     }
 }
 
 async fn activity_loop(
+    app: &tauri::AppHandle,
     client: &mut DiscordIpcClient,
     rich_presence_channel: FireAndForgetChannel<DiscordRichPresence>,
     updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
@@ -61,6 +65,7 @@ async fn activity_loop(
         if let Some(discord_presence) = receiver.recv().await {
             set_activity(client, &discord_presence)?;
             updater_status_channel.send(updater::UpdaterStatus::Running);
+            notify_user_on_status(app, "Connected to SP2Any and syncing to local Discord client.");
         } else {
             clear_activity(client)?;
             // updater status sending handled by caller
