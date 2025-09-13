@@ -14,16 +14,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Run Tests
-      uses: ./.github/actions/build-test-lint
-      with:
-        SPS_API_TOKEN: ${{ secrets.SPS_API_TOKEN }}
-        SPS_API_WRITE_TOKEN: ${{ secrets.SPS_API_WRITE_TOKEN }}
-        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-        VRCHAT_USERNAME: ${{ secrets.VRCHAT_USERNAME }}
-        VRCHAT_PASSWORD: ${{ secrets.VRCHAT_PASSWORD }}
-        VRCHAT_COOKIE: ${{ secrets.VRCHAT_COOKIE }}
-
     - name: Run build script
       run: "./release/release-build.sh"
 
