@@ -14,6 +14,27 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Install Rust, Cargo and rustup
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Get cached Cargo dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Get cached npm packages
+      uses: actions/cache@v4
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+
+    - name: Install prerequisites
+      shell: bash
+      run: ./release/ci-install-dependencies.sh
+
     - name: Run build script
       run: "./release/release-build.sh"
 
