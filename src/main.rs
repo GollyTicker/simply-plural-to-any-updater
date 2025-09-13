@@ -13,7 +13,6 @@ mod config;
 mod config_store;
 mod discord;
 mod fronting_status;
-mod gui;
 mod macros;
 mod simply_plural;
 mod updater;
@@ -34,7 +33,7 @@ fn main() -> Result<()> {
         run_async_blocking(updater::run_loop(&config))?;
     } else {
         eprintln!("Starting SP2Any Updater in GUI mode ...");
-        gui::run_tauri_gui(config)?;
+        unimplemented!();
     }
 
     Ok(())
