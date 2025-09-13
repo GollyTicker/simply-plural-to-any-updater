@@ -40,7 +40,6 @@ runs:
       shell: bash
       run: |
         ./release/cargo-build.sh
-        ./dev/tauri-build.sh
 
     - name: Unit tests
       shell: bash
