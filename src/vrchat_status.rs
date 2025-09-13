@@ -32,7 +32,7 @@ fn clean_fronter_names(
     } else {
         fronts
             .iter()
-            .map(|f| clean_name_for_vrchat_status(&f.preferred_vrchat_status_name()))
+            .map(|f| f.vrchat_status_name.clone().unwrap_or_else(||clean_name_for_vrchat_status(&f.name)))
             .collect()
     }
 }
@@ -245,6 +245,16 @@ mod tests {
         assert_eq!(
             format_fronts_for_vrchat_status(&config, fronts),
             "F: UserName"
+        );
+    }
+
+    #[test]
+    fn test_format_vrchat_status_doesnt_clean_specifically_configured_name() {
+        let config = mock_config_for_format_tests("F:", "N/A", 3);
+        let fronts = vec![mock_member_content("ABC", "User😊Name")];
+        assert_eq!(
+            format_fronts_for_vrchat_status(&config, fronts),
+            "F: User😊Name"
         );
     }
 

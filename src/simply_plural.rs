@@ -179,14 +179,6 @@ pub struct Fronter {
     pub(crate) vrchat_status_name: Option<String>,
 }
 
-impl Fronter {
-    pub fn preferred_vrchat_status_name(&self) -> String {
-        self.vrchat_status_name
-            .clone()
-            .unwrap_or_else(|| self.name.clone())
-    }
-}
-
 #[derive(Deserialize, Debug, Clone)]
 pub struct CustomFront {
     pub content: CustomFrontContent,

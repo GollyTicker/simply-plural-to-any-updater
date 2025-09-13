@@ -24,8 +24,8 @@ pub struct Config {
 }
 
 const DEFAULTS_ENV_URL: &str =
-    "https://raw.githubusercontent.com/GollyTicker/simply-plural-to-any-updater/main/defaults.env";
-const VRCUPDATER_SAMPLE_ENV_URL: &str = "https://raw.githubusercontent.com/GollyTicker/simply-plural-to-any-updater/main/vrcupdater.sample.env";
+    "https://raw.githubusercontent.com/GollyTicker/simply-plural-to-any-updater/74a4a0ad81c0757bdf49f68341f38f6f872e70ff/defaults.env";
+const VRCUPDATER_SAMPLE_ENV_URL: &str = "https://raw.githubusercontent.com/GollyTicker/simply-plural-to-any-updater/74a4a0ad81c0757bdf49f68341f38f6f872e70ff/vrcupdater.sample.env";
 const VRC_ENV_PATH_STR: &str = "vrcupdater.env";
 
 pub(crate) async fn setup_and_load_config() -> Result<Config> {

@@ -56,7 +56,7 @@ check_system_fronts_set() {
     if [[ "$SET" == "A" ]]; then
         check_vrc_status_string_equals "F˸Ann‚Bor‚Dae‚Cst"
     elif [[ "$SET" == "B" ]]; then
-        check_vrc_status_string_equals "F˸ tešt t․"
+        check_vrc_status_string_equals "F˸tš漢ク汉漢"
     else
         return 1
     fi
