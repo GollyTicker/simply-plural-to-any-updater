@@ -136,6 +136,7 @@ Update the dependencies.
   * add link to source code
 * make sure, that during production, only my own domains are allowed and not localhost or so.
 * forward port [vrchat character set support from v1](https://github.com/GollyTicker/simply-plural-to-any-updater/issues/7)
+  * and also count the unicode scalars instead of bytes
 
 #### User Feedback
 * sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
