@@ -45,7 +45,7 @@ check_system_fronts_set() {
         [[ "$( grep '<div>' <<< "$HTML" | wc -l )" == "4" ]]
     elif [[ "$SET" == "B" ]]; then
         grep '<title>SP-Updater-Test - Fronting Status</title>' <<< "$HTML"
-        grep '<div><img src="" /><p>tešt ▶️ t.</p></div>' <<< "$HTML"
+        grep '<div><img src="" /><p>tešt ▶️ t. 漢字 クケ 汉字 漢字</p></div>' <<< "$HTML"
         [[ "$( grep '<div>' <<< "$HTML" | wc -l )" == "1" ]]
     else
         return 1

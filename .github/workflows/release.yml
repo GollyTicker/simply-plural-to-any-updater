@@ -39,7 +39,7 @@ jobs:
     - name: Create Release and Upload Assets
       uses: softprops/action-gh-release@v2
       with:
-        token: ${{ secrets.DEPLOY_TOKEN }}
+        token: ${{ secrets.DEPLOY_PR_TOKEN }}
         files: "target/release_builds/*"
         body_path: ${{ steps.changelog.outputs.notes_file }}
         prerelease: ${{ env.IS_PRERELEASE }}

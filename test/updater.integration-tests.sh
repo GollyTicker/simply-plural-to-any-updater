@@ -59,8 +59,8 @@ check_system_fronts_set() {
         check_vrc_status_string_equals "F˸Ann‚Bor‚Dae‚Cst"
         check_discord_status_string_equals "F: Annalea 💖 A., Borgn B., Daenssa 📶 D., Cstm First"
     elif [[ "$SET" == "B" ]]; then
-        check_vrc_status_string_equals "F˸ tešt t․"
-        check_discord_status_string_equals "F: tešt ▶️ t."
+        check_vrc_status_string_equals "F˸tš漢ク汉漢"
+        check_discord_status_string_equals "F: tš▶️漢ク汉漢"
     else
         return 1
     fi

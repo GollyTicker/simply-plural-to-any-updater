@@ -45,9 +45,10 @@ fn collect_clean_fronter_names(
             .iter()
             .map(|f| match fronting_format.cleaning {
                 CleanForPlatform::NoClean => f.preferred_vrchat_status_name(),
-                CleanForPlatform::VRChat => {
-                    clean_name_for_vrchat_status(&f.preferred_vrchat_status_name())
-                }
+                CleanForPlatform::VRChat => f
+                    .vrchat_status_name
+                    .clone()
+                    .unwrap_or_else(|| clean_name_for_vrchat_status(&f.name)),
             })
             .collect()
     }
@@ -264,6 +265,13 @@ mod tests {
         let config = mock_formatter_for_tests("F:", "N/A", 3, VRCHAT_MAX_ALLOWED_STATUS_LENGTH);
         let fronts = vec![mock_member_content("User😊Name", "")];
         assert_eq!(format_fronting_status(&config, &fronts), "F: UserName");
+    }
+
+    #[test]
+    fn test_format_vrchat_status_doesnt_clean_specifically_configured_name() {
+        let config = mock_formatter_for_tests("F:", "N/A", 3, VRCHAT_MAX_ALLOWED_STATUS_LENGTH);
+        let fronts = vec![mock_member_content("UN", "User😊Name")];
+        assert_eq!(format_fronting_status(&config, &fronts), "F: User😊Name");
     }
 
     #[test]
