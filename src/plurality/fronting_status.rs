@@ -93,23 +93,23 @@ fn compute_status_strings_of_decreasing_lengths_for_aesthetics_and_information_t
     eprintln!(
         "Long      string: '{}' ({})",
         long_string,
-        long_string.len()
+        string_unicode_codepoints_length(&long_string)
     );
     eprintln!(
         "Short     string: '{}' ({})",
         short_string,
-        short_string.len()
+        string_unicode_codepoints_length(&short_string)
     );
     eprintln!(
         "Truncated string: '{}' ({})",
         truncated_string,
-        truncated_string.len()
+        string_unicode_codepoints_length(&truncated_string)
     );
 
     eprintln!(
         "Count     string: '{}' ({})",
         count_string,
-        count_string.len()
+        string_unicode_codepoints_length(&count_string)
     );
 
     vec![long_string, short_string, truncated_string, count_string]
@@ -122,10 +122,18 @@ fn pick_longest_string_within_vrchat_status_length_limit(
     let empty_string = String::new();
     status_strings
         .iter()
-        .filter(|s| fronting_format.max_length.is_none_or(|l| s.len() <= l))
-        .max_by_key(|s| s.len())
+        .filter(|s| {
+            fronting_format
+                .max_length
+                .is_none_or(|l| string_unicode_codepoints_length(*s) <= l)
+        })
+        .max_by_key(|s| string_unicode_codepoints_length(*s))
         .unwrap_or(&empty_string) // can't happen due to compile time guarantee
         .to_string()
+}
+
+pub fn string_unicode_codepoints_length<S: Into<String>>(s: S) -> usize {
+    s.into().chars().count() // doesn'T count graphemes, but I think that should still work well.
 }
 
 // VRChat status messages does not display all UTF-8 characters.

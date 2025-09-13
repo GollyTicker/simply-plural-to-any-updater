@@ -1,6 +1,5 @@
 use crate::plurality::{
-    CleanForPlatform, Fronter, FrontingFormat, VRCHAT_MAX_ALLOWED_STATUS_LENGTH,
-    clean_name_for_vrchat_status, format_fronting_status,
+    clean_name_for_vrchat_status, format_fronting_status, string_unicode_codepoints_length, CleanForPlatform, Fronter, FrontingFormat, VRCHAT_MAX_ALLOWED_STATUS_LENGTH
 };
 
 fn mock_formatter_for_tests(
@@ -140,6 +139,13 @@ fn test_format_status_truncation() {
     // Truncated string: "F:Long,VRC1,Anot" 17 > 10
     // Count: "F: 3#" 5 <= 10
     assert_eq!(format_fronting_status(&config, &fronts), "F: 3#");
+}
+
+#[test]
+fn length_counts_codepoints_and_not_bytes() {
+    assert_eq!(string_unicode_codepoints_length("123"), 3);
+    assert_eq!(string_unicode_codepoints_length("é"), 1);
+    assert_eq!(string_unicode_codepoints_length("你好"), 2);
 }
 
 #[test]
