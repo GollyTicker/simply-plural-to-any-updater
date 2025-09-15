@@ -144,6 +144,7 @@ Update the dependencies.
   * [artcle by discord](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots)
   * [self-botting](https://gist.github.com/nomsi/2684f5692cad5b0ceb52e308631859fd)
   * [reddit 1](https://old.reddit.com/r/Discord_selfbots/comments/t9o5xf/anyone_got_banned/), [reddit 2](https://old.reddit.com/r/discordapp/comments/7nl35v/regarding_the_ban_on_selfbots/)
+  * perhaps use the same approach as used by the discord chat exporter? this might actually work well.
 * DONE discord rich presence / activity as instead of discord status
 * DONE: create discord server with initial interests
   * share in pluralkit server

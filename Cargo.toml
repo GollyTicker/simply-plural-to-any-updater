@@ -39,7 +39,7 @@ reqwest = { version = "*", default-features = false, features = [
     "json",
     "cookies",
     "rustls-tls",
-] }
+]}
 strum_macros = "*"
 argon2 = "*"
 jsonwebtoken = "*"
@@ -51,3 +51,6 @@ specta = { version = "*", features = ["serde", "typescript", "export"] }
 specta-typescript = "*"
 rocket_cors = { version = "*", default-features = false }
 rocket_ws = "*"
+# using later version to ensure same cookie_store is used as in reqwest
+reqwest_cookie_store = { version = "0.8", features = ["serde"] }
+base64 = "0.22.1"
