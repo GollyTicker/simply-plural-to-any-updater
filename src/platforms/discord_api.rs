@@ -63,7 +63,6 @@ pub async fn get_api_auth_discord_callback(
     database::modify_user_secrets(
         db_pool,
         &user_id,
-        client,
         application_user_secrets,
         |user_with_secrets| {
             user_with_secrets.discord_user_id = Some(discord_user.id.clone().into());
@@ -160,8 +159,8 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
 </html>
 ";
 
-/// This websocket stream sends text messages of the type DiscordRichPresence and
-/// receives messages of the type UpdaterStatus.
+/// This websocket stream sends text messages of the type `DiscordRichPresence` and
+/// receives messages of the type `UpdaterStatus`.
 #[allow(clippy::needless_pass_by_value)]
 #[get("/api/user/platform/discord/bridge-events")]
 pub async fn get_api_user_platform_discord_bridge_events(

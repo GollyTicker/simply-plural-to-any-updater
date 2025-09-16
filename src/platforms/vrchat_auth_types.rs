@@ -1,8 +1,17 @@
+use std::sync::Arc;
+
 use crate::users;
 
 use serde::{Deserialize, Serialize};
 use strum_macros::Display;
 use vrchatapi::models::current_user::RequiresTwoFactorAuth;
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct VRChatUserId {
+    pub inner: String,
+}
+
+pub type Cookies = Arc<reqwest_cookie_store::CookieStoreMutex>;
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct VRChatCredentials {

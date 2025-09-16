@@ -82,7 +82,12 @@ async fn restart_updater_for_user(
 
     let (config, _) = users::create_config_with_strong_constraints(user_id, client, &db_config)?;
 
-    let () = shared_updaters.restart_updater(user_id, config)?;
+    let () = shared_updaters.restart_updater(
+        user_id,
+        config,
+        db_pool.clone(),
+        application_user_secrets,
+    )?;
 
     eprintln!("Restarting user updaters {user_id}. DONE.");
 

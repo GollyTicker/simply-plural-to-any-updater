@@ -159,7 +159,6 @@ pub async fn get_user_secrets(
 pub async fn modify_user_secrets(
     db_pool: &PgPool,
     user_id: &UserId,
-    client: &reqwest::Client,
     application_user_secrets: &secrets::ApplicationUserSecrets,
     modify: impl FnOnce(&mut UserConfigDbEntries<Decrypted, ValidConstraints>),
 ) -> Result<()> {
@@ -168,8 +167,10 @@ pub async fn modify_user_secrets(
 
     modify(&mut user_with_secrets);
 
+    let unused_client = reqwest::Client::new();
+
     let (_, new_config) =
-        users::create_config_with_strong_constraints(user_id, client, &user_with_secrets)?;
+        users::create_config_with_strong_constraints(user_id, &unused_client, &user_with_secrets)?;
 
     let () =
         set_user_config_secrets(db_pool, user_id, new_config, application_user_secrets).await?;

@@ -1,5 +1,8 @@
+use crate::database;
+use crate::platforms::vrchat_auth_types;
 use crate::plurality;
 use crate::record_if_error;
+use crate::users::UserId;
 use crate::{platforms::vrchat_auth, users};
 use anyhow::anyhow;
 use anyhow::{Ok, Result};
@@ -8,7 +11,13 @@ use vrchatapi::{
     models as vrc,
 };
 
-type InitializedUpdater = (VrcConfig, String);
+type InitializedUpdater = (
+    VrcConfig,
+    vrchat_auth_types::Cookies,
+    vrchat_auth_types::VRChatUserId,
+    sqlx::PgPool,
+    database::ApplicationUserSecrets,
+);
 pub struct VRChatUpdater {
     pub last_operation_error: Option<String>,
     initialized: Option<InitializedUpdater>,
@@ -28,12 +37,26 @@ impl VRChatUpdater {
         }
     }
 
-    pub async fn setup(&mut self, config: &users::UserConfigForUpdater) -> Result<()> {
-        let init_value = record_if_error!(
+    pub async fn setup(
+        &mut self,
+        config: &users::UserConfigForUpdater,
+        db_pool: &sqlx::PgPool,
+        application_user_secrets: &database::ApplicationUserSecrets,
+    ) -> Result<()> {
+        let vrchat_init = record_if_error!(
             self,
             vrchat_auth::authenticate_vrchat_with_cookie(config).await
         );
-        self.initialized = Some(init_value?);
+        let (vrchat_config, cookies, vrc_user_id) = vrchat_init?;
+        save_new_cookies_from_vrchat(&cookies, &config.user_id, db_pool, application_user_secrets)
+            .await?; // not recording this error is OK
+        self.initialized = Some((
+            vrchat_config,
+            cookies,
+            vrc_user_id,
+            db_pool.clone(),
+            application_user_secrets.clone(),
+        ));
         Ok(())
     }
 
@@ -70,20 +93,43 @@ async fn update_to_vrchat(
 
     let status_string = plurality::format_fronting_status(&fronting_format, fronts);
 
-    set_vrchat_status(initialized_updater, status_string.as_str()).await
+    set_vrchat_status(initialized_updater, &config.user_id, status_string.as_str()).await
 }
 
 async fn set_vrchat_status(
     initialized_updater: &InitializedUpdater,
+    user_id: &UserId,
     status_string: &str,
 ) -> Result<()> {
     let mut update_request = vrc::UpdateUserRequest::new();
     update_request.status_description = Some(status_string.to_string());
 
-    let (vrchat_config, user_id) = initialized_updater;
-    users_api::update_user(vrchat_config, user_id, Some(update_request))
-        .await
-        .inspect(|_| eprintln!("VRChat status updated successfully to: '{status_string}'"))?;
+    let (vrchat_config, cookies, vrc_user_id, db_pool, application_user_secrets) =
+        initialized_updater;
+    users_api::update_user(
+        vrchat_config,
+        vrc_user_id.inner.as_str(),
+        Some(update_request),
+    )
+    .await
+    .inspect(|_| eprintln!("VRChat status updated successfully to: '{status_string}'"))?;
 
+    save_new_cookies_from_vrchat(cookies, user_id, db_pool, application_user_secrets).await?;
+
+    Ok(())
+}
+
+/// Save new cookies after interaction with vrchat, so that a updater-restart uses the newest cookies.
+async fn save_new_cookies_from_vrchat(
+    cookies: &vrchat_auth_types::Cookies,
+    user_id: &UserId,
+    db_pool: &sqlx::PgPool,
+    application_user_secrets: &database::ApplicationUserSecrets,
+) -> Result<()> {
+    let serialized_cookies = vrchat_auth::serialize_cookie_store(cookies)?;
+    database::modify_user_secrets(db_pool, user_id, application_user_secrets, |user_secrets| {
+        user_secrets.vrchat_cookie = Some(serialized_cookies.into());
+    })
+    .await?;
     Ok(())
 }

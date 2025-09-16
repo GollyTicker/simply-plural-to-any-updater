@@ -53,6 +53,7 @@ attempt_login_without_cookie() {
     TMP_COOKIE="$( echo "$RESPONSE" | jq -r .Right.tmp_cookie )"
     echo "Method: $METHOD"
     echo "tmp_cookie: $TMP_COOKIE"
+    echo "tmp_cookie decoded: $(echo -n "$TMP_COOKIE" | base64 --decode | jq .)"
 }
 
 read_2fa_code_from_terminal() {
@@ -87,6 +88,7 @@ provide_2fa_code_for_new_cookie() {
     VRCHAT_COOKIE="$(echo "$NEW_COOKIE_JSON" | jq -r .cookie)"
     echo "Received new VRChat cookie:"
     echo "$VRCHAT_COOKIE"
+    echo "new cookie decoded: $(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq .)"
     export VRCHAT_COOKIE
 }
 
@@ -98,8 +100,10 @@ check_vrc_cookie_works() {
         return 1
     fi
 
+    VRCHAT_COOKIE_STR="$(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq -r .[0].raw_cookie)"
+
     RESPONSE="$(curl -s --fail-with-body "https://api.vrchat.cloud/api/1/auth/user" \
-        --cookie "$VRCHAT_COOKIE" \
+        --cookie "$VRCHAT_COOKIE_STR" \
         -u "$VRCHAT_USERNAME:$VRCHAT_PASSWORD" \
         -H "User-Agent: SP2Any/0.1.0 does-not-exist-792374@gmail.com"
     )"

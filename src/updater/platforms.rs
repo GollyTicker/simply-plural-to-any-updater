@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use crate::{platforms, plurality, users};
+use crate::{database, platforms, plurality, users};
 
 // NOTE: specta::Type is manually exported in bindings
 #[derive(Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
@@ -113,9 +113,18 @@ impl Updater {
         }
     }
 
-    pub async fn setup(&mut self, config: &users::UserConfigForUpdater) -> Result<()> {
+    pub async fn setup(
+        &mut self,
+        config: &users::UserConfigForUpdater,
+        db_pool: &sqlx::PgPool,
+        application_user_secrets: &database::ApplicationUserSecrets,
+    ) -> Result<()> {
         match self {
-            Self::VRChat(updater) => updater.setup(config).await,
+            Self::VRChat(updater) => {
+                updater
+                    .setup(config, db_pool, application_user_secrets)
+                    .await
+            }
             Self::Discord(updater) => updater.setup(config).await,
             Self::DiscordStatusMessage(updater) => updater.setup(config).await,
         }

@@ -1,14 +1,13 @@
 use crate::platforms::vrchat_auth_types::{
-    TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
-    VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
+    Cookies, TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse,
+    VRChatCredentials, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
+    VRChatUserId,
 };
 use crate::users;
 
 use anyhow::{Result, anyhow};
+use base64::prelude::*;
 use either::Either;
-use reqwest::Url;
-use reqwest::cookie::{self, CookieStore};
-use std::str::FromStr;
 use std::sync::Arc;
 use vrchatapi::{
     apis::{authentication_api, configuration::Configuration as VrcConfig},
@@ -23,15 +22,13 @@ const VRCHAT_UPDATER_USER_AGENT: &str = concat!(
     "gmail.com"
 );
 
-const VRCHAT_COOKIE_URL: &str = "https://api.vrchat.cloud";
-
 /* Called in updater. Cookie is only validated, no new cookie is created. */
 pub async fn authenticate_vrchat_with_cookie(
     config: &users::UserConfigForUpdater,
-) -> Result<(VrcConfig, String)> {
+) -> Result<(VrcConfig, Cookies, VRChatUserId)> {
     let creds = VRChatCredentialsWithCookie::from_config(config);
 
-    let (vrchat_config, _) =
+    let (vrchat_config, cookies) =
         new_vrchat_config_with_basic_auth_and_optional_cookie(Either::Right(&creds))?;
 
     let () = match authentication_api::get_current_user(&vrchat_config).await? {
@@ -42,34 +39,33 @@ pub async fn authenticate_vrchat_with_cookie(
         vrc::EitherUserOrTwoFactor::RequiresTwoFactorAuth(_) => Err(anyhow!("Login failed")),
     }?;
 
-    let user_id = get_vrchat_user_id(config, &vrchat_config).await?;
+    let vrc_user_id = get_vrchat_user_id(config, &vrchat_config).await?;
 
-    Ok((vrchat_config, user_id))
+    Ok((vrchat_config, cookies, vrc_user_id))
 }
 
 pub async fn authenticate_vrchat_for_new_cookie(
     creds: VRChatCredentials,
 ) -> Result<Either<VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse>> {
-    let (vrchat_config, cookie_store) =
+    let (vrchat_config, cookies) =
         new_vrchat_config_with_basic_auth_and_optional_cookie(Either::Left(&creds))?;
 
-    match authentication_api::get_current_user(&vrchat_config).await? {
+    let result = match authentication_api::get_current_user(&vrchat_config).await? {
         // User doesn't need 2fa
         vrc::EitherUserOrTwoFactor::CurrentUser(_me) => {
-            let cookie = extract_new_cookie(&cookie_store)?;
+            let cookie = serialize_cookie_store(&cookies)?;
             let creds_with_cookie = VRChatCredentialsWithCookie::from(creds, cookie);
-            Ok(Either::Left(creds_with_cookie))
+            Either::Left(creds_with_cookie)
         }
 
         vrc::EitherUserOrTwoFactor::RequiresTwoFactorAuth(requires_auth) => {
             let method = TwoFactorAuthMethod::from(&requires_auth);
-            let tmp_cookie = extract_new_cookie(&cookie_store)?;
-            Ok(Either::Right(TwoFactorCodeRequiredResponse {
-                method,
-                tmp_cookie,
-            }))
+            let tmp_cookie = serialize_cookie_store(&cookies)?;
+            Either::Right(TwoFactorCodeRequiredResponse { method, tmp_cookie })
         }
-    }
+    };
+
+    Ok(result)
 }
 
 pub async fn authenticate_vrchat_for_new_cookie_with_2fa(
@@ -80,13 +76,13 @@ pub async fn authenticate_vrchat_for_new_cookie_with_2fa(
         cookie: creds_with_tfa.tmp_cookie.clone(),
     };
 
-    let (vrchat_config, cookie_store) = new_vrchat_config_with_basic_auth_and_optional_cookie(
+    let (vrchat_config, cookies) = new_vrchat_config_with_basic_auth_and_optional_cookie(
         Either::Right(&creds_with_tmp_cookie),
     )?;
 
     let () = vrchat_verify_2fa(creds_with_tfa.method, creds_with_tfa.code, &vrchat_config).await?;
 
-    let cookie = extract_new_cookie(&cookie_store)?;
+    let cookie = serialize_cookie_store(&cookies)?;
 
     Ok(VRChatCredentialsWithCookie::from(
         creds_with_tfa.creds,
@@ -121,44 +117,51 @@ async fn vrchat_verify_2fa(
 
 fn new_vrchat_config_with_basic_auth_and_optional_cookie(
     creds: Either<&VRChatCredentials, &VRChatCredentialsWithCookie>,
-) -> Result<(VrcConfig, Arc<reqwest::cookie::Jar>)> {
-    let cookie_store = Arc::new(cookie::Jar::default());
-    let cookie_url = &Url::from_str(VRCHAT_COOKIE_URL)?;
+) -> Result<(VrcConfig, Cookies)> {
+    let my_cookie_store = Arc::new(reqwest_cookie_store::CookieStoreMutex::new(
+        reqwest_cookie_store::CookieStore::new(None),
+    ));
 
     let username = creds.either(|c| &c.username, |c| &c.creds.username);
     let password = creds.either(|c| &c.password, |c| &c.creds.password);
-    let cookie = creds.right().map(|c| &c.cookie);
+    let cookie_str = creds.right().map(|c| &c.cookie);
 
-    if let Some(cookie) = cookie {
-        cookie_store.add_cookie_str(cookie, cookie_url);
+    if let Some(serialized_cookies) = cookie_str {
+        let cookies = deserialize_cookie_store(serialized_cookies)?;
+        let mut cs = my_cookie_store.lock().map_err(|e| anyhow!(e.to_string()))?;
+        *cs = cookies;
     }
 
     let vrchat_config = VrcConfig {
         user_agent: Some(VRCHAT_UPDATER_USER_AGENT.to_string()),
         basic_auth: Some((username.clone(), Some(password.clone()))),
         client: reqwest::Client::builder()
-            .cookie_provider(cookie_store.clone())
+            .cookie_provider(my_cookie_store.clone())
             .build()?,
         ..Default::default()
     };
 
-    Ok((vrchat_config, cookie_store))
+    Ok((vrchat_config, my_cookie_store))
 }
 
-fn extract_new_cookie(cookie_store: &Arc<cookie::Jar>) -> Result<String> {
-    let cookie_url = &Url::from_str(VRCHAT_COOKIE_URL)?;
-    let cookie_value = cookie_store
-        .cookies(cookie_url)
-        .ok_or_else(|| anyhow!("no cookies"))?;
-    Ok(cookie_value.to_str()?.to_owned())
+pub fn serialize_cookie_store(cookies: &Cookies) -> Result<String> {
+    let a = cookies.lock().map_err(|e| anyhow!(e.to_string()))?.clone();
+    let b = serde_json::to_string(&a)?;
+    Ok(BASE64_STANDARD.encode(b))
+}
+
+fn deserialize_cookie_store(s: &String) -> Result<reqwest_cookie_store::CookieStore> {
+    let base64_decoded: String = BASE64_STANDARD.decode(s)?.try_into()?;
+    let cookies = serde_json::from_str(base64_decoded.as_str())?;
+    Ok(cookies)
 }
 
 async fn get_vrchat_user_id(
     config: &users::UserConfigForUpdater,
     vrchat_config: &VrcConfig,
-) -> Result<String> {
+) -> Result<VRChatUserId> {
     match authentication_api::get_current_user(vrchat_config).await? {
-        vrc::EitherUserOrTwoFactor::CurrentUser(user) => Ok(user.id),
+        vrc::EitherUserOrTwoFactor::CurrentUser(user) => Ok(VRChatUserId { inner: user.id }),
         vrc::EitherUserOrTwoFactor::RequiresTwoFactorAuth(_) => Err(anyhow!(
             "Cookie invalid for user {}",
             config.vrchat_username.secret

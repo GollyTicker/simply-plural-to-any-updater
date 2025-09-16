@@ -38,7 +38,6 @@ main() {
     check_system_fronts_set "B"
 
 
-    stop_updater
     clear_all_fronts
     echo "✅✅✅ Updater Integration Test ✅✅✅"
 }
@@ -52,8 +51,8 @@ check_system_fronts_set() {
         check_vrc_status_string_equals "F˸Ann‚Bor‚Dae‚Cst"
         check_discord_status_string_equals "F: Annalea 💖 A., Borgn B., Daenssa 📶 D., Cstm First"
     elif [[ "$SET" == "B" ]]; then
-        check_vrc_status_string_equals "F˸ tešt t․"
-        check_discord_status_string_equals "F: tešt ▶️ t."
+        check_vrc_status_string_equals "F˸ tš"
+        check_discord_status_string_equals "F: tš▶️漢ク汉漢"
     else
         return 1
     fi
@@ -63,8 +62,10 @@ check_system_fronts_set() {
 check_vrc_status_string_equals() {
     EXPECTED="$1"
 
+    VRCHAT_COOKIE_STR="$(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq -r .[0].raw_cookie)"
+
     RESPONSE="$(curl -s "https://api.vrchat.cloud/api/1/auth/user" \
-        --cookie "$VRCHAT_COOKIE" \
+        --cookie "$VRCHAT_COOKIE_STR" \
         -u "$VRCHAT_USERNAME:$VRCHAT_PASSWORD" \
         -H "User-Agent: SP2Any/0.1.0 does-not-exist-792374@gmail.com"
     )"

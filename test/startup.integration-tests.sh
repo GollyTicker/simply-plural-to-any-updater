@@ -79,7 +79,6 @@ main() {
     reset_changed_variables
 
 
-    stop_updater
     clear_all_fronts
     echo "✅✅✅ Updater Integration Test ✅✅✅"
 }
@@ -97,7 +96,7 @@ check_updater_loop_continues() {
 
 check_updater_failure() {
     echo "check_updater_failure"
-    docker logs sp2any-api 2>&1 | grep -q "Error"
+    [[ "$( docker logs sp2any-api 2>&1 | grep "Error" | wc -l )" != "0" ]]
 }
 
 check_updater() {
@@ -142,7 +141,6 @@ setup_discord_status_message_not_available() {
 setup_vrchat_misconfigured() {
     echo "setup_vrchat_misconfigured"
     
-    # todo. apparently vrchat doesn't care about wrong username/password as long as the cookie is valid!
     #VRCHAT_USERNAME="invalid"
     VRCHAT_PASSWORD="invalid2348" # we still set an invalid password here to ensure, that no 2FA code is sent to the email
     VRCHAT_COOKIE=""

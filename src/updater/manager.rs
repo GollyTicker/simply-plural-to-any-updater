@@ -1,8 +1,8 @@
 use crate::plurality::{self};
 use crate::updater::{self, UpdaterStatus, work_loop};
-use crate::users;
 use crate::users::UserId;
 use crate::{communication, setup};
+use crate::{database, users};
 use anyhow::{Result, anyhow};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -125,6 +125,8 @@ impl UpdaterManager {
         &self,
         user_id: &UserId,
         config: users::UserConfigForUpdater,
+        db_pool: sqlx::PgPool,
+        application_user_secrets: &database::ApplicationUserSecrets,
     ) -> Result<()> {
         let mut locked_task = self.tasks.lock().map_err(|e| anyhow!(e.to_string()))?;
 
@@ -138,8 +140,9 @@ impl UpdaterManager {
         let () = self.recreate_updater_statuses(user_id)?;
 
         let owned_self = self.to_owned();
+        let application_user_secrets = application_user_secrets.clone();
         let work_loop_task = tokio::spawn(async move {
-            work_loop::run_loop(config, owned_self).await;
+            work_loop::run_loop(config, owned_self, db_pool, &application_user_secrets).await;
         });
 
         locked_task.insert(

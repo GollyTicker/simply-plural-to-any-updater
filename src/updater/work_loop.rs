@@ -3,7 +3,7 @@ use tokio::time::sleep;
 
 use crate::updater::platforms::{Platform, Updater, UpdaterStatus};
 use crate::updater::{manager, platforms};
-use crate::{plurality, users};
+use crate::{database, plurality, users};
 use anyhow::Result;
 use chrono::Utc;
 
@@ -15,6 +15,8 @@ type UserUpdaters = HashMap<Platform, Updater>;
 pub async fn run_loop(
     config: users::UserConfigForUpdater,
     shared_updaters: manager::UpdaterManager,
+    db_pool: sqlx::PgPool,
+    application_user_secrets: &database::ApplicationUserSecrets,
 ) -> ! {
     eprintln!("Running Updater ...");
 
@@ -26,7 +28,10 @@ pub async fn run_loop(
 
     for u in updaters.values_mut() {
         if u.enabled(&config) {
-            log_error_and_continue(&u.platform().to_string(), u.setup(&config).await);
+            log_error_and_continue(
+                &u.platform().to_string(),
+                u.setup(&config, &db_pool, application_user_secrets).await,
+            );
         }
     }
 
