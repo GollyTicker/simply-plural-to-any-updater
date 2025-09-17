@@ -2,6 +2,6 @@
 
 set -euo pipefail
 
-(cd frontend && npm ci)
+(cd frontend && npm ci --ignore-scripts)
 
 cargo tauri build --verbose "$@"
