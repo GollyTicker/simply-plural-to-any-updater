@@ -105,6 +105,13 @@ fn test_format_vrchat_status_cleans_names() {
 }
 
 #[test]
+fn test_format_vrchat_status_doesnt_clean_specifically_configured_name() {
+    let config = mock_formatter_for_tests("F:", "N/A", 3, VRCHAT_MAX_ALLOWED_STATUS_LENGTH);
+    let fronts = vec![mock_member_content("UN", "User😊Name")];
+    assert_eq!(format_fronting_status(&config, &fronts), "F: User😊Name");
+}
+
+#[test]
 fn test_format_vrchat_status_complex_truncation_and_vrc_name() {
     let config = mock_formatter_for_tests("F:", "N/A", 4, VRCHAT_MAX_ALLOWED_STATUS_LENGTH);
     let fronts = vec![

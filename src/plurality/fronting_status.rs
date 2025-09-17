@@ -40,10 +40,12 @@ fn collect_clean_fronter_names(
     } else {
         fronts
             .iter()
-            .map(super::simply_plural_model::Fronter::preferred_vrchat_status_name)
-            .map(|name| match fronting_format.cleaning {
-                CleanForPlatform::NoClean => name.to_string(),
-                CleanForPlatform::VRChat => clean_name_for_vrchat_status(name),
+            .map(|f| match fronting_format.cleaning {
+                CleanForPlatform::NoClean => f.preferred_vrchat_status_name().to_owned(),
+                CleanForPlatform::VRChat => f
+                    .vrchat_status_name
+                    .clone()
+                    .unwrap_or_else(|| clean_name_for_vrchat_status(&f.name)),
             })
             .collect()
     }
