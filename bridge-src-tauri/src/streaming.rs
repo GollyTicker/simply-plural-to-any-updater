@@ -1,7 +1,7 @@
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, stream::StreamExt};
-use sp2any::for_discord_bridge::DiscordRichPresence;
 use sp2any::for_discord_bridge::FireAndForgetChannel;
+use sp2any::platforms::{BridgeToServerSseMessage, ServerToBridgeSseMessage};
 use sp2any::updater;
 use tokio::net::TcpStream;
 use tauri::Manager;
@@ -26,7 +26,8 @@ pub fn stream_updater_status_to_ws_messages_task(app: tauri::AppHandle, mut ws_s
             let m = updater_status_receiver.recv().await;
             match m {
                 Some(status) => {
-                    let json = match serde_json::to_string(&status) {
+                    let message = BridgeToServerSseMessage { discord_updater_status: status };
+                    let json = match serde_json::to_string(&message) {
                         Ok(x) => x,
                         Err(err) => {
                             log::warn!("Serde serialisation error: {err}");
@@ -60,14 +61,14 @@ pub fn stream_updater_status_to_ws_messages_task(app: tauri::AppHandle, mut ws_s
 pub fn stream_ws_messages_to_rich_presence_task(app: tauri::AppHandle, mut ws_read: WsReceiver) -> JoinHandle<()> {
     
     tauri::async_runtime::spawn(async move {
-        let rich_presence_channel = app.state::<FireAndForgetChannel<DiscordRichPresence>>();
+        let rich_presence_channel = app.state::<FireAndForgetChannel<ServerToBridgeSseMessage>>();
 
         log::info!("WS: Starting listener");
         while let Some(msg) = ws_read.next().await {
             match msg {
                 Ok(Message::Text(text)) => {
                     log::info!("WS: Message: '{text}'");
-                    let _ = serde_json::from_str(&text)
+                    let _ = serde_json::from_str::<ServerToBridgeSseMessage>(&text)
                         .map(|p| rich_presence_channel.send(p))
                         .inspect(|_| {
                             notify_user_on_status(

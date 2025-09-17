@@ -1,5 +1,5 @@
 use crate::{
-    plurality,
+    plurality, updater,
     users::{self},
 };
 use anyhow::Result;
@@ -37,6 +37,17 @@ impl DiscordUpdater {
         // fronts are sent to fronter_channel automatically by updater work loop
         Ok(())
     }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct ServerToBridgeSseMessage {
+    // If None, then remove old actvity and show nothing.
+    pub discord_rich_presence: Option<DiscordRichPresence>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct BridgeToServerSseMessage {
+    pub discord_updater_status: updater::UpdaterStatus,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

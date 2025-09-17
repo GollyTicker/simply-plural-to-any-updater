@@ -6,9 +6,9 @@ use anyhow::{Result, anyhow};
 use directories::ProjectDirs;
 use futures::stream::StreamExt;
 use sp2any::for_discord_bridge;
-use sp2any::for_discord_bridge::DiscordRichPresence;
 use sp2any::for_discord_bridge::FireAndForgetChannel;
 use sp2any::license;
+use sp2any::platforms::ServerToBridgeSseMessage;
 use sp2any::updater;
 use std::env;
 use std::fs;
@@ -52,7 +52,7 @@ fn get_credentials_path() -> Result<PathBuf> {
 async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
     log::debug!("initiate_discord_rpc_loop");
     let rich_presence_channel = app
-        .state::<FireAndForgetChannel<DiscordRichPresence>>()
+        .state::<FireAndForgetChannel<ServerToBridgeSseMessage>>()
         .inner()
         .clone();
     let updater_status_channel = app
@@ -220,7 +220,7 @@ pub fn run() -> Result<()> {
 
     let logs_dir = get_data_dir()?.join("logs");
 
-    let rich_presence_channel: FireAndForgetChannel<DiscordRichPresence> =
+    let rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage> =
         for_discord_bridge::fire_and_forget_channel();
     let updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus> =
         for_discord_bridge::fire_and_forget_channel();

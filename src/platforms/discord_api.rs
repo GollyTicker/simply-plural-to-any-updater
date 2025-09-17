@@ -1,5 +1,5 @@
 use crate::communication::HttpResult;
-use crate::platforms::discord;
+use crate::platforms::{BridgeToServerSseMessage, ServerToBridgeSseMessage, discord};
 use crate::updater::{Platform, UpdaterStatus};
 use crate::users::JwtString;
 use crate::{database, updater, users};
@@ -159,8 +159,8 @@ const DISCORD_OAUTH_SUCCESS_HTML: &str = "
 </html>
 ";
 
-/// This websocket stream sends text messages of the type `DiscordRichPresence` and
-/// receives messages of the type `UpdaterStatus`.
+/// This websocket stream sends text messages of the type `ServerToBridgeSseMessage` and
+/// receives messages of the type `BridgeToServerSseMessage`.
 #[allow(clippy::needless_pass_by_value)]
 #[get("/api/user/platform/discord/bridge-events")]
 pub async fn get_api_user_platform_discord_bridge_events(
@@ -175,11 +175,8 @@ pub async fn get_api_user_platform_discord_bridge_events(
     let config = database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
     let (config, _) = users::create_config_with_strong_constraints(&user_id, client, &config)?;
 
-    // todo. if discord is not enabled, then send the appropriate flags.
-
     let mut fronting_channel = shared_updaters.subscribe_fronter_channel(&user_id)?;
 
-    // todo. we need something which puts these values into the hashmap!
     let foreign_status_channel = shared_updaters.get_foreign_status_channel(&user_id)?;
 
     let notify = move |s: UpdaterStatus| foreign_status_channel.send(Some((Platform::Discord, s)));
@@ -206,9 +203,9 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                 break;
                             },
                             Some(Ok(ws::Message::Text(str))) => {
-                                let status = match serde_json::from_str(&str) {
+                                let message: BridgeToServerSseMessage = match serde_json::from_str(&str) {
                                     Ok(s) => {
-                                        eprintln!("{user_id}: WS: message deserialised: {s}");
+                                        eprintln!("{user_id}: WS: message deserialised: {s:?}");
                                         s
                                     },
                                     Err(e) => {
@@ -217,7 +214,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                         break; // end on reading error
                                     }
                                 };
-                                notify(status);
+                                notify(message.discord_updater_status);
                                 continue;
                             },
                             Some(Ok(unknown_message)) => {
@@ -237,7 +234,8 @@ pub async fn get_api_user_platform_discord_bridge_events(
                             let rich_presence_result = discord::render_fronts_to_discord_rich_presence(fronters, &config);
                             match rich_presence_result {
                                 Ok(rich_presence) => {
-                                    let payload = match rocket::serde::json::to_string(&rich_presence) {
+                                    let message = ServerToBridgeSseMessage {discord_rich_presence: Some(rich_presence)};
+                                    let payload = match rocket::serde::json::to_string(&message) {
                                         Ok(p) => p,
                                         Err(e) => {
                                             eprintln!("{user_id}: Failed to serialize rich presence: {e}");

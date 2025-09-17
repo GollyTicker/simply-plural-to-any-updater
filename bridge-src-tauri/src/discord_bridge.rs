@@ -8,6 +8,7 @@ use discord_rich_presence::{
 use serde::Deserialize;
 use sp2any::{
     for_discord_bridge::{DiscordRichPresence, FireAndForgetChannel},
+    platforms::ServerToBridgeSseMessage,
     updater::{self},
 };
 use tokio::time::sleep;
@@ -21,7 +22,7 @@ const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 
 pub async fn discord_ipc_loop(
     app: &tauri::AppHandle,
-    rich_presence_channel: FireAndForgetChannel<DiscordRichPresence>,
+    rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage>,
     updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
 ) -> never::Never {
     loop {
@@ -55,17 +56,22 @@ pub async fn discord_ipc_loop(
 async fn activity_loop(
     app: &tauri::AppHandle,
     client: &mut DiscordIpcClient,
-    rich_presence_channel: FireAndForgetChannel<DiscordRichPresence>,
+    rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage>,
     updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
 ) -> Result<never::Never> {
     let mut receiver = rich_presence_channel.subscribe();
     loop {
         log::info!("Waiting for SP2Any backend events...");
-        // todo. we need to receive a proper end of the discord rich presence here and clear activity
-        if let Some(discord_presence) = receiver.recv().await {
-            set_activity(client, &discord_presence)?;
+        if let Some(message) = receiver.recv().await {
+            match message.discord_rich_presence {
+                Some(drp) => set_activity(client, &drp)?,
+                None => clear_activity(client)?,
+            }
             updater_status_channel.send(updater::UpdaterStatus::Running);
-            notify_user_on_status(app, "Connected to SP2Any and syncing to local Discord client.");
+            notify_user_on_status(
+                app,
+                "Connected to SP2Any and syncing to local Discord client.",
+            );
         } else {
             clear_activity(client)?;
             // updater status sending handled by caller

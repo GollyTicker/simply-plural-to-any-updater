@@ -13,7 +13,7 @@ pub enum Platform {
 }
 
 // NOTE: specta::Type is manually exported in bindings
-#[derive(Clone, Serialize, Deserialize, strum_macros::Display)]
+#[derive(Clone, Serialize, Deserialize, strum_macros::Display, Debug)]
 pub enum UpdaterStatus {
     Disabled,
     Running,
