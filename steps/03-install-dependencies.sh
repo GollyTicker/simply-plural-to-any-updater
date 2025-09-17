@@ -40,5 +40,5 @@ patch "$PATCHED/src/discord_ipc.rs" < steps/discord-rich-presence.discord_ipc.rs
 echo "Patch OK!"
 
 # npm
-(cd bridge-frontend && npm ci)
-(cd frontend && npm ci)
+(cd bridge-frontend && npm ci --ignore-scripts)
+(cd frontend && npm ci --ignore-scripts)

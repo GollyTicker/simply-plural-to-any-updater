@@ -17,7 +17,7 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 ## Project Setup
 
 ```sh
-npm install
+npm install --ignore-scripts
 ```
 
 ### Compile and Hot-Reload for Development

@@ -27,9 +27,9 @@ jobs:
     - name: Update Node dependencies
       run: |
         cd frontend
-        npm install -g npm-check-updates
+        npm install --ignore-scripts -g npm-check-updates
         ncu -u
-        npm install
+        npm install --ignore-scripts
         cd ..
 
     - name: Has Changes
