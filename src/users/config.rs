@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::{
     config_value, config_value_if,
-    database::{self, SecretType},
+    database::{self, Decrypted, SecretType, ValidConstraints},
     users::model::UserId,
 };
 use serde::{Deserialize, Serialize};
@@ -115,7 +115,7 @@ pub struct UserConfigForUpdater {
     pub simply_plural_base_url: String,
     pub discord_base_url: String,
 
-    // Note: v Keep this in sync with UserConfigDbEntries! v
+    // Note: v Keep this in sync with UserConfigDbEntries AND the ts-bindings! v
     pub wait_seconds: WaitSeconds,
 
     pub system_name: String,
@@ -135,6 +135,48 @@ pub struct UserConfigForUpdater {
     pub vrchat_username: database::Decrypted,
     pub vrchat_password: database::Decrypted,
     pub vrchat_cookie: database::Decrypted,
+}
+
+#[derive(specta::Type, Serialize, Deserialize, Clone)]
+pub struct UserConfigForUser {
+    pub wait_seconds: Option<i32>,
+
+    pub system_name: Option<String>,
+
+    pub status_prefix: Option<String>,
+    pub status_no_fronts: Option<String>,
+    pub status_truncate_names_to: Option<i32>,
+
+    pub enable_discord: bool,
+    pub enable_discord_status_message: bool,
+    pub enable_vrchat: bool,
+
+    pub simply_plural_token: Option<Decrypted>,
+    pub discord_status_message_token: Option<Decrypted>,
+    pub vrchat_username: Option<Decrypted>,
+    pub vrchat_password: Option<Decrypted>,
+}
+
+impl From<UserConfigDbEntries<Decrypted, ValidConstraints>> for UserConfigForUser {
+    fn from(value: UserConfigDbEntries<Decrypted, ValidConstraints>) -> Self {
+        Self {
+            wait_seconds: value.wait_seconds,
+            system_name: value.system_name,
+            status_prefix: value.status_prefix,
+            status_no_fronts: value.status_no_fronts,
+            status_truncate_names_to: value.status_truncate_names_to,
+            enable_discord: value.enable_discord.unwrap_or_default(),
+            enable_discord_status_message: value
+                .enable_discord_status_message
+                .unwrap_or_default(),
+            enable_vrchat: value.enable_vrchat.unwrap_or_default(),
+            simply_plural_token: value.simply_plural_token,
+            discord_status_message_token: value.discord_status_message_token,
+            vrchat_username: value.vrchat_username,
+            vrchat_password: value.vrchat_password,
+            
+        }
+    }
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug, Default)]

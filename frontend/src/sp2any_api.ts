@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { JwtString, UserLoginCredentials, UserUpdatersStatuses } from './sp2any.bindings';
+import type { JwtString, UserConfigDbEntries, UserLoginCredentials, UserUpdatersStatuses } from './sp2any.bindings';
 
 export const http = axios.create({
   baseURL: 'http://localhost:8080',
@@ -16,6 +16,15 @@ export const sp2any_api = {
     let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
     let response = await http.get<UserUpdatersStatuses>('/api/updaters/status', { headers: { Authorization: `Bearer ${jwtString.inner}` } });
     return response.data;
+  },
+  get_config: async function (): Promise<UserConfigDbEntries> {
+    let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
+    let response = await http.get<UserConfigDbEntries>('/api/user/config', { headers: { Authorization: `Bearer ${jwtString.inner}` } });
+    return response.data;
+  },
+  set_config: async function (config: UserConfigDbEntries): Promise<void> {
+    let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
+    await http.post('/api/user/config', config, { headers: { Authorization: `Bearer ${jwtString.inner}` } });
   }
 }
 

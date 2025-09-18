@@ -2,7 +2,7 @@
 extern crate rocket;
 
 mod communication;
-mod database;
+pub mod database;
 pub mod platforms;
 mod plurality;
 pub mod setup;
