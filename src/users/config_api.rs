@@ -10,8 +10,7 @@ pub async fn get_api_user_config(
     db_pool: &State<PgPool>,
     jwt: jwt::Jwt,
     app_user_secrets: &State<database::ApplicationUserSecrets>,
-) -> HttpResult<Json<config::UserConfigForUser>>
-{
+) -> HttpResult<Json<config::UserConfigForUser>> {
     let user_id = jwt.user_id()?;
 
     let user_config = database::get_user_secrets(db_pool, &user_id, app_user_secrets).await?;
