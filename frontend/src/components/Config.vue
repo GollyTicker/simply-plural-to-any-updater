@@ -85,11 +85,13 @@ function setSecret(key: SecretKeys, event: Event) {
 async function fetchConfig() {
   try {
     config.value = await sp2any_api.get_config();
+    console.log("Received user config: ", config.value);
   } catch (e) {
     console.warn(e);
   }
 };
 
+// todo. continue here
 async function saveConfig() {
   try {
     await sp2any_api.set_config(config.value);
