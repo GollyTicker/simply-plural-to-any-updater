@@ -28,9 +28,9 @@ where
     pub status_no_fronts: Option<String>,
     pub status_truncate_names_to: Option<i32>,
 
-    pub enable_discord: Option<bool>,
-    pub enable_discord_status_message: Option<bool>,
-    pub enable_vrchat: Option<bool>,
+    pub enable_discord: bool,
+    pub enable_discord_status_message: bool,
+    pub enable_vrchat: bool,
 
     pub simply_plural_token: Option<Secret>,
     pub discord_status_message_token: Option<Secret>,
@@ -54,11 +54,9 @@ impl<S: SecretType> UserConfigDbEntries<S> {
             status_truncate_names_to: self
                 .status_truncate_names_to
                 .or(defaults.status_truncate_names_to),
-            enable_discord: self.enable_discord.or(defaults.enable_discord),
-            enable_discord_status_message: self
-                .enable_discord_status_message
-                .or(defaults.enable_discord_status_message),
-            enable_vrchat: self.enable_vrchat.or(defaults.enable_vrchat),
+            enable_discord: self.enable_discord,
+            enable_discord_status_message: self.enable_discord_status_message,
+            enable_vrchat: self.enable_vrchat,
             simply_plural_token: self
                 .simply_plural_token
                 .clone()
@@ -91,9 +89,9 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
             status_no_fronts: Some(String::from("none?")),
             status_truncate_names_to: Some(3),
             wait_seconds: Some(60),
-            enable_discord: Some(false),
-            enable_discord_status_message: Some(false),
-            enable_vrchat: Some(false),
+            enable_discord: false,
+            enable_discord_status_message: false,
+            enable_vrchat: false,
             valid_constraints: None,
             system_name: None,
             simply_plural_token: None,
@@ -108,14 +106,15 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
     }
 }
 
-/* Never convert this back into a DB entry, as it contains defaults which should not be persisted into the DB. */
+/// user specific config values in the form needed for the updaters
+/// !! Never convert this back into a DB entry, as it contains defaults which should not be persisted into the DB.
 pub struct UserConfigForUpdater {
     pub client: reqwest::Client,
     pub user_id: UserId,
     pub simply_plural_base_url: String,
     pub discord_base_url: String,
 
-    // Note: v Keep this in sync with UserConfigDbEntries! v
+    // Note: v Keep this in sync with UserConfigDbEntries AND the ts-bindings! v
     pub wait_seconds: WaitSeconds,
 
     pub system_name: String,
@@ -171,10 +170,9 @@ where
     let db_config = database::downgrade(db_config);
     let local_config_with_defaults = db_config.with_defaults();
 
-    let enable_discord = config_value!(local_config_with_defaults, enable_discord)?;
-    let enable_discord_status_message =
-        config_value!(local_config_with_defaults, enable_discord_status_message)?;
-    let enable_vrchat = config_value!(local_config_with_defaults, enable_vrchat)?;
+    let enable_discord = local_config_with_defaults.enable_discord;
+    let enable_discord_status_message = local_config_with_defaults.enable_discord_status_message;
+    let enable_vrchat = local_config_with_defaults.enable_vrchat;
 
     let config = UserConfigForUpdater {
         user_id: user_id.clone(),
@@ -262,9 +260,9 @@ mod tests {
             status_prefix: Some("SP:".to_string()),
             status_no_fronts: Some("No one fronting".to_string()),
             status_truncate_names_to: Some(5),
-            enable_discord: Some(true),
-            enable_discord_status_message: Some(true),
-            enable_vrchat: Some(false),
+            enable_discord: true,
+            enable_discord_status_message: true,
+            enable_vrchat: false,
             simply_plural_token: Some(Decrypted {
                 secret: "sp_token_123".to_string(),
             }),

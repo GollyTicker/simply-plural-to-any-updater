@@ -42,7 +42,7 @@ impl<'r> Decode<'r, Postgres> for Encrypted {
     }
 }
 
-#[derive(Default, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq)]
+#[derive(Default, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq, specta::Type)]
 pub struct Decrypted {
     pub secret: String,
 }

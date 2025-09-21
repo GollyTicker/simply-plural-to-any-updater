@@ -1,8 +1,6 @@
 use anyhow::Result;
 use sp2any::{
-    for_discord_bridge::UserLoginCredentials,
-    license,
-    users::{Email, JwtString, UserProvidedPassword},
+    database::Decrypted, for_discord_bridge::UserLoginCredentials, license, users::{Email, JwtString, UserProvidedPassword}
 };
 use specta::{
     self,
@@ -15,9 +13,12 @@ const DESTINATION: &str = "./frontend/src/sp2any.bindings.ts";
 fn main() -> Result<()> {
     println!("Exporting to {DESTINATION}...");
     let conf = &ExportConfiguration::default();
-    let defs = [export::<Email>(conf)?,
+    let defs = [
+        export::<Email>(conf)?,
         export::<UserProvidedPassword>(conf)?,
         export::<UserLoginCredentials>(conf)?,
+        export::<Decrypted>(conf)?,
+        // export::<UserConfigForUser>(conf)?, // todo. what do I do here?
         export::<JwtString>(conf)?,
         "export type Platform = \"VRChat\" | \"Discord\" | \"DiscordStatusMessage\"".to_owned(),
         "export type UpdaterStatus = \"Disabled\" | \"Running\" | { \"Error\": string }".to_owned(),
@@ -25,8 +26,9 @@ fn main() -> Result<()> {
         format!(
             "export const LICENSE_INFO_SHORT_HTML: string = \"{}\"",
             license::info_short_html().replace('"', "\\\"")
-        )];
-    fs::write(DESTINATION, defs.join("\n"))?;
+        ),
+    ];
+    fs::write(DESTINATION, defs.map(|s| s + ";").join("\n"))?;
     println!("Done.");
     Ok(())
 }

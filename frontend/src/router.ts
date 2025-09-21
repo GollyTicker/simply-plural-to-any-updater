@@ -11,7 +11,7 @@ const routes: any = [
   { path: '/login', component: Login },
   { path: '/status', component: Status },
   { path: '/config', component: Config },
-  { path: '/discord-oauth', compoment: DiscordAuthButton }
+  { path: '/discord-oauth', component: DiscordAuthButton }
 ];
 
 const router = createRouter({
