@@ -64,24 +64,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, type Ref } from 'vue';
-import type { Decrypted, UserConfigForUser } from '@/sp2any.bindings';
+import type { Decrypted, UserConfigDbEntries } from '@/sp2any.bindings';
 import { sp2any_api } from '@/sp2any_api';
 
-const config: Ref<UserConfigForUser> = ref({
-  discord_status_message_token: null,
-  enable_discord: false,
-  enable_discord_status_message: false,
-  enable_vrchat: false,
-  simply_plural_token: null,
-  status_no_fronts: null,
-  status_prefix: null,
-  status_truncate_names_to: null,
-  system_name: null,
-  vrchat_password: null,
-  vrchat_username: null,
-  wait_seconds: null,
-});
-type SecretKeys = "simply_plural_token" | "vrchat_password" | "vrchat_username" | "discord_status_message_token";
+const config: Ref<UserConfigDbEntries> = ref({});
+type SecretKeys = "simply_plural_token" | "vrchat_password" | "vrchat_cookie" | "vrchat_username" | "discord_status_message_token";
 
 const status = ref('');
 
@@ -91,7 +78,7 @@ function setSecret(key: SecretKeys, event: Event) {
     config.value[key] = <Decrypted>{ secret: target.value };
   }
   else {
-    config.value[key] = null;
+    config.value[key] = undefined;
   }
 }
 

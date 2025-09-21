@@ -28,7 +28,6 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
         .manage(setup.application_user_secrets)
         .manage(setup.client)
         .manage(setup.shared_updaters)
-        .manage(setup.discord_oauth_secrets)
         .mount(
             "/",
             routes![
@@ -42,7 +41,6 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
                 platforms::webview_api::get_api_fronting_by_user_id,
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_request,
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_resolve,
-                platforms::discord_api::get_api_auth_discord_callback,
                 platforms::discord_api::get_api_user_platform_discord_bridge_events,
             ],
         )

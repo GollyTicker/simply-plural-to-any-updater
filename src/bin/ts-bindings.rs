@@ -18,7 +18,21 @@ fn main() -> Result<()> {
         export::<UserProvidedPassword>(conf)?,
         export::<UserLoginCredentials>(conf)?,
         export::<Decrypted>(conf)?,
-        // export::<UserConfigForUser>(conf)?, // todo. what do I do here?
+"export type UserConfigDbEntries = {
+    wait_seconds?: number;
+    system_name?: string;
+    status_prefix?: string;
+    status_no_fronts?: string;
+    status_truncate_names_to?: number;
+    enable_discord?: boolean;
+    enable_discord_status_message?: boolean;
+    enable_vrchat?: boolean;
+    simply_plural_token?: Decrypted;
+    discord_status_message_token?: Decrypted;
+    vrchat_username?: Decrypted;
+    vrchat_password?: Decrypted;
+    vrchat_cookie?: Decrypted;
+}".to_owned(),
         export::<JwtString>(conf)?,
         "export type Platform = \"VRChat\" | \"Discord\" | \"DiscordStatusMessage\"".to_owned(),
         "export type UpdaterStatus = \"Disabled\" | \"Running\" | { \"Error\": string }".to_owned(),

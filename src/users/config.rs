@@ -34,9 +34,6 @@ where
 
     pub simply_plural_token: Option<Secret>,
     pub discord_status_message_token: Option<Secret>,
-    pub discord_user_id: Option<Secret>,
-    pub discord_oauth_access_token: Option<Secret>,
-    pub discord_oauth_refresh_token: Option<Secret>,
     pub vrchat_username: Option<Secret>,
     pub vrchat_password: Option<Secret>,
     pub vrchat_cookie: Option<Secret>,
@@ -65,15 +62,6 @@ impl<S: SecretType> UserConfigDbEntries<S> {
                 .discord_status_message_token
                 .clone()
                 .or(defaults.discord_status_message_token),
-            discord_user_id: self.discord_user_id.clone().or(defaults.discord_user_id),
-            discord_oauth_access_token: self
-                .discord_oauth_access_token
-                .clone()
-                .or(defaults.discord_oauth_access_token),
-            discord_oauth_refresh_token: self
-                .discord_oauth_refresh_token
-                .clone()
-                .or(defaults.discord_oauth_refresh_token),
             vrchat_username: self.vrchat_username.clone().or(defaults.vrchat_username),
             vrchat_password: self.vrchat_password.clone().or(defaults.vrchat_password),
             vrchat_cookie: self.vrchat_cookie.clone().or(defaults.vrchat_cookie),
@@ -96,9 +84,6 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
             system_name: None,
             simply_plural_token: None,
             discord_status_message_token: None,
-            discord_user_id: None,
-            discord_oauth_access_token: None,
-            discord_oauth_refresh_token: None,
             vrchat_username: None,
             vrchat_password: None,
             vrchat_cookie: None,
@@ -128,9 +113,6 @@ pub struct UserConfigForUpdater {
 
     pub simply_plural_token: database::Decrypted,
     pub discord_status_message_token: database::Decrypted,
-    pub discord_user_id: database::Decrypted,
-    pub discord_oauth_access_token: database::Decrypted,
-    pub discord_oauth_refresh_token: database::Decrypted,
     pub vrchat_username: database::Decrypted,
     pub vrchat_password: database::Decrypted,
     pub vrchat_cookie: database::Decrypted,
@@ -194,21 +176,6 @@ where
             local_config_with_defaults,
             discord_status_message_token
         )?,
-        discord_user_id: config_value_if!(
-            enable_discord,
-            local_config_with_defaults,
-            discord_user_id
-        )?,
-        discord_oauth_access_token: config_value_if!(
-            enable_discord,
-            local_config_with_defaults,
-            discord_oauth_access_token
-        )?,
-        discord_oauth_refresh_token: config_value_if!(
-            enable_discord,
-            local_config_with_defaults,
-            discord_oauth_refresh_token
-        )?,
         vrchat_username: config_value_if!(
             enable_vrchat,
             local_config_with_defaults,
@@ -269,15 +236,6 @@ mod tests {
             discord_status_message_token: Some(Decrypted {
                 secret: "discord_status_message_token_abc".to_string(),
             }),
-            discord_user_id: Some(Decrypted {
-                secret: "discord_user_id".to_string(),
-            }),
-            discord_oauth_access_token: Some(Decrypted {
-                secret: "discord_oauth_access_token".to_string(),
-            }),
-            discord_oauth_refresh_token: Some(Decrypted {
-                secret: "discord_oauth_refresh_token".to_string(),
-            }),
             vrchat_username: None,
             vrchat_password: None,
             vrchat_cookie: None,
@@ -299,15 +257,6 @@ mod tests {
   },
   "discord_status_message_token": {
     "secret": "discord_status_message_token_abc"
-  },
-  "discord_user_id": {
-    "secret": "discord_user_id"
-  },
-  "discord_oauth_access_token": {
-    "secret": "discord_oauth_access_token"
-  },
-  "discord_oauth_refresh_token": {
-    "secret": "discord_oauth_refresh_token"
   },
   "vrchat_username": null,
   "vrchat_password": null,

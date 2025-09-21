@@ -5,8 +5,6 @@ set -euo pipefail
 
 export JWT_APPLICATION_SECRET="some-jwt-secret"
 export APPLICATION_USER_SECRETS="some-app-user-secret"
-[[ "$DISCORD_OAUTH_CLIENT_ID" != "" ]]
-[[ "$DISCORD_OAUTH_CLIENT_SECRET" != "" ]]
 
 export SECONDS_BETWEEN_UPDATES=10
 export SYSTEM_PUBLIC_NAME=ayake-test
@@ -50,8 +48,6 @@ get_user_config_json() {
         \"enable_vrchat\": ${ENABLE_VRCHAT},
         \"enable_discord\": ${ENABLE_DISCORD},
         \"discord_user_id\": { \"secret\": \"invalid\" },
-        \"discord_oauth_access_token\": { \"secret\": \"invalid\" },
-        \"discord_oauth_refresh_token\": { \"secret\": \"invalid\" },
         $SIMPLY_PLURAL_TOKEN_LINE
         $DISCORD_STATUS_MESSAGE_TOKEN_LINE
         $VRCHAT_USERNAME_LINE

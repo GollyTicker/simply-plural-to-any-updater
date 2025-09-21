@@ -44,7 +44,7 @@ impl UpdaterManager {
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
-            .ok_or_else(|| anyhow!("No fronter channel found for {}", user_id))?
+            .ok_or_else(|| anyhow!("No fronter channel found for {user_id}"))?
             .subscribe();
 
         Ok(receiver)
@@ -60,7 +60,7 @@ impl UpdaterManager {
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
-            .ok_or_else(|| anyhow!("No fronter channel found for  {}", user_id))?
+            .ok_or_else(|| anyhow!("No fronter channel found for  {user_id}"))?
             .send(fronters);
 
         eprintln!("{user_id}: Send fronter update to {receiver_count} receivers.");
@@ -82,7 +82,7 @@ impl UpdaterManager {
 
         let specific_channel = locked
             .get(user_id)
-            .ok_or_else(|| anyhow!("No foreign status channel found for {}", user_id))?;
+            .ok_or_else(|| anyhow!("No foreign status channel found for {user_id}"))?;
 
         Ok(specific_channel.clone())
     }

@@ -52,9 +52,6 @@ pub async fn get_user(
             enable_vrchat,
             '' AS simply_plural_token,
             '' AS discord_status_message_token,
-            '' AS discord_user_id,
-            '' AS discord_oauth_access_token,
-            '' AS discord_oauth_refresh_token,
             '' AS vrchat_username,
             '' AS vrchat_password,
             '' AS vrchat_cookie,
@@ -90,10 +87,7 @@ pub async fn set_user_config_secrets(
             enc__vrchat_username = pgp_sym_encrypt($12, $9),
             enc__vrchat_password = pgp_sym_encrypt($13, $9),
             enc__vrchat_cookie = pgp_sym_encrypt($14, $9),
-            enable_discord = $15,
-            enc__discord_user_id = pgp_sym_encrypt($16, $9),
-            enc__discord_oauth_access_token = pgp_sym_encrypt($17, $9),
-            enc__discord_oauth_refresh_token = pgp_sym_encrypt($18, $9)
+            enable_discord = $15
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -111,9 +105,6 @@ pub async fn set_user_config_secrets(
     .bind(config.vrchat_password.map(|s| s.secret))
     .bind(config.vrchat_cookie.map(|s| s.secret))
     .bind(config.enable_discord)
-    .bind(config.discord_user_id.map(|s| s.secret))
-    .bind(config.discord_oauth_access_token.map(|s| s.secret))
-    .bind(config.discord_oauth_refresh_token.map(|s| s.secret))
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -140,9 +131,6 @@ pub async fn get_user_secrets(
             enable_vrchat,
             pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,
             pgp_sym_decrypt(enc__discord_status_message_token, $2) AS discord_status_message_token,
-            pgp_sym_decrypt(enc__discord_user_id, $2) AS discord_user_id,
-            pgp_sym_decrypt(enc__discord_oauth_access_token, $2) AS discord_oauth_access_token,
-            pgp_sym_decrypt(enc__discord_oauth_refresh_token, $2) AS discord_oauth_refresh_token,
             pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,
             pgp_sym_decrypt(enc__vrchat_password, $2) AS vrchat_password,
             pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie,
