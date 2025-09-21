@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::{database, platforms, plurality, users};
 
 // NOTE: specta::Type is manually exported in bindings
-#[derive(Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
+#[derive(Copy, Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
 pub enum Platform {
     VRChat,
     Discord,
@@ -15,9 +15,14 @@ pub enum Platform {
 // NOTE: specta::Type is manually exported in bindings
 #[derive(Clone, Serialize, Deserialize, strum_macros::Display, Debug)]
 pub enum UpdaterStatus {
+    /// User has not enabled this updater in the settings.
     Disabled,
+    /// User has enabled this updater and the last update ran successfully.
     Running,
+    /// User has enabled this updater and the last update failed with an error.
     Error(String),
+    /// User has just enabled this updater and it's not known yet, if it's confirmed to be running successfully.
+    Starting,
 }
 
 pub enum Updater {
@@ -62,6 +67,19 @@ impl Platform {
             Self::Discord => true,
             Self::DiscordStatusMessage | Self::VRChat => false,
         }
+    }
+}
+
+#[must_use] pub const fn initial_status(platform: Platform, config: &users::UserConfigForUpdater) -> UpdaterStatus {
+    let enabled = match platform {
+        Platform::Discord => config.enable_discord,
+        Platform::VRChat => config.enable_vrchat,
+        Platform::DiscordStatusMessage => config.enable_discord_status_message,
+    };
+    if enabled {
+        UpdaterStatus::Starting
+    } else {
+        UpdaterStatus::Disabled
     }
 }
 

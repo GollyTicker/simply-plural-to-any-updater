@@ -168,9 +168,6 @@ start_updater() {
 
     setup_test_user
 
-    # ensure the automatic restart of updaters happens during startup
-    docker restart sp2any-api
-
     await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
 
     echo "Started startup-test."

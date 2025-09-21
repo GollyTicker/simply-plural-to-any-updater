@@ -1,7 +1,7 @@
 <template>
   <div class="config-container">
     <h1>Config</h1>
-    <form @submit.prevent="saveConfig">
+    <form @submit.prevent="saveConfigAndRestart" autocomplete="off">
       <div class="config-grid">
         <div class="config-item">
           <label for="wait_seconds">Wait Seconds</label>
@@ -56,7 +56,7 @@
             @input="setSecret('vrchat_password', $event)" />
         </div>
       </div>
-      <button type="submit">Save</button>
+      <button type="submit">Save and Restart</button>
       <p>{{ status }}</p>
     </form>
   </div>
@@ -91,14 +91,13 @@ async function fetchConfig() {
   }
 };
 
-// todo. continue here
-async function saveConfig() {
+async function saveConfigAndRestart() {
   try {
-    await sp2any_api.set_config(config.value);
-    status.value = 'Config saved successfully!';
+    await sp2any_api.set_config_and_restart(config.value);
+    status.value = 'Config saved successfully and restarted updaters!';
   } catch (e) {
     console.warn(e);
-    status.value = 'Failed to save config.';
+    status.value = 'Failed to save config and restart updaters.';
   }
 };
 

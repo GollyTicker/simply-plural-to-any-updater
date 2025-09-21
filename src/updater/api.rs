@@ -22,28 +22,6 @@ pub fn get_api_updaters_status(
     Ok(Json(updaters_state))
 }
 
-#[post("/api/updaters/restart")]
-pub async fn post_api_updaters_restart(
-    jwt: users::Jwt,
-    db_pool: &State<PgPool>,
-    application_user_secrets: &State<database::ApplicationUserSecrets>,
-    client: &State<reqwest::Client>,
-    shared_updater_state: &State<manager::UpdaterManager>,
-) -> HttpResult<()> {
-    let user_id = jwt.user_id()?;
-
-    let () = restart_updater_for_user(
-        &user_id,
-        db_pool,
-        application_user_secrets,
-        client,
-        shared_updater_state,
-    )
-    .await?;
-
-    Ok(())
-}
-
 pub async fn restart_all_user_updaters_for_app_startups(
     setup: setup::ApplicationSetup,
 ) -> Result<()> {
@@ -69,7 +47,7 @@ pub async fn restart_all_user_updaters_for_app_startups(
     Ok(())
 }
 
-async fn restart_updater_for_user(
+pub async fn restart_updater_for_user(
     user_id: &UserId,
     db_pool: &PgPool,
     application_user_secrets: &database::ApplicationUserSecrets,

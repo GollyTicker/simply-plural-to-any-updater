@@ -91,7 +91,7 @@ setup_test_user() {
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $JWT" \
         -d "$JSON" \
-        "$BASE_URL/api/user/config"
+        "$BASE_URL/api/user/config_and_restart"
     
     # echo "User config JSON: $JSON"
 
@@ -106,15 +106,6 @@ setup_test_user() {
     [[ "$( echo "$USER_INFO" | jq -r .email.inner )" == "$EMAIL" ]]
 
     echo "Test user setup complete."
-}
-
-restart_updaters() {
-    echo "Restarting updaters ..."
-    curl -s --fail-with-body \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $JWT" \
-        -d "$JSON" \
-        "$BASE_URL/api/updaters/restart"
 }
 
 get_updater_statuses() {

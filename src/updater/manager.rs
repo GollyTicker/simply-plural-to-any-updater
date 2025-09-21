@@ -1,5 +1,5 @@
 use crate::plurality::{self};
-use crate::updater::{self, UpdaterStatus, work_loop};
+use crate::updater::{self, work_loop};
 use crate::users::UserId;
 use crate::{communication, setup};
 use crate::{database, users};
@@ -137,7 +137,7 @@ impl UpdaterManager {
 
         let () = self.recreate_fronter_channel(user_id)?;
         let foreign_status_updater_task = self.recreate_foreign_status_channel(user_id)?;
-        let () = self.recreate_updater_statuses(user_id)?;
+        let () = self.recreate_updater_statuses(user_id, &config)?;
 
         let owned_self = self.to_owned();
         let application_user_secrets = application_user_secrets.clone();
@@ -196,13 +196,16 @@ impl UpdaterManager {
         Ok(foreign_status_updater)
     }
 
-    fn recreate_updater_statuses(&self, user_id: &UserId) -> Result<()> {
+    fn recreate_updater_statuses(
+        &self,
+        user_id: &UserId,
+        config: &users::UserConfigForUpdater,
+    ) -> Result<()> {
         let initially_disabled_status =
             updater::available_updaters(self.discord_status_message_available)
                 .into_iter()
-                .map(|p| (p, UpdaterStatus::Disabled))
+                .map(|p| (p, updater::initial_status(p, config)))
                 .collect();
-        // todo. we should add status Unknown here because Disabled is only when it's intentionally disabled!
 
         self.statuses
             .lock()

@@ -48,7 +48,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
                         match message {
                             Some(close) if is_closed(&close) => {
                                 eprintln!("{user_id}: ended ws stream {close:?}");
-                                notify(UpdaterStatus::Disabled);
+                                notify(UpdaterStatus::Error("No connection to bridge.".to_owned()));
                                 break;
                             },
                             Some(Ok(ws::Message::Text(str))) => {

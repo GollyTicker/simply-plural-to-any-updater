@@ -36,8 +36,6 @@ start_backend() {
 
     setup_test_user
 
-    restart_updaters
-
     await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
 
     echo "Started Backend."
