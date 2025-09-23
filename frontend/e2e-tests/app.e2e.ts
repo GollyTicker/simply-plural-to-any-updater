@@ -16,9 +16,26 @@ async function login(password?: string) {
     await $('button[type="submit"]').click()
 }
 
-async function loggedInAndConnected() {
+async function loggedInAndOnStatusPage() {
     await expect($('#status-page-title')).toHaveText("Updaters Status")
 }
+
+async function navigateToStatus() {
+    await $('a[href="/status"]').click();
+}
+
+async function loggedInAndOnConfigPage() {
+    await expect($('.config-container h1')).toHaveText('Config');
+}
+
+async function navigateToConfig() {
+    await $('a[href="/config"]').click();
+}
+
+async function configUpdateAndRestartSucceeded() {
+    await expect($('#config-update-status')).toHaveText('Config saved successfully and restarted updaters!');
+}
+
 
 describe('sp2any-bridge flow', () => {
     it('should be intially not logged in', async () => {
@@ -28,7 +45,7 @@ describe('sp2any-bridge flow', () => {
 
     it('can then be logged in to see updater status', async () => {
         await login()
-        await loggedInAndConnected()
+        await loggedInAndOnStatusPage()
     })
 
     it('should show the correct updater status', async () => {
@@ -37,8 +54,8 @@ describe('sp2any-bridge flow', () => {
     });
 
     it('should show the correct config values', async () => {
-        await $('a[href="/config"]').click();
-        await expect($('.config-container h1')).toHaveText('Config');
+        await navigateToConfig();
+        await loggedInAndOnConfigPage();
 
         await expect($('#enable_vrchat')).toBeSelected();
         await expect($('#enable_discord')).toBeSelected();
@@ -57,6 +74,34 @@ describe('sp2any-bridge flow', () => {
         await expect($('#vrchat_password')).toHaveValue(process.env.VRCHAT_PASSWORD!);
     });
 
-    // todo. add tests where we save these values and then observe the changes.
-    // manually tested that this works.
+    it('should be able to disable discord and vrchat', async () => {
+        await $('#enable_vrchat').click();
+        await $('#enable_discord').click();
+
+        await $('button[type="submit"]').click();
+        await configUpdateAndRestartSucceeded();
+
+        await navigateToStatus();
+        await loggedInAndOnStatusPage();
+
+        await expect($('#vrchat-status')).toHaveText('Disabled');
+        await expect($('#discord-status')).toHaveText('Disabled');
+    });
+
+    it('should be able to re-enable discord and vrchat', async () => {
+        await navigateToConfig();
+        await loggedInAndOnConfigPage();
+
+        await $('#enable_vrchat').click();
+        await $('#enable_discord').click();
+
+        await $('button[type="submit"]').click();
+        await configUpdateAndRestartSucceeded();
+
+        await navigateToStatus();
+        await loggedInAndOnStatusPage();
+
+        await expect($('#vrchat-status')).toHaveText('Running');
+        await expect($('#discord-status')).toHaveText('Starting');
+    });
 });

@@ -57,7 +57,7 @@
         </div>
       </div>
       <button type="submit">Save and Restart</button>
-      <p>{{ status }}</p>
+      <p id="config-update-status">{{ status }}</p>
     </form>
   </div>
 </template>

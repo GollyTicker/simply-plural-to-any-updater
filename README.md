@@ -115,10 +115,10 @@ Update the dependencies.
 
 ## TODOs
 
+* add `enable_website` config
 * add status not only for updaters but also for SP itself.
 * Add automatic sync to PluralKit
 * complete migration to webapp
-* add `enable_website` config
 * Rename 'VRChat Status Name' field to 'SP2Any Simple Name' field
 * Ask on Reddit and various discord servers for what features the users want
 * persistent deployment:
@@ -135,8 +135,6 @@ Update the dependencies.
   * add link to KoFi and ask for kind donations
   * add link to source code
 * make sure, that during production, only my own domains are allowed and not localhost or so.
-* forward port [vrchat character set support from v1](https://github.com/GollyTicker/simply-plural-to-any-updater/issues/7)
-  * and also count the unicode scalars instead of bytes
 
 #### User Feedback
 * sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
@@ -145,9 +143,4 @@ Update the dependencies.
   * [self-botting](https://gist.github.com/nomsi/2684f5692cad5b0ceb52e308631859fd)
   * [reddit 1](https://old.reddit.com/r/Discord_selfbots/comments/t9o5xf/anyone_got_banned/), [reddit 2](https://old.reddit.com/r/discordapp/comments/7nl35v/regarding_the_ban_on_selfbots/)
   * perhaps use the same approach as used by the discord chat exporter? this might actually work well.
-* DONE discord rich presence / activity as instead of discord status
-* DONE: create discord server with initial interests
-  * share in pluralkit server
-  * plural hub server
-  * other plural reddit communities
 * share with refactionvr server mods before sharing in channel
