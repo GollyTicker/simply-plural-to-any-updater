@@ -80,18 +80,12 @@ setup_test_user() {
             "$BASE_URL/api/user/login"
     )"
 
-    JWT="$(echo "$JWT_JSON" | jq -r .inner)"
+    export JWT="$(echo "$JWT_JSON" | jq -r .inner)"
     export USER_ID="$(echo "$JWT" | cut -d'.' -f2 | base64 --decode | jq -r .sub)"
     echo "Received Jwt: $JWT"
     echo "User ID: $USER_ID"
 
-    echo "Setting config ..."
-    JSON="$(get_user_config_json)"
-    curl -s --fail-with-body \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $JWT" \
-        -d "$JSON" \
-        "$BASE_URL/api/user/config_and_restart"
+    set_user_config_and_restart
     
     # echo "User config JSON: $JSON"
 
@@ -106,6 +100,16 @@ setup_test_user() {
     [[ "$( echo "$USER_INFO" | jq -r .email.inner )" == "$EMAIL" ]]
 
     echo "Test user setup complete."
+}
+
+set_user_config_and_restart() {
+    echo "Setting config and restarting ..."
+    JSON="$(get_user_config_json)"
+    curl -s --fail-with-body \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $JWT" \
+        -d "$JSON" \
+        "$BASE_URL/api/user/config_and_restart"
 }
 
 get_updater_statuses() {

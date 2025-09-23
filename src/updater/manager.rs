@@ -134,6 +134,7 @@ impl UpdaterManager {
         locked_task
             .get(user_id)
             .map(|updaters| updaters.iter().map(tokio::task::JoinHandle::abort));
+        eprintln!("Aborted updaters {user_id}");
 
         let () = self.recreate_fronter_channel(user_id)?;
         let foreign_status_updater_task = self.recreate_foreign_status_channel(user_id)?;
