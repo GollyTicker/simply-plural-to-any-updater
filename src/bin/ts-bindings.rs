@@ -1,6 +1,10 @@
 use anyhow::Result;
 use sp2any::{
-    database::Decrypted, for_discord_bridge::UserLoginCredentials, license, users::{Email, JwtString, UserProvidedPassword}
+    database::Decrypted, for_discord_bridge::UserLoginCredentials, license, users::{Email, JwtString, UserProvidedPassword},
+    platforms::{
+        TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
+        VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
+    },
 };
 use specta::{
     self,
@@ -41,6 +45,13 @@ fn main() -> Result<()> {
             "export const LICENSE_INFO_SHORT_HTML: string = \"{}\"",
             license::info_short_html().replace('"', "\\\"")
         ),
+        export::<VRChatCredentials>(conf)?,
+        export::<VRChatCredentialsWithCookie>(conf)?,
+        export::<TwoFactorAuthMethod>(conf)?,
+        export::<TwoFactorCodeRequiredResponse>(conf)?,
+        export::<TwoFactorAuthCode>(conf)?,
+        export::<VRChatCredentialsWithTwoFactorAuth>(conf)?,
+        "export type VrchatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse }".to_owned(),
     ];
     fs::write(DESTINATION, defs.map(|s| s + ";").join("\n"))?;
     println!("Done.");

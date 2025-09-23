@@ -5,6 +5,7 @@ use crate::users;
 use serde::{Deserialize, Serialize};
 use strum_macros::Display;
 use vrchatapi::models::current_user::RequiresTwoFactorAuth;
+use specta;
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct VRChatUserId {
@@ -13,13 +14,13 @@ pub struct VRChatUserId {
 
 pub type Cookies = Arc<reqwest_cookie_store::CookieStoreMutex>;
 
-#[derive(Clone, Deserialize, Serialize, Debug)]
+#[derive(Clone, Deserialize, Serialize, Debug, specta::Type)]
 pub struct VRChatCredentials {
     pub username: String,
     pub password: String,
 }
 
-#[derive(Clone, Serialize, Debug)]
+#[derive(Clone, Serialize, Debug, specta::Type)]
 pub struct VRChatCredentialsWithCookie {
     pub creds: VRChatCredentials,
     pub cookie: String,
@@ -46,13 +47,13 @@ impl VRChatCredentialsWithCookie {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct TwoFactorCodeRequiredResponse {
     pub method: TwoFactorAuthMethod,
     pub tmp_cookie: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, Display, Debug)]
+#[derive(Clone, Serialize, Deserialize, Display, Debug, specta::Type)]
 pub enum TwoFactorAuthMethod {
     TwoFactorAuthMethodEmail,
     TwoFactorAuthMethodApp,
@@ -72,7 +73,7 @@ impl TwoFactorAuthMethod {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, specta::Type)]
 pub struct TwoFactorAuthCode {
     inner: String,
 }
@@ -83,7 +84,7 @@ impl From<TwoFactorAuthCode> for String {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, specta::Type)]
 pub struct VRChatCredentialsWithTwoFactorAuth {
     pub creds: VRChatCredentials,
     pub method: TwoFactorAuthMethod,

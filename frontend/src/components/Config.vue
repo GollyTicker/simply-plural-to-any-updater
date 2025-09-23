@@ -2,6 +2,8 @@
   <div class="config-container">
     <h1>Config</h1>
     <form @submit.prevent="saveConfigAndRestart" autocomplete="off">
+      <button type="submit">Save and Restart</button>
+      <p id="config-update-status">{{ status }}</p>
       <div class="config-grid">
         <div class="config-item">
           <label for="wait_seconds">Wait Seconds</label>
@@ -55,22 +57,40 @@
           <input id="vrchat_password" type="password" :value="config.vrchat_password?.secret"
             @input="setSecret('vrchat_password', $event)" />
         </div>
+        <div class="config-item">
+          <button @click.prevent="loginToVRChat">Login to VRChat</button>
+        </div>
+        <div class="config-item">
+          <label for="vrchat_2fa_code">VRChat 2FA Code</label>
+          <input id="vrchat_2fa_code" type="text" v-model="vrchatTwoFactor" />
+          <button @click.prevent="submitVRChat2FA">Submit 2FA</button>
+        </div>
+        <p id="vrchat-login-status">{{ vrchatLoginStatus }}</p>
+        <div class="config-item">
+          <label for="vrchat_cookie">VRChat Cookie</label>
+          <input id="vrchat_cookie" type="password" :value="config.vrchat_cookie?.secret"
+            @input="setSecret('vrchat_cookie', $event)" />
+        </div>
       </div>
-      <button type="submit">Save and Restart</button>
-      <p id="config-update-status">{{ status }}</p>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, type Ref } from 'vue';
-import type { Decrypted, UserConfigDbEntries } from '@/sp2any.bindings';
+import type { Decrypted, UserConfigDbEntries, VRChatCredentials, VRChatCredentialsWithTwoFactorAuth, TwoFactorAuthMethod } from '@/sp2any.bindings';
 import { sp2any_api } from '@/sp2any_api';
 
-const config: Ref<UserConfigDbEntries> = ref({});
+const config: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries);
 type SecretKeys = "simply_plural_token" | "vrchat_password" | "vrchat_cookie" | "vrchat_username" | "discord_status_message_token";
 
 const status = ref('');
+const vrchatTwoFactor = ref('');
+const vrchatLoginStatus = ref('');
+const vrchatTmpCookie = ref('');
+const vrchatTwoFactorMethod: Ref<TwoFactorAuthMethod | undefined> = ref(undefined);
+
+const VRCHAT_LOGIN_SUCCESSFUL = 'VRChat login successful and retrieved cookie! Please save config now.';
 
 function setSecret(key: SecretKeys, event: Event) {
   const target = event.target as HTMLInputElement;
@@ -79,6 +99,49 @@ function setSecret(key: SecretKeys, event: Event) {
   }
   else {
     config.value[key] = undefined;
+  }
+}
+
+async function loginToVRChat() {
+  vrchatLoginStatus.value = 'Requesting 2FA...';
+  try {
+    const creds: VRChatCredentials = {
+      username: config.value.vrchat_username!.secret,
+      password: config.value.vrchat_password!.secret
+    };
+    const result = await sp2any_api.vrchat_request_2fa(creds);
+    if ("Left" in result) {
+      config.value.vrchat_cookie = { secret: result.Left.cookie };
+      vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL;
+    } else {
+      vrchatTmpCookie.value = result.Right.tmp_cookie;
+      vrchatTwoFactorMethod.value = result.Right.method;
+      vrchatLoginStatus.value = `Please enter 2FA code from ${result.Right.method}.`;
+    }
+  } catch (e) {
+    console.warn(e);
+    vrchatLoginStatus.value = 'Failed to login to VRChat.';
+  }
+}
+
+async function submitVRChat2FA() {
+  vrchatLoginStatus.value = 'Submitting 2FA code...';
+  try {
+    const creds_with_tfa: VRChatCredentialsWithTwoFactorAuth = {
+      creds: {
+        username: config.value.vrchat_username!.secret,
+        password: config.value.vrchat_password!.secret
+      },
+      code: { inner: vrchatTwoFactor.value },
+      tmp_cookie: vrchatTmpCookie.value,
+      method: vrchatTwoFactorMethod.value!
+    };
+    const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa);
+    config.value.vrchat_cookie = { secret: result.cookie };
+    vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL;
+  } catch (e) {
+    console.warn(e);
+    vrchatLoginStatus.value = 'Failed to submit 2FA code.';
   }
 }
 

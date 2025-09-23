@@ -11,3 +11,4 @@ pub mod webview_api;
 pub use discord::*;
 pub use discord_status_message::*;
 pub use vrchat::*;
+pub use vrchat_auth_types::*;

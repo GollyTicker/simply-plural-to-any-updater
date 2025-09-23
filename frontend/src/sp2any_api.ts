@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { JwtString, UserConfigDbEntries, UserLoginCredentials, UserUpdatersStatuses } from './sp2any.bindings';
+import type { JwtString, UserConfigDbEntries, UserLoginCredentials, UserUpdatersStatuses, VRChatCredentials, VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse, VRChatCredentialsWithTwoFactorAuth, VrchatAuthResponse } from './sp2any.bindings';
 
 export const http = axios.create({
   baseURL: 'http://localhost:8080',
@@ -25,6 +25,16 @@ export const sp2any_api = {
   set_config_and_restart: async function (config: UserConfigDbEntries): Promise<void> {
     let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
     await http.post('/api/user/config_and_restart', config, { headers: { Authorization: `Bearer ${jwtString.inner}` } });
+  },
+  vrchat_request_2fa: async function (creds: VRChatCredentials): Promise<VrchatAuthResponse> {
+    let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
+    let response = await http.post<VrchatAuthResponse>('/api/user/platform/vrchat/auth_2fa/request', creds, { headers: { Authorization: `Bearer ${jwtString.inner}` } });
+    return response.data;
+  },
+  vrchat_resolve_2fa: async function (creds_with_tfa: VRChatCredentialsWithTwoFactorAuth): Promise<VRChatCredentialsWithCookie> {
+    let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
+    let response = await http.post<VRChatCredentialsWithCookie>('/api/user/platform/vrchat/auth_2fa/resolve', creds_with_tfa, { headers: { Authorization: `Bearer ${jwtString.inner}` } });
+    return response.data;
   }
 }
 
