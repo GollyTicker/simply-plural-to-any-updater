@@ -14,6 +14,8 @@ await sp2any-db "listening on IPv4 address"
 
 export DATABASE_URL="postgres://postgres:postgres@localhost:5432/sp2any"
 
+( cd docker && cargo sqlx migrate run )
+
 rm -v .sqlx/*.json || true
 
 ./steps/12-backend-cargo-build.sh

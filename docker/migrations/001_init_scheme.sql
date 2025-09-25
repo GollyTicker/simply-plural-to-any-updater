@@ -38,3 +38,4 @@ CREATE TABLE IF NOT EXISTS users (
     /* constraints to check manually before inserting into db:
     whenever a platform is enabled, the corresponding fields must be not null.*/
 );
+

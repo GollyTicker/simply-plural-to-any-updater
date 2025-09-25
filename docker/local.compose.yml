@@ -37,6 +37,7 @@ services:
     #   - 8000:8000
 
   sp2any-db:
+    # NOTE: db-migrations need to be run explicitly after startup. search for `sqlx migrate` or `sqlx::migrate!`
     image: postgres:17-alpine
     container_name: sp2any-db
     environment:
@@ -44,7 +45,6 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: sp2any
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - sp2any-data:/var/lib/postgresql/data
     restart: "on-failure:2"
     network_mode: host

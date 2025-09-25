@@ -8,12 +8,6 @@ use sqlx::postgres;
 use std::time::Duration;
 
 pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
-    let db_pool = postgres::PgPoolOptions::new()
-        .max_connections(5)
-        .acquire_timeout(Duration::from_secs(3))
-        .connect(&cli_args.database_url)
-        .await?;
-
     let client: reqwest::Client = reqwest::Client::builder()
         .cookie_store(true)
         .timeout(Duration::from_secs(cli_args.request_timeout))
@@ -49,6 +43,15 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
         ..Default::default()
     }
     .to_cors()?;
+
+    let db_pool = postgres::PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&cli_args.database_url)
+        .await?;
+
+    // the macro integrates these files from compile-time!
+    let () = sqlx::migrate!("docker/migrations").run(&db_pool).await?;
 
     Ok(ApplicationSetup {
         db_pool,
