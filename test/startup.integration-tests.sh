@@ -42,7 +42,7 @@ main() {
     # exactly one update happened in that period
     echo "$BEFORE_COUNT + 1" =? "$AFTER_COUNT"
     [[ "$((BEFORE_COUNT + 1))" == "$AFTER_COUNT" ]]
-
+    echo "✅ no duplicate updater tasks"
 
     setup_sp_rest_failure
     start_updater
@@ -51,6 +51,7 @@ main() {
     check_updater "DiscordStatusMessage" "Running"
     check_updater "VRChat" "Running"
     reset_changed_variables
+    echo "✅ simply plural rest failure"
     
 
     stop_updater
@@ -61,6 +62,7 @@ main() {
     check_updater "VRChat" "Running"
     check_missing "DiscordStatusMessage"
     reset_changed_variables
+    echo "✅ discord status message failure"
 
 
     stop_updater
@@ -71,6 +73,7 @@ main() {
     check_updater "DiscordStatusMessage" "Disabled"
     check_updater "VRChat" "Running"
     reset_changed_variables
+    echo "✅ discord status message disabled"
 
 
     stop_updater
@@ -81,6 +84,7 @@ main() {
     check_updater "DiscordStatusMessage" "Running"
     check_updater "VRChat" "Disabled"
     reset_changed_variables
+    echo "✅ vrchat disabled"
 
 
     stop_updater
@@ -91,6 +95,7 @@ main() {
     check_updater "DiscordStatusMessage" "Running"
     get_updater_statuses | jq -r ".VRChat" | grep -q "Error"
     reset_changed_variables
+    echo "✅ vrchat failed"
 
 
     clear_all_fronts
