@@ -8,6 +8,7 @@
       <div class="nav-links-container">
         <router-link to="/status">Status</router-link>
         <router-link to="/config">Settings</router-link>
+        <router-link to="/logout">Logout</router-link>
       </div>
     </nav>
     <router-view class="content"/>

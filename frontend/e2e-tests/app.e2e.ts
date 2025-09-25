@@ -16,6 +16,10 @@ async function login(password?: string) {
     await $('button[type="submit"]').click()
 }
 
+async function navigateToLogout() {
+    await $('a[href="/logout"]').click();
+}
+
 async function loggedInAndOnStatusPage() {
     await expect($('#status-page-title')).toHaveText("Updaters Status")
 }
@@ -47,6 +51,14 @@ describe('sp2any login logic', () => {
         await login()
         await loggedInAndOnStatusPage()
     })
+
+    it('can logout and then re-login', async () => {
+        await navigateToLogout();
+        await notLoggedIn();
+
+        await login();
+        await loggedInAndOnStatusPage();
+    });
 
     it('should redirect to login on invalid jwt', async () => {
         await browser.execute(() => {
