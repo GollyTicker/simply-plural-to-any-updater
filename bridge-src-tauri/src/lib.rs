@@ -13,13 +13,11 @@ use sp2any::updater;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tauri::Emitter;
 use tauri::Manager;
 use tauri::async_runtime::{JoinHandle, Mutex};
-use tokio_tungstenite::{
-    connect_async,
-    tungstenite::client::IntoClientRequest,
-};
+use tokio_tungstenite::{connect_async, tungstenite::client::IntoClientRequest};
 
 // todo. add auto-update capabilities.
 // todo. add auto-start capabilities: https://crates.io/crates/auto-launch
@@ -109,9 +107,8 @@ async fn subscribe_to_bridge_channel_anyhow(
     Ok(())
 }
 
-
 async fn register_background_task(app: tauri::AppHandle, handle: JoinHandle<()>) {
-    let state = app.state::<Mutex<Vec<JoinHandle<()>>>>();
+    let state = app.state::<Arc<Mutex<Vec<JoinHandle<()>>>>>();
     state.lock().await.push(handle);
 }
 
@@ -120,18 +117,19 @@ pub fn notify_user_on_status<S: Into<String>>(app: &tauri::AppHandle, value: S) 
     // we don't care about the success.
 }
 
-fn new_background_tasks_container() -> Mutex<Vec<JoinHandle<()>>> {
-    Mutex::new(vec![])
+fn new_background_tasks_container() -> Arc<Mutex<Vec<JoinHandle<()>>>> {
+    Arc::new(Mutex::new(vec![]))
 }
 
 async fn abort_background_task(app: tauri::AppHandle) -> () {
     log::debug!("abort_background_task");
-    let state = app.state::<Mutex<Vec<JoinHandle<()>>>>();
-    let mut locked_tasks = state.lock().await;
-    locked_tasks
-        .iter()
-        .for_each(tauri::async_runtime::JoinHandle::abort);
-    *locked_tasks = vec![];
+    let state = app.state::<Arc<Mutex<Vec<JoinHandle<()>>>>>();
+    let thread_shared_tasks = state.inner().clone();
+    let mut locked_tasks = thread_shared_tasks.lock().await;
+    for_discord_bridge::blocking_abort_and_clear_tasks(
+        &mut locked_tasks,
+        |tauri::async_runtime::JoinHandle::Tokio(task)| task,
+    );
 }
 
 #[tauri::command]

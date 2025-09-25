@@ -6,6 +6,7 @@ use crate::{database, users};
 use anyhow::{Result, anyhow};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use tokio::task::JoinHandle;
 
 type SharedMutable<T> = Arc<Mutex<T>>;
 type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
@@ -131,10 +132,9 @@ impl UpdaterManager {
         let mut locked_task = self.tasks.lock().map_err(|e| anyhow!(e.to_string()))?;
 
         eprintln!("Aborting updaters {user_id}");
-        locked_task
-            .get(user_id)
-            .map(|updaters| updaters.iter().map(tokio::task::JoinHandle::abort));
-        eprintln!("Aborted updaters {user_id}");
+        if let Some(task) = locked_task.get_mut(user_id) {
+            communication::blocking_abort_and_clear_tasks(task, |x| x);
+        }
 
         let () = self.recreate_fronter_channel(user_id)?;
         let foreign_status_updater_task = self.recreate_foreign_status_channel(user_id)?;
@@ -163,10 +163,7 @@ impl UpdaterManager {
         Ok(())
     }
 
-    fn recreate_foreign_status_channel(
-        &self,
-        user_id: &UserId,
-    ) -> Result<tokio::task::JoinHandle<()>> {
+    fn recreate_foreign_status_channel(&self, user_id: &UserId) -> Result<JoinHandle<()>> {
         let new_channel = communication::fire_and_forget_channel();
 
         self.foreign_managed_status_channel

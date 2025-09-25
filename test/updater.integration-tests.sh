@@ -28,13 +28,7 @@ main() {
 
     set_system_fronts_set "A"
     start_updater
-
-
-    # sleep 3s
-    # set_user_config_and_restart
-    # echo "todo. fix that previous updater is not properly aborted!?"
-    # sleep 2h
-
+    
 
     check_system_fronts_set "A"
     set_system_fronts_set "B"

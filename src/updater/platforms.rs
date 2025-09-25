@@ -70,7 +70,11 @@ impl Platform {
     }
 }
 
-#[must_use] pub const fn initial_status(platform: Platform, config: &users::UserConfigForUpdater) -> UpdaterStatus {
+#[must_use]
+pub const fn initial_status(
+    platform: Platform,
+    config: &users::UserConfigForUpdater,
+) -> UpdaterStatus {
     let enabled = match platform {
         Platform::Discord => config.enable_discord,
         Platform::VRChat => config.enable_vrchat,

@@ -2,7 +2,7 @@
 name = "sp2any"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.87.0"
+rust-version = "1.90.0"
 
 [[bin]]
 name = "sp2any"
@@ -39,7 +39,7 @@ reqwest = { version = "*", default-features = false, features = [
     "json",
     "cookies",
     "rustls-tls",
-]}
+] }
 strum_macros = "*"
 argon2 = "*"
 jsonwebtoken = "*"
@@ -53,4 +53,5 @@ rocket_cors = { version = "*", default-features = false }
 rocket_ws = "*"
 # using later version to ensure same cookie_store is used as in reqwest
 reqwest_cookie_store = { version = "0.8", features = ["serde"] }
-base64 = "0.22.1"
+base64 = "*"
+async-scoped = { version = "*", features = ["use-tokio"] }

@@ -30,6 +30,19 @@ main() {
     ./steps/12-backend-cargo-build.sh
 
 
+    # regression test: Ensure, that restarts don't create duplicate tasks
+    stop_updater
+    start_updater
+    sleep 3s
+    set_user_config_and_restart
+    BEFORE_COUNT="$(get_updater_loop_count)"
+    sleep "$SECONDS_BETWEEN_UPDATES"
+    sleep 1s
+    AFTER_COUNT="$(get_updater_loop_count)"
+    # exactly one update happened in that period
+    [[ "$((BEFORE_COUNT + 1))" == "$AFTER_COUNT" ]]
+
+
     setup_sp_rest_failure
     start_updater
     check_updater_failure
@@ -37,7 +50,7 @@ main() {
     check_updater "DiscordStatusMessage" "Running"
     check_updater "VRChat" "Running"
     reset_changed_variables
-
+    
 
     stop_updater
     setup_discord_status_message_not_available
@@ -47,7 +60,7 @@ main() {
     check_updater "VRChat" "Running"
     check_missing "DiscordStatusMessage"
     reset_changed_variables
-    
+
 
     stop_updater
     setup_vrchat_only
@@ -87,6 +100,10 @@ main() {
 check_updater_has_no_errors() {
     echo "check_updater_has_no_errors"
     [[ "$( docker logs sp2any-api 2>&1 | grep "Error" | wc -l )" == "0" ]]
+}
+
+get_updater_loop_count() {
+    docker logs sp2any-api 2>&1 | grep "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..." | wc -l
 }
 
 check_updater_loop_continues() {

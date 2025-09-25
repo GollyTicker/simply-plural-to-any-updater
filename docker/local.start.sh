@@ -4,7 +4,6 @@ set -euo pipefail
 
 source docker/source.sh
 
-
 ./docker/local.stop.sh
 
 COMPOSE="docker compose -f docker/local.compose.yml"

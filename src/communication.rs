@@ -1,6 +1,27 @@
-use tokio::sync::broadcast;
+use tokio::{sync::broadcast, task::JoinHandle};
 
 pub type HttpResult<T> = Result<T, rocket::response::Debug<anyhow::Error>>;
+
+pub fn blocking_abort_and_clear_tasks<T, F>(tasks: &mut Vec<T>, f: F)
+where
+    F: Fn(T) -> JoinHandle<()>,
+{
+    let updaters = std::mem::take(tasks);
+    for task in updaters {
+        let task = f(task);
+        let task_id = task.id();
+        eprintln!("Aborting... (task_id={task_id})");
+        task.abort();
+        async_scoped::TokioScope::scope_and_block(|scope| {
+            scope.spawn(async {
+                let _ = task.await;
+            });
+        });
+        // we can't use await here, because the provided vector from a mutex is not 'static
+        // hence the scoped to work with non-'static data
+        eprintln!("Aborted. (task_id={task_id})");
+    }
+}
 
 /// Variation of the `tokio::sync::broadcast` channel, where the sender doesn't
 /// care if any receiver is listening. Useful to ensure, that all receivers get only the latest value.

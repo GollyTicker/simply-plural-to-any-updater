@@ -10,7 +10,10 @@ pub mod updater;
 pub mod users;
 
 pub mod for_discord_bridge {
-    pub use crate::communication::{FireAndForgetChannel, LatestReceiver, fire_and_forget_channel};
+    pub use crate::communication::{
+        FireAndForgetChannel, LatestReceiver, blocking_abort_and_clear_tasks,
+        fire_and_forget_channel,
+    };
     pub use crate::platforms::DiscordRichPresence;
     pub use crate::users::user_api::UserLoginCredentials;
     pub use crate::users::{JwtString, UserProvidedPassword};

@@ -3,9 +3,9 @@ use std::sync::Arc;
 use crate::users;
 
 use serde::{Deserialize, Serialize};
+use specta;
 use strum_macros::Display;
 use vrchatapi::models::current_user::RequiresTwoFactorAuth;
-use specta;
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct VRChatUserId {
@@ -27,6 +27,7 @@ pub struct VRChatCredentialsWithCookie {
 }
 
 impl VRChatCredentialsWithCookie {
+    #[must_use]
     pub fn from_config(config: &users::UserConfigForUpdater) -> Self {
         Self::from_strings(
             config.vrchat_username.secret.clone(),
@@ -35,6 +36,7 @@ impl VRChatCredentialsWithCookie {
         )
     }
 
+    #[must_use]
     pub fn from(creds: VRChatCredentials, cookie: String) -> Self {
         Self::from_strings(creds.username, creds.password, cookie)
     }
@@ -60,6 +62,7 @@ pub enum TwoFactorAuthMethod {
 }
 
 impl TwoFactorAuthMethod {
+    #[must_use]
     pub fn from(requires_2fa_auth: &RequiresTwoFactorAuth) -> Self {
         let is_email_2fa = requires_2fa_auth
             .requires_two_factor_auth
