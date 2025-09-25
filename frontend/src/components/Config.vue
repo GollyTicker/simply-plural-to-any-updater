@@ -56,18 +56,16 @@
             <label for="enable_discord">Enable Discord</label>
             <input id="enable_discord" type="checkbox" v-model="config.enable_discord" />
           </div>
-          <!-- not shown currently until it's properly had it's warnings added
           <div class="config-item">
-            <label for="enable_discord_status_message">Enable Discord Status Message</label>
+            <label for="enable_discord_status_message">Enable Discord Status Message (Discord ToS violation!)</label>
             <input id="enable_discord_status_message" type="checkbox" v-model="config.enable_discord_status_message" />
           </div>
           <div class="config-item">
-            <label for="discord_status_message_token">Discord Status Message Token</label>
+            <label for="discord_status_message_token">Discord Status Message Token (Discord ToS violation!)</label>
             <input id="discord_status_message_token" type="password"
               :value="config.discord_status_message_token?.secret"
               @input="setSecret('discord_status_message_token', $event)" />
           </div>
-          -->
         </div>
       </div>
       <div class="config-section">

@@ -2,9 +2,7 @@
 
 set -euo pipefail
 
-
-export JWT_APPLICATION_SECRET="some-jwt-secret"
-export APPLICATION_USER_SECRETS="some-app-user-secret"
+export SP2ANY_STAGE=local
 
 export SECONDS_BETWEEN_UPDATES=10
 export SYSTEM_PUBLIC_NAME=ayake-test

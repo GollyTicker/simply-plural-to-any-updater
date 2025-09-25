@@ -40,6 +40,7 @@ main() {
     sleep 1s
     AFTER_COUNT="$(get_updater_loop_count)"
     # exactly one update happened in that period
+    echo "$BEFORE_COUNT + 1" =? "$AFTER_COUNT"
     [[ "$((BEFORE_COUNT + 1))" == "$AFTER_COUNT" ]]
 
 
