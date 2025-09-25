@@ -35,6 +35,10 @@ export const sp2any_api = {
     let response = await http.get<UserConfigDbEntries>('/api/user/config', { headers: { Authorization: `Bearer ${jwtString.inner}` } });
     return response.data;
   },
+  get_defaults: async function (): Promise<UserConfigDbEntries> {
+    let response = await http.get<UserConfigDbEntries>('/api/config/defaults');
+    return response.data;
+  },
   set_config_and_restart: async function (config: UserConfigDbEntries): Promise<void> {
     let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
     await http.post('/api/user/config_and_restart', config, { headers: { Authorization: `Bearer ${jwtString.inner}` } });

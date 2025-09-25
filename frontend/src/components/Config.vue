@@ -9,7 +9,8 @@
         <div class="config-grid">
           <div class="config-item">
             <label for="wait_seconds">Wait Seconds</label>
-            <input id="wait_seconds" type="number" v-model.number="config.wait_seconds" />
+            <input id="wait_seconds" type="number" v-model.number="config.wait_seconds"
+              :placeholder="defaults.wait_seconds?.toString()" />
           </div>
         </div>
       </div>
@@ -23,7 +24,8 @@
           </div>
           <div class="config-item">
             <label for="system_name">System Name</label>
-            <input id="system_name" type="text" v-model="config.system_name" />
+            <input id="system_name" type="text" v-model="config.system_name"
+              :placeholder="defaults.system_name" />
           </div>
         </div>
       </div>
@@ -32,15 +34,18 @@
         <div class="config-grid">
           <div class="config-item">
             <label for="status_prefix">Status Prefix</label>
-            <input id="status_prefix" type="text" v-model="config.status_prefix" />
+            <input id="status_prefix" type="text" v-model="config.status_prefix"
+              :placeholder="defaults.status_prefix" />
           </div>
           <div class="config-item">
             <label for="status_no_fronts">Status No Fronts</label>
-            <input id="status_no_fronts" type="text" v-model="config.status_no_fronts" />
+            <input id="status_no_fronts" type="text" v-model="config.status_no_fronts"
+              :placeholder="defaults.status_no_fronts" />
           </div>
           <div class="config-item">
             <label for="status_truncate_names_to">Status Truncate Names To</label>
-            <input id="status_truncate_names_to" type="number" v-model.number="config.status_truncate_names_to" />
+            <input id="status_truncate_names_to" type="number" v-model.number="config.status_truncate_names_to"
+              :placeholder="defaults.status_truncate_names_to?.toString()" />
           </div>
         </div>
       </div>
@@ -110,6 +115,7 @@ import type { Decrypted, UserConfigDbEntries, VRChatCredentials, VRChatCredentia
 import { sp2any_api } from '@/sp2any_api';
 
 const config: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries);
+const defaults: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries);
 type SecretKeys = "simply_plural_token" | "vrchat_password" | "vrchat_cookie" | "vrchat_username" | "discord_status_message_token";
 
 const status = ref('');
@@ -182,6 +188,15 @@ async function fetchConfig() {
   }
 };
 
+async function fetchDefaults() {
+  try {
+    defaults.value = await sp2any_api.get_defaults();
+    console.log("Received default config: ", defaults.value);
+  } catch (e) {
+    console.warn(e);
+  }
+};
+
 async function saveConfigAndRestart() {
   try {
     await sp2any_api.set_config_and_restart(config.value);
@@ -194,6 +209,7 @@ async function saveConfigAndRestart() {
 
 onMounted(async () => {
   await fetchConfig();
+  await fetchDefaults();
 });
 </script>
 
