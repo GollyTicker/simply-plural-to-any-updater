@@ -37,7 +37,7 @@ async function configUpdateAndRestartSucceeded() {
 }
 
 
-describe('sp2any-bridge flow', () => {
+describe('sp2any login logic', () => {
     it('should be intially not logged in', async () => {
         await browser.url(env.SP2ANY_BASE_URL!);
         await notLoggedIn()
@@ -48,7 +48,22 @@ describe('sp2any-bridge flow', () => {
         await loggedInAndOnStatusPage()
     })
 
+    it('should redirect to login on invalid jwt', async () => {
+        await browser.execute(() => {
+            window.localStorage.setItem('jwt', '{"inner":"invalid-jwt"}');
+        });
+
+        await navigateToConfig();
+        await notLoggedIn();
+    });
+});
+
+describe('sp2any updater status and config save and restarts', () => {
     it('should show the correct updater status', async () => {
+        await browser.url(env.SP2ANY_BASE_URL!);
+        await login()
+        await loggedInAndOnStatusPage()
+
         await expect($('#vrchat-status')).toHaveText('Running');
         await expect($('#discord-status')).toHaveText('Starting');
     });

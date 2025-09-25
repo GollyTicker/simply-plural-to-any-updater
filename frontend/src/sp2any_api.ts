@@ -1,9 +1,22 @@
 import axios from 'axios';
 import type { JwtString, UserConfigDbEntries, UserLoginCredentials, UserUpdatersStatuses, VRChatCredentials, VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse, VRChatCredentialsWithTwoFactorAuth, VrchatAuthResponse } from './sp2any.bindings';
+import router from './router'
 
 export const http = axios.create({
   baseURL: 'http://localhost:8080',
 });
+
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && [401, 403].includes(error.response.status)) {
+      console.warn("Auth failed with 401/403 on request. Now redirecting to login. Error:", error);
+      localStorage.removeItem('jwt');
+      router.push('/login');
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Also handles the storage of the JwtString
 export const sp2any_api = {
