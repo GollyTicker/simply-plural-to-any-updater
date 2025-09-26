@@ -25,6 +25,7 @@ sudo apt-get install -y --no-upgrade \
 cargo install cargo-audit@^0.21
 cargo install sqlx-cli@^0.8
 cargo install cargo-xwin@^0.19
+cargo install tauri-cli@^2
 
 # Tauri e2e tests
 cargo install tauri-driver@^2
