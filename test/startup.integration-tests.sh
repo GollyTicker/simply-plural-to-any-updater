@@ -31,7 +31,6 @@ main() {
 
 
     # regression test: Ensure, that restarts don't create duplicate tasks
-    stop_updater
     start_updater
     sleep 3s
     set_user_config_and_restart
@@ -45,7 +44,8 @@ main() {
     echo "✅ no duplicate updater tasks"
 
     setup_sp_rest_failure
-    start_updater
+    set_user_config_and_restart
+    sleep 7s # startup time for restart
     check_updater_failure
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
@@ -65,9 +65,9 @@ main() {
     echo "✅ discord status message failure"
 
 
-    stop_updater
     setup_vrchat_only
-    start_updater
+    set_user_config_and_restart
+    sleep 7s # startup time for restart
     check_updater_has_no_errors
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Disabled"
@@ -76,9 +76,9 @@ main() {
     echo "✅ discord status message disabled"
 
 
-    stop_updater
     setup_discord_status_message_only
-    start_updater
+    set_user_config_and_restart
+    sleep 7s # startup time for restart
     check_updater_has_no_errors
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
@@ -87,9 +87,9 @@ main() {
     echo "✅ vrchat disabled"
 
 
-    stop_updater
     setup_vrchat_misconfigured
-    start_updater
+    set_user_config_and_restart
+    sleep 7s # startup time for restart
     check_updater_failure
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
