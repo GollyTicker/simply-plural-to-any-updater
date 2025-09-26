@@ -37,7 +37,16 @@ runs:
         path: |
           ~/.cargo/
           target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+    - name: Get cached Cargo dependencies
+      uses: actions/cache@v4
+      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      with:
+        path: |
+          ~/.cargo/
+          bridge-src-tauri/target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('bridge-src-tauri/Cargo.lock') }}
 
     - name: Get cached npm packages
       uses: actions/cache@v4
@@ -45,6 +54,13 @@ runs:
       with:
         path: frontend/node_modules
         key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+
+    - name: Get cached npm packages
+      uses: actions/cache@v4
+      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      with:
+        path: bridge-frontend/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('bridge-frontend/package-lock.json') }}
 
     - name: Install prerequisites
       shell: bash
