@@ -115,6 +115,11 @@ Update the dependencies.
 
 ## TODOs
 
+### First deployment
+* make SP2ANY_BASE_URL configureable for frontend-dist
+* deploy on private space once and share with friend
+* deploy for discord test server users
+
 * add `enable_website` config
 * add status not only for updaters but also for SP itself.
 * Add automatic sync to PluralKit
