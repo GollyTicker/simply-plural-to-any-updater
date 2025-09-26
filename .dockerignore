@@ -1,4 +1,3 @@
-output
 target/*
 !target/debug/sp2any
 bridge-src-tauri/target/*

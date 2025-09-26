@@ -7,7 +7,7 @@ export SP2ANY_STAGE=local
 export FRONTEND_DIST=./../frontend/dist
 export PATH_TO_SP2ANY_API_EXEC=../target/debug/sp2any
     
-./docker/local.stop.sh || true
+./docker/stop.sh local || true
 
 docker compose -f docker/docker.compose.yml pull
 docker compose -f docker/docker.compose.yml up sp2any-db -d
@@ -24,7 +24,7 @@ rm -v .sqlx/*.json || true
 
 cargo sqlx prepare
 
-./docker/local.stop.sh
+./docker/stop.sh local
 
 unset DATABASE_URL
 

@@ -95,7 +95,7 @@ export BASE_URL="http://localhost:8080"
 
 start_updater() {
     echo "start_updater"
-    ./docker/local.start.sh > docker/logs/start.log 2>&1
+    ./docker/start.sh local > docker/logs/start.log 2>&1
 
     setup_test_user
 
@@ -106,7 +106,7 @@ start_updater() {
 
 stop_updater() {
     echo "stop_updater"
-    ./docker/local.stop.sh > docker/logs/stop.log 2>&1
+    ./docker/stop.sh local > docker/logs/stop.log 2>&1
     echo "Stopped Updater."
 }
 trap stop_updater EXIT

@@ -32,7 +32,7 @@ export BASE_URL="http://localhost:8080"
 
 start_backend() {
     echo "start_backend"
-    ./docker/local.start.sh > docker/logs/start.log 2>&1
+    ./docker/start.sh local > docker/logs/start.log 2>&1
 
     setup_test_user
 
@@ -43,7 +43,7 @@ start_backend() {
 
 stop_backend() {
     echo "stop_backend"
-    ./docker/local.stop.sh > docker/logs/stop.log 2>&1
+    ./docker/stop.sh local > docker/logs/stop.log 2>&1
     echo "Stop Backend."
 }
 trap stop_backend EXIT

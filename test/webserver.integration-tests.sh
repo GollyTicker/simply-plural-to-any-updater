@@ -64,7 +64,7 @@ unset VRCHAT_COOKIE
 start_webserver() {
     echo "start_webserver"
 
-    ./docker/local.start.sh > docker/logs/start.log 2>&1
+    ./docker/start.sh local > docker/logs/start.log 2>&1
 
     setup_test_user
 
@@ -73,7 +73,7 @@ start_webserver() {
 
 stop_webserver() {
     echo "stop_webserver"
-    ./docker/local.stop.sh > docker/logs/start.log 2>&1
+    ./docker/stop.sh local > docker/logs/start.log 2>&1
     echo "Stopped webserver."
 }
 trap stop_webserver EXIT

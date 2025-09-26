@@ -18,7 +18,7 @@ export BASE_URL="http://localhost:8080"
 main() {
     stop_updater
     ./steps/12-backend-cargo-build.sh
-    ./docker/local.start.sh > docker/logs/start.log 2>&1
+    ./docker/start.sh local > docker/logs/start.log 2>&1
 
     if check_vrc_cookie_works ; then
         return 0
@@ -122,7 +122,7 @@ check_vrc_cookie_works() {
 
 stop_updater() {
     echo "stop_updater"
-    ./docker/local.stop.sh > docker/logs/stop.log 2>&1
+    ./docker/stop.sh local > docker/logs/stop.log 2>&1
     echo "Stopped Updater."
 }
 trap stop_updater EXIT
