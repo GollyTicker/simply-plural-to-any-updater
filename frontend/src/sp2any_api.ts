@@ -3,7 +3,7 @@ import type { JwtString, UserConfigDbEntries, UserLoginCredentials, UserUpdaters
 import router from './router'
 
 export const http = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_SP2ANY_BASE_URL || '__SP2ANY_BASE_URL__' /* substituted via sed before integrating into nginx */,
 });
 
 http.interceptors.response.use(
