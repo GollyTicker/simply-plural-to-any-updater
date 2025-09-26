@@ -2,6 +2,7 @@
 
 set +e
 
+export SP2ANY_STAGE=local
 
 docker logs sp2any-db > docker/logs/sp2any-db.log 2>&1
 docker logs sp2any-api > docker/logs/sp2any-api.log 2>&1

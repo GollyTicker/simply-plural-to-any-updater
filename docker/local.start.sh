@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+export SP2ANY_STAGE=local
+source "docker/$SP2ANY_STAGE.env"
+
 source docker/source.sh
 
 ./docker/local.stop.sh

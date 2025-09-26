@@ -1,0 +1,7 @@
+output
+target/*
+!target/debug/sp2any
+bridge-src-tauri/target/*
+!bridge-src-tauri/target/debug/sp2any-bridge
+frontend/node_modules
+bridge-frontend/node_modules

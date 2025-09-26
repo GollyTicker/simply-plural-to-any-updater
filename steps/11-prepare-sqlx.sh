@@ -4,7 +4,9 @@ set -euo pipefail
 
 source docker/source.sh
 export SP2ANY_STAGE=local
-
+export FRONTEND_DIST=./../frontend/dist
+export PATH_TO_SP2ANY_API_EXEC=../target/debug/sp2any
+    
 ./docker/local.stop.sh || true
 
 docker compose -f docker/docker.compose.yml pull
