@@ -26,7 +26,7 @@ jobs:
         VRCHAT_USERNAME: ${{ secrets.VRCHAT_USERNAME }}
         VRCHAT_PASSWORD: ${{ secrets.VRCHAT_PASSWORD }}
         VRCHAT_COOKIE: ${{ secrets.VRCHAT_COOKIE }}
-        SKIP_TESTS: true # skip tests, because they're flaky on github due to vrchat auth issues
+        SKIP_TESTS: true
 
     - name: Run build script
       run: "./steps/30-build-release.sh"
