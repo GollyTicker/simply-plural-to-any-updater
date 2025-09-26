@@ -7,8 +7,8 @@ export SP2ANY_STAGE=local
 
 ./docker/local.stop.sh || true
 
-docker compose -f docker/local.compose.yml pull
-docker compose -f docker/local.compose.yml up sp2any-db -d
+docker compose -f docker/docker.compose.yml pull
+docker compose -f docker/docker.compose.yml up sp2any-db -d
 
 await sp2any-db "listening on IPv4 address"
 

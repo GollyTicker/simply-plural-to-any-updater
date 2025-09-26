@@ -1,33 +1,24 @@
 #!/bin/bash
-#
-# Script to build Rust executables for various targets, including Windows and Linux.
-# Note: MinGW toolchains are required for Windows builds.
 
 set -euo pipefail
-
-
 
 TARGETS=(
     "x86_64-pc-windows-gnu"    # 64-bit Windows
     "x86_64-unknown-linux-gnu" # 64-bit Linux (glibc)
 )
 
-OUTPUT_DIR_BASE="output"
-echo "Cleaning '$OUTPUT_DIR_BASE'"
-rm -rf "$OUTPUT_DIR_BASE" || true
-mkdir -p "${OUTPUT_DIR_BASE}"
+LINUX_TARGET="x86_64-unknown-linux-gnu"
 
 
-
-ensure_mingw_toolchains() {
-    echo "Step 1: Ensure MinGW toolchains, which are needed for C Runtime libraries, are installed."
-    dpkg -l gcc-mingw-w64-x86-64
+cleanup_output() {
+    OUT_DIR="target/release_builds"
+    echo "Cleaning '$OUT_DIR'"
+    rm -rf "$OUT_DIR" || true
+    mkdir -p "${OUT_DIR}"
 }
 
 
 add_rust_targets() {
-    echo ""
-    echo "Step 2: Add Rust targets using rustup."
     for target in "${TARGETS[@]}"; do
         rustup target add "$target"
     done
@@ -35,39 +26,45 @@ add_rust_targets() {
 
 
 build_binaries() {
-    echo ""
-    echo "Step 3: Building binaries..."
-
-
-    echo "== build bridge for linux and windows =="
-    PROJECT_BINARY_NAME=sp2any-bridge
     for target in "${TARGETS[@]}"; do
+        echo "🛠️ sp2any-bridge $target"
         ./steps/22-bridge-frontend-tauri-release.sh --target "$target"
-        dest_path="${OUTPUT_DIR_BASE}/sp2any-bridge/"
-        mkdir -p "$dest_path"
-        cp -v bridge-src-tauri/target/$target/release/bundle/*/*.{rpm,AppImage,deb,exe} "$dest_path" || true
+        BUILD_OUT_PATH="bridge-src-tauri/target/$target/release/bundle"
+        if [[ "$target" == *"windows"* ]]; then
+            cp -v "$BUILD_OUT_PATH"/*/*.exe "$OUT_DIR/"
+        else
+            cp -v "$BUILD_OUT_PATH"/*/*.{rpm,AppImage,deb} "$OUT_DIR/"
+        fi
+        echo "✅ sp2any-bridge $target"
+
+        echo ""
     done
 
 
-    echo "== build server for linux =="
-    PROJECT_BINARY_NAME=sp2any
-    ./steps/12-backend-cargo-build.sh --release --target "x86_64-unknown-linux-gnu"
-    ./steps/17-frontend-npm-build.sh
-    cp -vr ./frontend/dist "$OUTPUT_DIR_BASE/sp2any-frontend"
-    src_path="target/x86_64-unknown-linux-gnu/release/sp2any"
-    dest_path="${OUTPUT_DIR_BASE}/sp2any-api/sp2any"
-    mkdir -p "$(dirname "$dest_path")"
+    echo "🛠️ sp2any-api $LINUX_TARGET"
+    ./steps/12-backend-cargo-build.sh --release --target "$LINUX_TARGET"
+    src_path="target/$LINUX_TARGET/release/sp2any"
+    dest_path="${OUT_DIR}/sp2any-api"
     cp -v "$src_path" "$dest_path"
+    echo "✅ sp2any-api $target"
+
+    echo ""
+
+    echo "🛠️ sp2any-frontend $LINUX_TARGET"
+    ./steps/17-frontend-npm-build.sh
+    tar -czvf "$OUT_DIR/sp2any-frontend.tar.gz" -C frontend/dist .
+    echo "✅ sp2any-brontend $target"
 }
 
 
 main() {
-    ensure_mingw_toolchains
+    cleanup_output
     add_rust_targets
     build_binaries
 
     echo ""
-    echo "Build process finished. Output in: ${PWD}/${OUTPUT_DIR_BASE}"
+    echo "✅✅✅ Build process finished. Output in: ${PWD}/${OUT_DIR}"
 }
+
 
 main

@@ -1,10 +1,9 @@
 name: Release
 
 on:
-  # disabled until further notice
   push:
     tags:
-      - 'never' # 'v*' # Trigger on tags starting with v (e.g. v1.0)
+      - 'v*' # Trigger on tags starting with v (e.g. v1.0)
 
 jobs:
   release:
@@ -27,9 +26,10 @@ jobs:
         VRCHAT_USERNAME: ${{ secrets.VRCHAT_USERNAME }}
         VRCHAT_PASSWORD: ${{ secrets.VRCHAT_PASSWORD }}
         VRCHAT_COOKIE: ${{ secrets.VRCHAT_COOKIE }}
+        SKIP_TESTS: true # skip tests, because they're flaky on github due to vrchat auth issues
 
     - name: Run build script
-      run: "./steps/build-release.sh"
+      run: "./steps/30-build-release.sh"
 
     - name: Generate changelog
       id: changelog
