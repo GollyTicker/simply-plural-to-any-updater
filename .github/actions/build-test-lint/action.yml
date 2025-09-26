@@ -20,25 +20,17 @@ inputs:
     required: false
   RUN_TESTS:
     required: false
-    default: false
 runs:
   using: "composite"
   steps:
 
-    #### ==================== THESE STEPS ARE PARTIALLY DUPLICATED IN DEPENDENCIES UPDATE WORKFLOW
-
-    - name: Check tests not running
-      shell: bash
-      if: ${{ inputs.RUN_TESTS }} == 'true'
-      run: false
-
     - name: Install Rust, Cargo and rustup
       uses: dtolnay/rust-toolchain@stable
-      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      if: inputs.SKIP_SETUP == 'false'
 
     - name: Get cached Cargo dependencies
       uses: actions/cache@v4
-      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      if: inputs.SKIP_SETUP == 'false'
       with:
         path: |
           ~/.cargo/
@@ -47,7 +39,7 @@ runs:
 
     - name: Get cached Cargo dependencies
       uses: actions/cache@v4
-      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      if: inputs.SKIP_SETUP == 'false'
       with:
         path: |
           ~/.cargo/
@@ -56,37 +48,37 @@ runs:
 
     - name: Get cached npm packages
       uses: actions/cache@v4
-      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      if: inputs.SKIP_SETUP == 'false'
       with:
         path: frontend/node_modules
         key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
 
     - name: Get cached npm packages
       uses: actions/cache@v4
-      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      if: inputs.SKIP_SETUP == 'false'
       with:
         path: bridge-frontend/node_modules
         key: ${{ runner.os }}-node-${{ hashFiles('bridge-frontend/package-lock.json') }}
 
     - name: Install prerequisites
       shell: bash
-      if: ${{ inputs.SKIP_SETUP }} == 'false'
+      if: inputs.SKIP_SETUP == 'false'
       run: ./steps/03-install-dependencies.sh
 
     - name: Build
       shell: bash
-      if: ${{ inputs.RUN_TESTS }} == 'true'
+      if: inputs.RUN_TESTS == 'true'
       run: |
         ./steps/12-backend-cargo-build.sh
 
     - name: Unit tests
       shell: bash
-      if: ${{ inputs.RUN_TESTS }} == 'true'
+      if: inputs.RUN_TESTS == 'true'
       run: ./test/unit-tests.sh
 
     - name: Startup Integration Tests
       shell: bash
-      if: ${{ inputs.RUN_TESTS }} == 'true'
+      if: inputs.RUN_TESTS == 'true'
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
@@ -101,8 +93,8 @@ runs:
     # todo. problem is that the vrchat cookie is invalidated after one successful run on github actions :(
     # vrchat seems to do some new check on their own side...
     - name: Updater Integration Tests
-      shell: bash
-      if: ${{ inputs.RUN_TESTS }} == 'true'
+      shell: bash # This step is currently disabled in the logic below
+      if: false && inputs.RUN_TESTS == 'true'
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
@@ -116,7 +108,7 @@ runs:
 
     - name: Webserver Integration Tests
       shell: bash
-      if: ${{ inputs.RUN_TESTS }} == 'true'
+      if: inputs.RUN_TESTS == 'true'
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
@@ -126,7 +118,7 @@ runs:
 
     - name: Lint
       shell: bash
-      if: ${{ inputs.RUN_TESTS }} == 'true'
+      if: inputs.RUN_TESTS == 'true'
       run: |
         ./steps/10-lint.sh
         git diff --exit-code
