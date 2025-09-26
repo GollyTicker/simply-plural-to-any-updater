@@ -18,13 +18,19 @@ inputs:
     required: true
   SKIP_SETUP:
     required: false
-  SKIP_TESTS:
+  RUN_TESTS:
     required: false
+    default: false
 runs:
   using: "composite"
   steps:
 
     #### ==================== THESE STEPS ARE PARTIALLY DUPLICATED IN DEPENDENCIES UPDATE WORKFLOW
+
+    - name: Check tests not running
+      shell: bash
+      if: ${{ inputs.RUN_TESTS }} == 'true'
+      run: false
 
     - name: Install Rust, Cargo and rustup
       uses: dtolnay/rust-toolchain@stable
@@ -69,18 +75,18 @@ runs:
 
     - name: Build
       shell: bash
-      if: ${{ inputs.SKIP_TESTS }} == 'false'
+      if: ${{ inputs.RUN_TESTS }} == 'true'
       run: |
         ./steps/12-backend-cargo-build.sh
 
     - name: Unit tests
       shell: bash
-      if: ${{ inputs.SKIP_TESTS }} == 'false'
+      if: ${{ inputs.RUN_TESTS }} == 'true'
       run: ./test/unit-tests.sh
 
     - name: Startup Integration Tests
       shell: bash
-      if: ${{ inputs.SKIP_TESTS }} == 'false'
+      if: ${{ inputs.RUN_TESTS }} == 'true'
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
@@ -96,7 +102,7 @@ runs:
     # vrchat seems to do some new check on their own side...
     - name: Updater Integration Tests
       shell: bash
-      if: ${{ inputs.SKIP_TESTS }} == 'false'
+      if: ${{ inputs.RUN_TESTS }} == 'true'
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
@@ -110,7 +116,7 @@ runs:
 
     - name: Webserver Integration Tests
       shell: bash
-      if: ${{ inputs.SKIP_TESTS }} == 'false'
+      if: ${{ inputs.RUN_TESTS }} == 'true'
       env:
         SPS_API_TOKEN: ${{ inputs.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ inputs.SPS_API_WRITE_TOKEN }}
@@ -120,7 +126,7 @@ runs:
 
     - name: Lint
       shell: bash
-      if: ${{ inputs.SKIP_TESTS }} == 'false'
+      if: ${{ inputs.RUN_TESTS }} == 'true'
       run: |
         ./steps/10-lint.sh
         git diff --exit-code
