@@ -7,8 +7,8 @@ set -euo pipefail
 # Tests
 sudo apt-get install -y --no-upgrade oathtool
 
-# MinGW toolchains for Windows targets
-sudo apt-get install -y --no-upgrade gcc-mingw-w64-x86-64 gcc-mingw-w64-i686
+# Cross-compile to Windows from Linux
+sudo apt-get install -y --no-upgrade gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 nsis lld llvm
 
 # Tauri
 sudo apt-get install -y --no-upgrade \
@@ -24,6 +24,7 @@ sudo apt-get install -y --no-upgrade \
 
 cargo install cargo-audit@^0.21
 cargo install sqlx-cli@^0.8
+cargo install cargo-xwin@^0.19
 
 # Tauri e2e tests
 cargo install tauri-driver@^2

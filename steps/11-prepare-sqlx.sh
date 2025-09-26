@@ -3,7 +3,7 @@
 set -euo pipefail
 
 source docker/source.sh
-export PATH_TO_CONFIG_JSON="./does-not-exist"
+export SP2ANY_STAGE=local
 
 ./docker/local.stop.sh || true
 

@@ -1,5 +1,6 @@
 # Rust
 target
+output
 
 # Config files
 /*.env

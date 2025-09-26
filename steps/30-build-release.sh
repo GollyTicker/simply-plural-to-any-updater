@@ -12,10 +12,9 @@ TARGETS=(
     "x86_64-unknown-linux-gnu" # 64-bit Linux (glibc)
 )
 
-# extract project name from Cargo.toml
-PROJECT_BINARY_NAME=$(grep -E '^name\s*=\s*".*"' Cargo.toml | head -n 1 | sed -E 's/name\s*=\s*"([^"]+)".*/\1/')
-
-OUTPUT_DIR_BASE="target/release_builds"
+OUTPUT_DIR_BASE="output"
+echo "Cleaning '$OUTPUT_DIR_BASE'"
+rm -rf "$OUTPUT_DIR_BASE" || true
 mkdir -p "${OUTPUT_DIR_BASE}"
 
 
@@ -37,32 +36,28 @@ add_rust_targets() {
 
 build_binaries() {
     echo ""
-    echo "Step 3: Building binaries for ${PROJECT_BINARY_NAME}..."
+    echo "Step 3: Building binaries..."
 
+
+    echo "== build bridge for linux and windows =="
+    PROJECT_BINARY_NAME=sp2any-bridge
     for target in "${TARGETS[@]}"; do
-        echo "[$target] "
-        ./steps/12-backend-cargo-build.sh --release --target "$target"
-        echo "[$target] Cargo build successful."
-
-        # Determine PLATFORM and .exe suffix based on the target triple
-        platform_label=""
-        exe_suffix=""
-        if [[ "$target" == *"-pc-windows-gnu"* ]]; then
-            platform_label="Win"
-            exe_suffix=".exe"
-        elif [[ "$target" == *"-unknown-linux-gnu"* ]]; then
-            platform_label="Linux"
-        fi
-
-        final_executable_name="SP2Any-${platform_label}${exe_suffix}"
-
-        # Path to the binary produced by cargo
-        src_path="target/${target}/release/${PROJECT_BINARY_NAME}${exe_suffix}"
-        dest_path="${OUTPUT_DIR_BASE}/${final_executable_name}"
-
-        cp "$src_path" "$dest_path"
-        echo "[$target] Created binary at '${dest_path}'."
+        ./steps/22-bridge-frontend-tauri-release.sh --target "$target"
+        dest_path="${OUTPUT_DIR_BASE}/sp2any-bridge/"
+        mkdir -p "$dest_path"
+        cp -v bridge-src-tauri/target/$target/release/bundle/*/*.{rpm,AppImage,deb,exe} "$dest_path" || true
     done
+
+
+    echo "== build server for linux =="
+    PROJECT_BINARY_NAME=sp2any
+    ./steps/12-backend-cargo-build.sh --release --target "x86_64-unknown-linux-gnu"
+    ./steps/17-frontend-npm-build.sh
+    cp -vr ./frontend/dist "$OUTPUT_DIR_BASE/sp2any-frontend"
+    src_path="target/x86_64-unknown-linux-gnu/release/sp2any"
+    dest_path="${OUTPUT_DIR_BASE}/sp2any-api/sp2any"
+    mkdir -p "$(dirname "$dest_path")"
+    cp -v "$src_path" "$dest_path"
 }
 
 
