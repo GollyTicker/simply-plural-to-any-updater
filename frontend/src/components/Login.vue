@@ -11,8 +11,9 @@
         <input type="password" id="password" v-model="password"  autocomplete="password"/>
       </div>
       <button type="submit">Login</button>
+      <button @click="register" type="button" class="register-button">Register</button>
     </form>
-    <p v-if="error" class="error-message">{{ error }}</p>
+    <p v-if="status" class="status-message">{{ status }}</p>
   </div>
 </template>
 
@@ -27,7 +28,7 @@ import { sp2any_api } from '@/sp2any_api';
 
 const email: Ref<string> = ref('');
 const password: Ref<string> = ref('');
-const error: Ref<string> = ref('');
+const status: Ref<string> = ref('');
 
 const login = async () => {
   const creds = {
@@ -38,11 +39,27 @@ const login = async () => {
   try {
     await sp2any_api.login(creds);
     console.log('Login successful!');
-    error.value = '';
+    status.value = '';
     router.push('/status');
   } catch (err) {
-    error.value = 'Invalid credentials';
+    status.value = 'Invalid credentials';
     console.error('Login failed:', err);
+  }
+};
+
+const register = async () => {
+  const creds = {
+    email: { inner: email.value },
+    password: { inner: password.value },
+  } as UserLoginCredentials;
+
+  try {
+    status.value = 'Sending registration request...';
+    await sp2any_api.register(creds);
+    status.value = 'Registration successful! You can now log in.';
+  } catch (err: any) {
+    status.value = 'Registration failed: ' + err.toString();
+    console.error('Registration failed:', err);
   }
 };
 </script>
@@ -105,8 +122,16 @@ button:hover {
   background-color: var(--color-secondary);
 }
 
-.error-message {
-  color: var(--primary-warn);
+.register-button {
+  margin-top: 0.5rem;
+  background-color: var(--color-background-soft);
+}
+
+.register-button:hover {
+  background-color: var(--color-background-mute);
+}
+
+.status-message {
   text-align: center;
   margin-top: 1rem;
 }

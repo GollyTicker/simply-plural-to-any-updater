@@ -40,6 +40,49 @@ async function configUpdateAndRestartSucceeded() {
     await expect($('#config-update-status')).toHaveText('Config saved successfully and restarted updaters!');
 }
 
+async function register(email: string) {
+    await $('#email').setValue(email);
+    await $('#password').setValue('a-secure-password');
+    await $('button.register-button').click();
+}
+
+async function registrationSucceeded() {
+    await expect($('.status-message')).toHaveText('Registration successful! You can now log in.');
+}
+
+async function registrationFailed() {
+    await expect($('.status-message')).toHaveText('Registration failed: AxiosError: Request failed with status code 500');
+}
+
+
+describe('sp2any registration logic', () => {
+    const test_email = `test-${Date.now()}@example.com`;
+
+    it('should allow a new user to register', async () => {
+        await browser.url(env.SP2ANY_BASE_URL!);
+        await register(test_email);
+        await registrationSucceeded();
+    });
+
+    it('should allow the new user to log in', async () => {
+        // The form is already filled from the registration step
+        await $('button[type="submit"]').click()
+        await loggedInAndOnStatusPage();
+    });
+
+    it('should allow the user to log out', async () => {
+        await navigateToLogout();
+        await notLoggedIn();
+    });
+
+    it('should not allow registering with an existing email', async () => {
+        await browser.url(env.SP2ANY_BASE_URL!);
+        // This is the email of the default user, which already exists
+        await register(TEST_EMAIL);
+        await registrationFailed();
+    });
+});
+
 
 describe('sp2any login logic', () => {
     it('should be intially not logged in', async () => {
@@ -69,6 +112,7 @@ describe('sp2any login logic', () => {
         await notLoggedIn();
     });
 });
+
 
 describe('sp2any updater status and config save and restarts', () => {
     it('should show the correct updater status', async () => {

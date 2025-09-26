@@ -25,6 +25,9 @@ export const sp2any_api = {
     localStorage.setItem("jwt", JSON.stringify(jwtString.data));
     return jwtString.data;
   },
+  register: async function (creds: UserLoginCredentials): Promise<void> {
+    await http.post('/api/user/register', creds);
+  },
   get_updater_status: async function (): Promise<UserUpdatersStatuses> {
     let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
     let response = await http.get<UserUpdatersStatuses>('/api/updaters/status', { headers: { Authorization: `Bearer ${jwtString.inner}` } });
