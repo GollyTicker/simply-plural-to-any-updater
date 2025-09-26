@@ -18,6 +18,8 @@ jobs:
     - name: Run Tests
       uses: ./.github/actions/build-test-lint
       with:
+        SKIP_SETUP: false
+        SKIP_TESTS: true        
         SPS_API_TOKEN: ${{ secrets.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ secrets.SPS_API_WRITE_TOKEN }}
         DISCORD_OAUTH_CLIENT_ID: ${{ secrets.DISCORD_OAUTH_CLIENT_ID }}
@@ -26,7 +28,6 @@ jobs:
         VRCHAT_USERNAME: ${{ secrets.VRCHAT_USERNAME }}
         VRCHAT_PASSWORD: ${{ secrets.VRCHAT_PASSWORD }}
         VRCHAT_COOKIE: ${{ secrets.VRCHAT_COOKIE }}
-        SKIP_TESTS: true
 
     - name: Run build script
       run: "./steps/30-build-release.sh"
