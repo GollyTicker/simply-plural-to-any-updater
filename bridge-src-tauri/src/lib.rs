@@ -19,11 +19,12 @@ use tauri::Manager;
 use tauri::async_runtime::{JoinHandle, Mutex};
 use tokio_tungstenite::{connect_async, tungstenite::client::IntoClientRequest};
 
+const DEFAULT_SP2ANY_BASE_URL: &str = "https://public-test.sp2any.ayake.net";
+
 // todo. add auto-update capabilities.
 // todo. add auto-start capabilities: https://crates.io/crates/auto-launch
 // todo. note, that only a single user account is supported for now.
 
-const DEFAULT_SP2ANY_BASE_URL: &str = "https://sp2any.io";
 const MEGABYTES: u128 = 10 ^ 6;
 
 fn get_data_dir() -> Result<PathBuf> {
