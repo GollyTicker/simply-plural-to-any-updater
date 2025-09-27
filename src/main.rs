@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use clap::Parser;
 
 use sp2any::license;
-use sp2any::{platforms, setup, updater, users};
+use sp2any::{meta, platforms, setup, updater, users};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,6 +28,7 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
         .manage(setup.application_user_secrets)
         .manage(setup.client)
         .manage(setup.shared_updaters)
+        .manage(setup.sp2any_variant_info)
         .mount(
             "/",
             routes![
@@ -42,6 +43,7 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_request,
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_resolve,
                 platforms::discord_api::get_api_user_platform_discord_bridge_events,
+                meta::get_api_meta_sp2any_variant,
             ],
         )
         .attach(setup.cors_policy)

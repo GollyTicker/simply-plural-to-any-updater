@@ -7,10 +7,10 @@ use rocket::{State, serde::json::Json};
 use sqlx::PgPool;
 
 #[get("/api/config/defaults")]
-pub async fn get_api_config_defaults() -> HttpResult<Json<config::UserConfigDbEntries<database::Decrypted>>> {
+pub fn get_api_config_defaults()
+-> HttpResult<Json<config::UserConfigDbEntries<database::Decrypted>>> {
     Ok(Json(config::UserConfigDbEntries::default()))
 }
-
 
 #[get("/api/user/config")]
 pub async fn get_api_user_config(

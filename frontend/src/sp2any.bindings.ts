@@ -2,6 +2,7 @@ export type Email = { inner: string };
 export type UserProvidedPassword = { inner: string };
 export type UserLoginCredentials = { email: Email; password: UserProvidedPassword };
 export type Decrypted = { secret: string };
+export type SP2AnyVariantInfo = { variant: string; description: string | null; show_in_ui: boolean };
 export type UserConfigDbEntries = {
     wait_seconds?: number;
     system_name?: string;

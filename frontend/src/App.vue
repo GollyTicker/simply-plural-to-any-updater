@@ -4,6 +4,7 @@
       <div id="app-header">
           <img src="/favicon.png" alt="logo" />
           <h1 class="title">SP2Any</h1>
+          <p v-if="variantInfo?.show_in_ui" id="variant-info" :title="variantInfo.description ?? undefined">@{{ variantInfo.variant }}</p>
       </div>
       <div class="nav-links-container">
         <router-link to="/status">Status</router-link>
@@ -19,7 +20,16 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import LicenseInfo from './components/LicenseInfo.vue';
+import { sp2any_api } from './sp2any_api';
+import type { SP2AnyVariantInfo } from './sp2any.bindings';
+
+const variantInfo = ref<SP2AnyVariantInfo | null>(null);
+
+onMounted(async () => {
+  variantInfo.value = await sp2any_api.get_variant_info();
+});
 </script>
 
 <style scoped>
@@ -65,6 +75,20 @@ nav {
   border-radius: 0.25rem;
   color: black;
   background-color: var(--color-background-mute);
+}
+
+#variant-info {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.2em;
+  background-color: #8962d1;
+  color: white;
+  text-align: center;
+  cursor: help;
+  margin-left: 0.5rem;
+  font-size: 0.9em;
+  font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 nav a:hover {

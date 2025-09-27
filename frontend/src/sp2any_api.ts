@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { JwtString, UserConfigDbEntries, UserLoginCredentials, UserUpdatersStatuses, VRChatCredentials, VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse, VRChatCredentialsWithTwoFactorAuth, VrchatAuthResponse } from './sp2any.bindings';
+import type { SP2AnyVariantInfo, JwtString, UserConfigDbEntries, UserLoginCredentials, UserUpdatersStatuses, VRChatCredentials, VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse, VRChatCredentialsWithTwoFactorAuth, VrchatAuthResponse } from './sp2any.bindings';
 import router from './router'
 
 export const http = axios.create({
@@ -54,6 +54,10 @@ export const sp2any_api = {
   vrchat_resolve_2fa: async function (creds_with_tfa: VRChatCredentialsWithTwoFactorAuth): Promise<VRChatCredentialsWithCookie> {
     let jwtString: JwtString = JSON.parse(localStorage.getItem("jwt")!);
     let response = await http.post<VRChatCredentialsWithCookie>('/api/user/platform/vrchat/auth_2fa/resolve', creds_with_tfa, { headers: { Authorization: `Bearer ${jwtString.inner}` } });
+    return response.data;
+  },
+  get_variant_info: async function (): Promise<SP2AnyVariantInfo> {
+    let response = await http.get<SP2AnyVariantInfo>('/api/meta/sp2any-variant-info');
     return response.data;
   }
 }
