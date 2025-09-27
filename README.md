@@ -116,10 +116,13 @@ Update the dependencies.
 ## TODOs
 
 ### First deployment
-* make SP2ANY_BASE_URL configureable for frontend-dist
+* DONE: make SP2ANY_BASE_URL configureable for frontend-dist
 * deploy on private space once and share with friend
+* add hint on all deployments where it warns about which variant one is on on the nav bar
 * deploy for discord test server users
 
+
+* fix bug: wait seconds incorrectly set to empty string by frontend
 * add `enable_website` config
 * add status not only for updaters but also for SP itself.
 * Add automatic sync to PluralKit
