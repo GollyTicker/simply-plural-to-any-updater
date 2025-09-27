@@ -197,6 +197,15 @@ async function fetchDefaults() {
 
 async function saveConfigAndRestart() {
   try {
+    // Ensure that empty strings are interpreted as undefined.
+    // Vue unfortunately breaks type-safety, because v-model.number returns number as a type
+    // but allows invalid strings at runtime and simply returns them unchanged.
+    for (const key in config.value) {
+      if (config.value[key as keyof UserConfigDbEntries] === '') {
+        config.value[key as keyof UserConfigDbEntries] = undefined;
+      }
+    }
+
     await sp2any_api.set_config_and_restart(config.value);
     status.value = 'Config saved successfully and restarted updaters!';
   } catch (e) {

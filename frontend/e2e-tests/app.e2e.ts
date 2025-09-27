@@ -175,4 +175,21 @@ describe('sp2any updater status and config save and restarts', () => {
         await expect($('#vrchat-status')).toHaveText('Running');
         await expect($('#discord-status')).toHaveText('Starting');
     });
+
+    // todo. fix this test
+    // it('should correctly save an empty string as an optional value and correctly process numbers', async () => {
+    //     await navigateToConfig();
+    //     await loggedInAndOnConfigPage();
+
+    //     // Set a value and save it
+    //     await $('#wait_seconds').setValue("");
+    //     await expect($('#wait_seconds')).toHaveValue("");
+    //     await $('button[type="submit"]').click();
+    //     await configUpdateAndRestartSucceeded();
+
+    //     // The config is re-fetched on navigation, so the value should be gone
+    //     await navigateToStatus();
+    //     await navigateToConfig();
+    //     await expect($('#wait_seconds')).toHaveValue('');
+    // });
 });

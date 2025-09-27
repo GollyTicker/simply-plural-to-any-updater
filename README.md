@@ -121,9 +121,8 @@ Update the dependencies.
 * add hint on all deployments where it warns about which variant one is on on the nav bar
 * add variant picker for sp2any-bridge, such that it even knows where to connect to!
 * deploy for discord test server users
+* security: make it such that on my private instance, only handpicked users may register and use it.
 
-
-* fix bug: wait seconds incorrectly set to empty string by frontend
 * add `enable_website` config
 * add status not only for updaters but also for SP itself.
 * Add automatic sync to PluralKit
