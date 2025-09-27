@@ -117,8 +117,9 @@ Update the dependencies.
 
 ### First deployment
 * DONE: make SP2ANY_BASE_URL configureable for frontend-dist
-* deploy on private space once and share with friend
+* DONE: deploy on private space once and share with friend
 * add hint on all deployments where it warns about which variant one is on on the nav bar
+* add variant picker for sp2any-bridge, such that it even knows where to connect to!
 * deploy for discord test server users
 
 
