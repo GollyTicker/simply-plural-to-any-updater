@@ -99,6 +99,20 @@ button:focus-visible {
   margin: 0;
 }
 
+#variant-info {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.2em;
+  background-color: #8962d1;
+  color: white;
+  text-align: center;
+  cursor: help;
+  margin-left: 0.5rem;
+  font-size: 2rem;
+  font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
+}
+
 footer {
   text-align: center;
   font-size: 0.8rem;
