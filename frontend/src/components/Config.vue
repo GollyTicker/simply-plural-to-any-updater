@@ -24,8 +24,7 @@
           </div>
           <div class="config-item">
             <label for="system_name">System Name</label>
-            <input id="system_name" type="text" v-model="config.system_name"
-              :placeholder="defaults.system_name" />
+            <input id="system_name" type="text" v-model="config.system_name" :placeholder="defaults.system_name" />
           </div>
         </div>
       </div>
@@ -53,8 +52,11 @@
         <h2>Discord</h2>
         <div class="config-grid">
           <div class="config-item">
-            <label for="enable_discord">Enable Discord</label>
+            <label for="enable_discord">Enable Discord (via bridge)</label>
             <input id="enable_discord" type="checkbox" v-model="config.enable_discord" />
+            <p id="sp2any-brige-info">To use this, open <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">download SP2Any
+                Bridge</a>, then open the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
+              Then run it on the computer where Discord Desktop is running.</p>
           </div>
           <div class="config-item">
             <label for="enable_discord_status_message">Enable Discord Status Message (Discord ToS violation!)</label>
@@ -109,7 +111,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, type Ref } from 'vue';
-import type { Decrypted, UserConfigDbEntries, VRChatCredentials, VRChatCredentialsWithTwoFactorAuth, TwoFactorAuthMethod } from '@/sp2any.bindings';
+import { type Decrypted, type UserConfigDbEntries, type VRChatCredentials, type VRChatCredentialsWithTwoFactorAuth, type TwoFactorAuthMethod, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL } from '@/sp2any.bindings';
 import { sp2any_api } from '@/sp2any_api';
 
 const config: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries);
@@ -259,6 +261,10 @@ onMounted(async () => {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+#sp2any-brige-info {
+  font-size: smaller;
 }
 
 button {

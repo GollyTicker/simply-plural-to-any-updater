@@ -125,6 +125,7 @@ Update the dependencies.
 * deploy for discord test server users
 * security: make it such that on my private instance, only handpicked users may register and use it.
 
+* remove `0.1.0` from sp2any bridge executable
 * add `enable_website` config
 * add status not only for updaters but also for SP itself.
 * Add automatic sync to PluralKit

@@ -3,7 +3,7 @@ use sp2any::{
     database::Decrypted,
     for_discord_bridge::UserLoginCredentials,
     license,
-    meta_api::{CANONICAL_SP2ANY_BASE_URL, SP2AnyVariantInfo},
+    meta_api::{SP2AnyVariantInfo, CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL},
     platforms::{
         TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
         VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
@@ -28,6 +28,7 @@ fn main() -> Result<()> {
         export::<Decrypted>(conf)?,
         export::<SP2AnyVariantInfo>(conf)?,
         format!("export const CANONICAL_SP2ANY_BASE_URL: string = \"{CANONICAL_SP2ANY_BASE_URL}\""),
+        format!("export const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: string = \"{SP2ANY_GITHUB_REPOSITORY_RELEASES_URL}\""),
 "export type UserConfigDbEntries = {
     wait_seconds?: number;
     system_name?: string;
