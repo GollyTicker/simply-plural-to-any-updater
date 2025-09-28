@@ -7,9 +7,12 @@ async function notLoggedIn() {
     await expect($('#login-status')).toHaveText("Not logged in")
 }
 
-async function login(password?: string) {
+async function login(password?: string, baseUrl?: string) {
     await $('#email').setValue(TEST_EMAIL)
     await $('#password').setValue(password ?? TEST_PASSWORD)
+    if (baseUrl) {
+        await $('#sp2any-base-url-input').setValue(baseUrl)
+    }
 
     await $('button[type="submit"]').click()
 }
@@ -50,4 +53,22 @@ describe('sp2any-bridge login flow', () => {
 
         await expect($('#login-status')).toHaveText("Invalid login. Please try again.")
     })
-})
+});
+
+describe('variants and base-url configuration', () => {
+    it('should show @local variant by default in test setup', async () => {
+        await expect($('#variant-info')).toHaveText('@local')
+    })
+
+    it('should allow changing the base url and fail login', async () => {
+        await login(TEST_PASSWORD, 'http://localhost:23923')
+        await expect($('#login-status')).toHaveText("Login failed: error sending request for url (http://localhost:23923/api/user/login)")
+    })
+
+    it('should allow changing the base url and succeed login', async () => {
+        await login(TEST_PASSWORD, process.env.SP2ANY_BASE_URL!)
+        await loggedInAndConnected()
+        await expect($('#variant-info')).toHaveText('@local')
+        await logout()
+    })
+});

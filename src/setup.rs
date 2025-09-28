@@ -1,11 +1,10 @@
 use crate::database;
+use crate::meta_api;
 use crate::updater;
 use crate::users;
 use anyhow::Result;
 use clap::Parser;
 use rocket::http::Method;
-use serde::Deserialize;
-use serde::Serialize;
 use sqlx::postgres;
 use std::time::Duration;
 
@@ -23,7 +22,7 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
         inner: cli_args.application_user_secrets.clone(),
     };
 
-    let sp2any_variant_info = SP2AnyVariantInfo {
+    let sp2any_variant_info = meta_api::SP2AnyVariantInfo {
         variant: cli_args.sp2any_variant.clone(),
         description: cli_args.sp2any_variant_description.clone(),
         show_in_ui: !cli_args.sp2any_variant_hide_in_ui,
@@ -104,16 +103,9 @@ pub struct CliArgs {
 pub struct ApplicationSetup {
     pub db_pool: sqlx::PgPool,
     pub client: reqwest::Client,
-    pub sp2any_variant_info: SP2AnyVariantInfo,
+    pub sp2any_variant_info: meta_api::SP2AnyVariantInfo,
     pub jwt_secret: users::ApplicationJwtSecret,
     pub application_user_secrets: database::ApplicationUserSecrets,
     pub shared_updaters: updater::UpdaterManager,
     pub cors_policy: rocket_cors::Cors,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
-pub struct SP2AnyVariantInfo {
-    variant: String,
-    description: Option<String>,
-    show_in_ui: bool,
 }

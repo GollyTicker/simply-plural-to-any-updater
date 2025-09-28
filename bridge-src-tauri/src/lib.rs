@@ -1,9 +1,9 @@
 mod discord_bridge;
+mod local_storage;
 mod never;
 mod streaming;
 
 use anyhow::{Result, anyhow};
-use directories::ProjectDirs;
 use futures::stream::StreamExt;
 use sp2any::for_discord_bridge;
 use sp2any::for_discord_bridge::FireAndForgetChannel;
@@ -11,15 +11,11 @@ use sp2any::license;
 use sp2any::platforms::ServerToBridgeSseMessage;
 use sp2any::updater;
 use std::env;
-use std::fs;
-use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::Emitter;
 use tauri::Manager;
 use tauri::async_runtime::{JoinHandle, Mutex};
 use tokio_tungstenite::{connect_async, tungstenite::client::IntoClientRequest};
-
-const DEFAULT_SP2ANY_BASE_URL: &str = "https://public-test.sp2any.ayake.net";
 
 // todo. add auto-update capabilities.
 // todo. add auto-start capabilities: https://crates.io/crates/auto-launch
@@ -27,24 +23,28 @@ const DEFAULT_SP2ANY_BASE_URL: &str = "https://public-test.sp2any.ayake.net";
 
 const MEGABYTES: u128 = 10 ^ 6;
 
-fn get_data_dir() -> Result<PathBuf> {
-    let proj_dirs = ProjectDirs::from("io", "sp2any", "sp2any.bridge")
-        .ok_or_else(|| anyhow!("Failed to get project directories"))
-        .map(|p| p.data_local_dir().to_path_buf());
-
-    let data_dir = env::var("SP2ANY_DATA_DIR")
-        .map(PathBuf::from)
-        .or(proj_dirs)?;
-
-    log::debug!("Data dir: {}", data_dir.to_string_lossy());
-
-    Ok(data_dir)
+#[tauri::command]
+async fn fetch_base_url_and_variant_info()
+-> Result<(String, for_discord_bridge::SP2AnyVariantInfo), String> {
+    let result = fetch_base_url_and_variant_info_anyhow()
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(result)
 }
 
-fn get_credentials_path() -> Result<PathBuf> {
-    let data_dir = get_data_dir()?;
-    fs::create_dir_all(&data_dir)?;
-    Ok(data_dir.join("credentials.json"))
+async fn fetch_base_url_and_variant_info_anyhow()
+-> Result<(String, for_discord_bridge::SP2AnyVariantInfo)> {
+    let base_url = local_storage::get_base_url()?;
+    let client = reqwest::Client::new();
+    let variant_info_url = format!("{}{}", base_url, "/api/meta/sp2any-variant-info");
+    let variant_info = client
+        .get(&variant_info_url)
+        .send()
+        .await?
+        .error_for_status()?
+        .json()
+        .await?;
+    Ok((base_url, variant_info))
 }
 
 #[tauri::command]
@@ -78,8 +78,7 @@ async fn subscribe_to_bridge_channel_anyhow(
     app: tauri::AppHandle,
     jwt: for_discord_bridge::JwtString,
 ) -> Result<()> {
-    let base_url =
-        env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
+    let base_url = local_storage::get_base_url()?;
     let ws_url = format!(
         "{}/api/user/platform/discord/bridge-events",
         base_url.replace("http", "ws")
@@ -145,8 +144,7 @@ async fn login_anyhow(
     creds: for_discord_bridge::UserLoginCredentials,
 ) -> Result<for_discord_bridge::JwtString> {
     let client = reqwest::Client::new();
-    let base_url =
-        env::var("SP2ANY_BASE_URL").unwrap_or_else(|_| DEFAULT_SP2ANY_BASE_URL.to_owned());
+    let base_url = local_storage::get_base_url()?;
     let login_url = format!("{}{}", base_url, "/api/user/login");
 
     log::info!("Attempting login: {login_url} with {:?}", &creds.email);
@@ -165,59 +163,37 @@ async fn login_anyhow(
     Ok(jwt_string)
 }
 
-fn set_user_credentials(creds: &for_discord_bridge::UserLoginCredentials) -> Result<()> {
-    let path = get_credentials_path()?;
-    let json = serde_json::to_string(creds)?;
-    fs::write(path, json)?;
-    log::info!("Stored credentials for {:?}", &creds.email);
-    Ok(())
-}
-
 #[tauri::command]
-async fn store_credentials(creds: for_discord_bridge::UserLoginCredentials) -> Result<(), String> {
+async fn store_credentials(
+    creds: for_discord_bridge::UserLoginCredentials,
+    base_url: String,
+) -> Result<(), String> {
     log::debug!("store_credentials");
-    set_user_credentials(&creds).map_err(|e| e.to_string())?;
+    local_storage::set_base_url(base_url).map_err(|e| e.to_string())?;
+    local_storage::set_user_credentials(&creds).map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
 async fn login_with_stored_credentials() -> Result<for_discord_bridge::JwtString, String> {
     log::debug!("login_with_stored_credentials");
-    let creds = get_user_credentials().map_err(|e| e.to_string())?;
+    let creds = local_storage::get_user_credentials().map_err(|e| e.to_string())?;
     let jwt_string = login(creds).await?;
     log::info!("Logged in with stored credentials.");
     Ok(jwt_string)
 }
-
-fn get_user_credentials() -> Result<for_discord_bridge::UserLoginCredentials> {
-    let path = get_credentials_path()?;
-    let json = fs::read_to_string(path)?;
-    let creds: for_discord_bridge::UserLoginCredentials = serde_json::from_str(&json)?;
-    log::info!("Retrieved credentials for {:?}", &creds.email);
-    Ok(creds)
-}
-
 #[tauri::command]
 async fn stop_and_clear_credentials(app: tauri::AppHandle) -> Result<(), String> {
     log::debug!("stop_and_clear_credentials");
     abort_background_task(app).await;
-    clear_user_credentials().map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-fn clear_user_credentials() -> Result<()> {
-    let path = get_credentials_path()?;
-    if path.exists() {
-        fs::remove_file(path)?;
-    }
-    log::info!("Cleared credentials.");
+    local_storage::clear_user_credentials().map_err(|e| e.to_string())?;
     Ok(())
 }
 
 pub fn run() -> Result<()> {
     println!("{}", license::info_text());
 
-    let logs_dir = get_data_dir()?.join("logs");
+    let logs_dir = local_storage::get_logs_dir()?;
 
     let rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage> =
         for_discord_bridge::fire_and_forget_channel();
@@ -245,7 +221,8 @@ pub fn run() -> Result<()> {
             login_with_stored_credentials,
             stop_and_clear_credentials,
             subscribe_to_bridge_channel,
-            initiate_discord_rpc_loop
+            initiate_discord_rpc_loop,
+            fetch_base_url_and_variant_info
         ])
         .manage(new_background_tasks_container())
         .manage(rich_presence_channel)

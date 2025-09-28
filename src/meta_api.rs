@@ -1,8 +1,10 @@
 use rocket::State;
 use rocket::serde::json::Json;
+use serde::{Deserialize, Serialize};
 
 use crate::communication::HttpResult;
-use crate::setup::SP2AnyVariantInfo;
+
+pub const CANONICAL_SP2ANY_BASE_URL: &str = "https://public-test.sp2any.ayake.net";
 
 #[get("/api/meta/sp2any-variant-info")]
 pub fn get_api_meta_sp2any_variant(
@@ -10,4 +12,11 @@ pub fn get_api_meta_sp2any_variant(
 ) -> HttpResult<Json<SP2AnyVariantInfo>> {
     let variant = variant_info.inner().clone();
     Ok(Json(variant))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+pub struct SP2AnyVariantInfo {
+    pub variant: String,
+    pub description: Option<String>,
+    pub show_in_ui: bool,
 }

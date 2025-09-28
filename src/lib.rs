@@ -3,7 +3,7 @@ extern crate rocket;
 
 mod communication;
 pub mod database;
-pub mod meta;
+pub mod meta_api;
 pub mod platforms;
 mod plurality;
 pub mod setup;
@@ -15,6 +15,7 @@ pub mod for_discord_bridge {
         FireAndForgetChannel, LatestReceiver, blocking_abort_and_clear_tasks,
         fire_and_forget_channel,
     };
+    pub use crate::meta_api::{CANONICAL_SP2ANY_BASE_URL, SP2AnyVariantInfo};
     pub use crate::platforms::DiscordRichPresence;
     pub use crate::users::user_api::UserLoginCredentials;
     pub use crate::users::{JwtString, UserProvidedPassword};

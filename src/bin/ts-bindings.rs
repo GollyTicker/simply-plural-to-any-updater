@@ -1,9 +1,14 @@
 use anyhow::Result;
 use sp2any::{
-    database::Decrypted, for_discord_bridge::UserLoginCredentials, license, platforms::{
+    database::Decrypted,
+    for_discord_bridge::UserLoginCredentials,
+    license,
+    meta_api::{CANONICAL_SP2ANY_BASE_URL, SP2AnyVariantInfo},
+    platforms::{
         TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
         VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
-    }, setup, users::{Email, JwtString, UserProvidedPassword}
+    },
+    users::{Email, JwtString, UserProvidedPassword},
 };
 use specta::{
     self,
@@ -21,7 +26,8 @@ fn main() -> Result<()> {
         export::<UserProvidedPassword>(conf)?,
         export::<UserLoginCredentials>(conf)?,
         export::<Decrypted>(conf)?,
-        export::<setup::SP2AnyVariantInfo>(conf)?,
+        export::<SP2AnyVariantInfo>(conf)?,
+        format!("export const CANONICAL_SP2ANY_BASE_URL: string = \"{CANONICAL_SP2ANY_BASE_URL}\""),
 "export type UserConfigDbEntries = {
     wait_seconds?: number;
     system_name?: string;

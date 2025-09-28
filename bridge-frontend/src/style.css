@@ -99,18 +99,38 @@ button:focus-visible {
   margin: 0;
 }
 
+
 #variant-info {
-  padding: 0.25rem 0.75rem;
+  padding: 0.3rem 0.5rem;
   border-radius: 0.2em;
   background-color: #8962d1;
   color: white;
-  text-align: center;
   cursor: help;
   margin-left: 0.5rem;
-  font-size: 2rem;
-  font-weight: 600;
-  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: bolder;
   white-space: nowrap;
+  /* display toggled by JS */
+}
+
+
+#login-form #variant-container {
+  width: 100%;
+
+  #sp2any-base-url-input,
+  span {
+    font-size: 0.7em;
+    padding: 0.0em;
+    margin: 0.0em;
+  }
+
+  span {
+    color: gray;
+  }
+
+  #sp2any-base-url-input {
+    width: 75%;
+  }
 }
 
 footer {
