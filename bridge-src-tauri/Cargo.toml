@@ -26,4 +26,4 @@ reqwest-eventsource = "*"
 futures = "*"
 discord-rich-presence = { path = "../target/discord-rich-presence-patched" }
 chrono = "*"
-tokio-tungstenite = "*"
+tokio-tungstenite = { version = "*", features = ["rustls-tls-webpki-roots"] }

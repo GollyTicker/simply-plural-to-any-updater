@@ -33,7 +33,7 @@ build_binaries() {
         if [[ "$target" == *"windows"* ]]; then
             cp -v "$BUILD_OUT_PATH"/*/*.exe "$OUT_DIR/"
         else
-            cp -v "$BUILD_OUT_PATH"/*/*.{rpm,AppImage,deb} "$OUT_DIR/"
+            cp -v "$BUILD_OUT_PATH"/*/*.{rpm,deb} "$OUT_DIR/"
         fi
         echo "✅ sp2any-bridge $target"
 

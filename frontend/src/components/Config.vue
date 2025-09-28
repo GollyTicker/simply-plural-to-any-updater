@@ -81,10 +81,9 @@
             <input id="enable_discord" type="checkbox" v-model="config.enable_discord" />
             <p id="sp2any-brige-info">
               To use this, open
-              <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL"
-                >download SP2Any Bridge</a
-              >, then open the first "Assets" section to see and download the "SP2Any.Bridge" for
-              your platform. Then run it on the computer where Discord Desktop is running.
+              <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">this</a>, then open
+              the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
+              Then run it on the computer where Discord Desktop is running.
             </p>
           </div>
           <div class="config-item">
