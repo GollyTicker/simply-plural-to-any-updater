@@ -119,7 +119,7 @@ Update the dependencies.
 * DONE: make SP2ANY_BASE_URL configureable for frontend-dist
 * DONE: deploy on private space once and share with friend
 * DONE: add hint on all deployments where it warns about which variant one is on on the nav bar
-* add variant picker for sp2any-bridge, such that it even knows where to connect to!
+* DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
 * test that workflows work with deployed dev-online
 * add download link to bridge frontend in UI
 * deploy for discord test server users
