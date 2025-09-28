@@ -4,7 +4,11 @@
     <div class="status-list">
       <div v-for="(status, name) in updaters" :key="name" class="status-item">
         <span class="service-name">{{ name }}</span>
-        <span :id="name.toLowerCase() + '-status'" :class="['status-badge', 'status-' + statusKind(status!).toLowerCase()]">{{ statusKind(status!) }}</span>
+        <span
+          :id="name.toLowerCase() + '-status'"
+          :class="['status-badge', 'status-' + statusKind(status!).toLowerCase()]"
+          >{{ statusKind(status!) }}</span
+        >
         <span class="status-info">{{ statusInfo(status!) }}</span>
       </div>
     </div>
@@ -12,51 +16,57 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import type { UpdaterStatus, UserUpdatersStatuses } from '@/sp2any.bindings'
+import { sp2any_api } from '@/sp2any_api'
 
-import { ref, onMounted, onUnmounted, type Ref } from 'vue';
-import type { UpdaterStatus, UserUpdatersStatuses } from '@/sp2any.bindings';
-import { sp2any_api } from '@/sp2any_api';
+const updaters: Ref<UserUpdatersStatuses> = ref({})
 
-const updaters: Ref<UserUpdatersStatuses> = ref({});
-
-let refreshViewIntervalTimer: number | undefined = undefined;
+let refreshViewIntervalTimer: number | undefined = undefined
 
 function statusKind(status: UpdaterStatus): string {
   switch (status) {
-    case 'Disabled': return status;
-    case 'Running': return status;
-    case 'Starting': return status;
-    default: return "Error"; // note. how to make this as future-proof as rust matches?
+    case 'Disabled':
+      return status
+    case 'Running':
+      return status
+    case 'Starting':
+      return status
+    default:
+      return 'Error' // note. how to make this as future-proof as rust matches?
   }
 }
 
 function statusInfo(status: UpdaterStatus): string {
   switch (status) {
-    case 'Disabled': return "";
-    case 'Running': return "";
-    case 'Starting': return "";
-    default: return status.Error; // note. how to make this as future-proof as rust matches?
+    case 'Disabled':
+      return ''
+    case 'Running':
+      return ''
+    case 'Starting':
+      return ''
+    default:
+      return status.Error // note. how to make this as future-proof as rust matches?
   }
 }
 
 const fetchUpdatersState = async () => {
   try {
-    updaters.value = await sp2any_api.get_updater_status();
-    console.log("get_updater_status: ", updaters.value);
+    updaters.value = await sp2any_api.get_updater_status()
+    console.log('get_updater_status: ', updaters.value)
   } catch (e) {
-    console.warn(e);
+    console.warn(e)
   }
-};
+}
 
 onMounted(async () => {
-  await fetchUpdatersState();
-  refreshViewIntervalTimer = setInterval(fetchUpdatersState, 5000);
-});
+  await fetchUpdatersState()
+  refreshViewIntervalTimer = setInterval(fetchUpdatersState, 5000)
+})
 
 onUnmounted(() => {
-  clearInterval(refreshViewIntervalTimer);
-});
-
+  clearInterval(refreshViewIntervalTimer)
+})
 </script>
 
 <style scoped>

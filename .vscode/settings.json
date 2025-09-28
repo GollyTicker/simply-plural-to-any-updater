@@ -14,5 +14,8 @@
     "files.watcherExclude": {
         "**/target/**": true,
         "**/tmp/**": true
-    }
+    },
+    "[vue]": {
+        "editor.defaultFormatter": "numso.prettier-standard-vscode"
+    },
 }

@@ -6,10 +6,11 @@ use crate::communication::HttpResult;
 
 pub const CANONICAL_SP2ANY_BASE_URL: &str = "https://public-test.sp2any.ayake.net";
 
-pub const SP2ANY_GITHUB_REPOSITORY_URL: &str = "https://github.com/GollyTicker/simply-plural-to-any-updater";
+pub const SP2ANY_GITHUB_REPOSITORY_URL: &str =
+    "https://github.com/GollyTicker/simply-plural-to-any-updater";
 
-pub const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: &str = "https://github.com/GollyTicker/simply-plural-to-any-updater/releases";
-
+pub const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: &str =
+    "https://github.com/GollyTicker/simply-plural-to-any-updater/releases";
 
 #[get("/api/meta/sp2any-variant-info")]
 pub fn get_api_meta_sp2any_variant(

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "lint": "eslint src --fix",
     "preview": "vite preview",
     "e2e:note": "YOU MUST BUILD bridge-src-tauri BEFORE invoking the below e2e test. YOU MUST START the backend in the tests folder as well.",
     "e2e": "export SP2ANY_BASE_URL=http://localhost:8080 && export SP2ANY_DATA_DIR=\"$(realpath \"$PWD/../test/tmp\")\" && rm -rv \"$SP2ANY_DATA_DIR\"; wdio run ./wdio.conf.js"
@@ -19,6 +20,7 @@
     "@wdio/mocha-framework": "^9.19.2",
     "@wdio/spec-reporter": "^9.19.2",
     "@wdio/types": "^9.19.2",
+    "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2",
     "vite": "^7.1.7",

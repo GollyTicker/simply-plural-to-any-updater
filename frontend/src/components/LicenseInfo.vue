@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { LICENSE_INFO_SHORT_HTML } from '@/sp2any.bindings';
+import { LICENSE_INFO_SHORT_HTML } from '@/sp2any.bindings'
 </script>
 <style>
 .license-short a {

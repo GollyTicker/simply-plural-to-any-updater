@@ -4,11 +4,11 @@
     <form @submit.prevent="login" class="login-form">
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" v-model="email" autocomplete="email"/>
+        <input type="email" id="email" v-model="email" autocomplete="email" />
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" v-model="password"  autocomplete="password"/>
+        <input type="password" id="password" v-model="password" autocomplete="password" />
       </div>
       <button type="submit">Login</button>
       <button @click="register" type="button" class="register-button">Register</button>
@@ -18,50 +18,49 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-})
+defineProps({})
 
-import { ref, type Ref } from 'vue';
-import router from '@/router';
-import type { UserLoginCredentials } from '@/sp2any.bindings';
-import { sp2any_api } from '@/sp2any_api';
+import { ref, type Ref } from 'vue'
+import router from '@/router'
+import type { UserLoginCredentials } from '@/sp2any.bindings'
+import { sp2any_api } from '@/sp2any_api'
 
-const email: Ref<string> = ref('');
-const password: Ref<string> = ref('');
-const status: Ref<string> = ref('');
+const email: Ref<string> = ref('')
+const password: Ref<string> = ref('')
+const status: Ref<string> = ref('')
 
 const login = async () => {
   const creds = {
     email: { inner: email.value },
     password: { inner: password.value },
-  } as UserLoginCredentials;
+  } as UserLoginCredentials
 
   try {
-    await sp2any_api.login(creds);
-    console.log('Login successful!');
-    status.value = '';
-    router.push('/status');
+    await sp2any_api.login(creds)
+    console.log('Login successful!')
+    status.value = ''
+    router.push('/status')
   } catch (err) {
-    status.value = 'Invalid credentials';
-    console.error('Login failed:', err);
+    status.value = 'Invalid credentials'
+    console.error('Login failed:', err)
   }
-};
+}
 
 const register = async () => {
   const creds = {
     email: { inner: email.value },
     password: { inner: password.value },
-  } as UserLoginCredentials;
+  } as UserLoginCredentials
 
   try {
-    status.value = 'Sending registration request...';
-    await sp2any_api.register(creds);
-    status.value = 'Registration successful! You can now log in.';
+    status.value = 'Sending registration request...'
+    await sp2any_api.register(creds)
+    status.value = 'Registration successful! You can now log in.'
   } catch (err: any) {
-    status.value = 'Registration failed: ' + err.toString();
-    console.error('Registration failed:', err);
+    status.value = 'Registration failed: ' + err.toString()
+    console.error('Registration failed:', err)
   }
-};
+}
 </script>
 
 <style scoped>

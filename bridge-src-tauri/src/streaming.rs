@@ -3,21 +3,21 @@ use futures::{SinkExt, stream::StreamExt};
 use sp2any::for_discord_bridge::FireAndForgetChannel;
 use sp2any::platforms::{BridgeToServerSseMessage, ServerToBridgeSseMessage};
 use sp2any::updater;
-use tokio::net::TcpStream;
 use tauri::Manager;
 use tauri::async_runtime::JoinHandle;
-use tokio_tungstenite::{tungstenite, MaybeTlsStream, WebSocketStream};
+use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, tungstenite};
 
 use crate::notify_user_on_status;
-
-
 
 pub type WsSender = SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
 pub type WsReceiver = SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
 
-pub fn stream_updater_status_to_ws_messages_task(app: tauri::AppHandle, mut ws_send: WsSender) -> JoinHandle<()> {
-    
+pub fn stream_updater_status_to_ws_messages_task(
+    app: tauri::AppHandle,
+    mut ws_send: WsSender,
+) -> JoinHandle<()> {
     tauri::async_runtime::spawn(async move {
         let updater_status_channel = app.state::<FireAndForgetChannel<updater::UpdaterStatus>>();
         let mut updater_status_receiver = updater_status_channel.subscribe();
@@ -26,7 +26,9 @@ pub fn stream_updater_status_to_ws_messages_task(app: tauri::AppHandle, mut ws_s
             let m = updater_status_receiver.recv().await;
             match m {
                 Some(status) => {
-                    let message = BridgeToServerSseMessage { discord_updater_status: status };
+                    let message = BridgeToServerSseMessage {
+                        discord_updater_status: status,
+                    };
                     let json = match serde_json::to_string(&message) {
                         Ok(x) => x,
                         Err(err) => {
@@ -49,7 +51,7 @@ pub fn stream_updater_status_to_ws_messages_task(app: tauri::AppHandle, mut ws_s
                             break;
                         }
                     }
-                },
+                }
                 None => break,
             }
         }
@@ -58,8 +60,10 @@ pub fn stream_updater_status_to_ws_messages_task(app: tauri::AppHandle, mut ws_s
     })
 }
 
-pub fn stream_ws_messages_to_rich_presence_task(app: tauri::AppHandle, mut ws_read: WsReceiver) -> JoinHandle<()> {
-    
+pub fn stream_ws_messages_to_rich_presence_task(
+    app: tauri::AppHandle,
+    mut ws_read: WsReceiver,
+) -> JoinHandle<()> {
     tauri::async_runtime::spawn(async move {
         let rich_presence_channel = app.state::<FireAndForgetChannel<ServerToBridgeSseMessage>>();
 

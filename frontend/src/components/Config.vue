@@ -9,8 +9,12 @@
         <div class="config-grid">
           <div class="config-item">
             <label for="wait_seconds">Wait Seconds</label>
-            <input id="wait_seconds" type="number" v-model.number="config.wait_seconds"
-              :placeholder="defaults.wait_seconds?.toString()" />
+            <input
+              id="wait_seconds"
+              type="number"
+              v-model.number="config.wait_seconds"
+              :placeholder="defaults.wait_seconds?.toString()"
+            />
           </div>
         </div>
       </div>
@@ -19,12 +23,21 @@
         <div class="config-grid">
           <div class="config-item">
             <label for="simply_plural_token">Simply Plural Token</label>
-            <input id="simply_plural_token" type="password" :value="config.simply_plural_token?.secret"
-              @input="setSecret('simply_plural_token', $event)" />
+            <input
+              id="simply_plural_token"
+              type="password"
+              :value="config.simply_plural_token?.secret"
+              @input="setSecret('simply_plural_token', $event)"
+            />
           </div>
           <div class="config-item">
             <label for="system_name">System Name</label>
-            <input id="system_name" type="text" v-model="config.system_name" :placeholder="defaults.system_name" />
+            <input
+              id="system_name"
+              type="text"
+              v-model="config.system_name"
+              :placeholder="defaults.system_name"
+            />
           </div>
         </div>
       </div>
@@ -33,18 +46,30 @@
         <div class="config-grid">
           <div class="config-item">
             <label for="status_prefix">Status Prefix</label>
-            <input id="status_prefix" type="text" v-model="config.status_prefix"
-              :placeholder="defaults.status_prefix" />
+            <input
+              id="status_prefix"
+              type="text"
+              v-model="config.status_prefix"
+              :placeholder="defaults.status_prefix"
+            />
           </div>
           <div class="config-item">
             <label for="status_no_fronts">Status No Fronts</label>
-            <input id="status_no_fronts" type="text" v-model="config.status_no_fronts"
-              :placeholder="defaults.status_no_fronts" />
+            <input
+              id="status_no_fronts"
+              type="text"
+              v-model="config.status_no_fronts"
+              :placeholder="defaults.status_no_fronts"
+            />
           </div>
           <div class="config-item">
             <label for="status_truncate_names_to">Status Truncate Names To</label>
-            <input id="status_truncate_names_to" type="number" v-model.number="config.status_truncate_names_to"
-              :placeholder="defaults.status_truncate_names_to?.toString()" />
+            <input
+              id="status_truncate_names_to"
+              type="number"
+              v-model.number="config.status_truncate_names_to"
+              :placeholder="defaults.status_truncate_names_to?.toString()"
+            />
           </div>
         </div>
       </div>
@@ -54,19 +79,34 @@
           <div class="config-item">
             <label for="enable_discord">Enable Discord (via bridge)</label>
             <input id="enable_discord" type="checkbox" v-model="config.enable_discord" />
-            <p id="sp2any-brige-info">To use this, open <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">download SP2Any
-                Bridge</a>, then open the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
-              Then run it on the computer where Discord Desktop is running.</p>
+            <p id="sp2any-brige-info">
+              To use this, open
+              <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL"
+                >download SP2Any Bridge</a
+              >, then open the first "Assets" section to see and download the "SP2Any.Bridge" for
+              your platform. Then run it on the computer where Discord Desktop is running.
+            </p>
           </div>
           <div class="config-item">
-            <label for="enable_discord_status_message">Enable Discord Status Message (Discord ToS violation!)</label>
-            <input id="enable_discord_status_message" type="checkbox" v-model="config.enable_discord_status_message" />
+            <label for="enable_discord_status_message"
+              >Enable Discord Status Message (Discord ToS violation!)</label
+            >
+            <input
+              id="enable_discord_status_message"
+              type="checkbox"
+              v-model="config.enable_discord_status_message"
+            />
           </div>
           <div class="config-item">
-            <label for="discord_status_message_token">Discord Status Message Token (Discord ToS violation!)</label>
-            <input id="discord_status_message_token" type="password"
+            <label for="discord_status_message_token"
+              >Discord Status Message Token (Discord ToS violation!)</label
+            >
+            <input
+              id="discord_status_message_token"
+              type="password"
               :value="config.discord_status_message_token?.secret"
-              @input="setSecret('discord_status_message_token', $event)" />
+              @input="setSecret('discord_status_message_token', $event)"
+            />
           </div>
         </div>
       </div>
@@ -79,13 +119,21 @@
           </div>
           <div class="config-item">
             <label for="vrchat_username">VRChat Username</label>
-            <input id="vrchat_username" type="password" :value="config.vrchat_username?.secret"
-              @input="setSecret('vrchat_username', $event)" />
+            <input
+              id="vrchat_username"
+              type="password"
+              :value="config.vrchat_username?.secret"
+              @input="setSecret('vrchat_username', $event)"
+            />
           </div>
           <div class="config-item">
             <label for="vrchat_password">VRChat Password</label>
-            <input id="vrchat_password" type="password" :value="config.vrchat_password?.secret"
-              @input="setSecret('vrchat_password', $event)" />
+            <input
+              id="vrchat_password"
+              type="password"
+              :value="config.vrchat_password?.secret"
+              @input="setSecret('vrchat_password', $event)"
+            />
           </div>
           <div class="config-item">
             <button @click.prevent="loginToVRChat">Login to VRChat</button>
@@ -98,8 +146,12 @@
           <p id="vrchat-login-status">{{ vrchatLoginStatus }}</p>
           <div class="config-item">
             <label for="vrchat_cookie">VRChat Cookie</label>
-            <input id="vrchat_cookie" type="password" :value="config.vrchat_cookie?.secret"
-              @input="setSecret('vrchat_cookie', $event)" />
+            <input
+              id="vrchat_cookie"
+              type="password"
+              :value="config.vrchat_cookie?.secret"
+              @input="setSecret('vrchat_cookie', $event)"
+            />
           </div>
         </div>
       </div>
@@ -110,92 +162,104 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, type Ref } from 'vue';
-import { type Decrypted, type UserConfigDbEntries, type VRChatCredentials, type VRChatCredentialsWithTwoFactorAuth, type TwoFactorAuthMethod, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL } from '@/sp2any.bindings';
-import { sp2any_api } from '@/sp2any_api';
+import { ref, onMounted, type Ref } from 'vue'
+import {
+  type Decrypted,
+  type UserConfigDbEntries,
+  type VRChatCredentials,
+  type VRChatCredentialsWithTwoFactorAuth,
+  type TwoFactorAuthMethod,
+  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
+} from '@/sp2any.bindings'
+import { sp2any_api } from '@/sp2any_api'
 
-const config: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries);
-const defaults: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries);
-type SecretKeys = "simply_plural_token" | "vrchat_password" | "vrchat_cookie" | "vrchat_username" | "discord_status_message_token";
+const config: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries)
+const defaults: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries)
+type SecretKeys =
+  | 'simply_plural_token'
+  | 'vrchat_password'
+  | 'vrchat_cookie'
+  | 'vrchat_username'
+  | 'discord_status_message_token'
 
-const status = ref('');
-const vrchatTwoFactor = ref('');
-const vrchatLoginStatus = ref('');
-const vrchatTmpCookie = ref('');
-const vrchatTwoFactorMethod: Ref<TwoFactorAuthMethod | undefined> = ref(undefined);
+const status = ref('')
+const vrchatTwoFactor = ref('')
+const vrchatLoginStatus = ref('')
+const vrchatTmpCookie = ref('')
+const vrchatTwoFactorMethod: Ref<TwoFactorAuthMethod | undefined> = ref(undefined)
 
-const VRCHAT_LOGIN_SUCCESSFUL = 'VRChat login successful and retrieved cookie! Please save config now.';
+const VRCHAT_LOGIN_SUCCESSFUL =
+  'VRChat login successful and retrieved cookie! Please save config now.'
 
 function setSecret(key: SecretKeys, event: Event) {
-  const target = event.target as HTMLInputElement;
-  if (target.value !== "") {
-    config.value[key] = <Decrypted>{ secret: target.value };
-  }
-  else {
-    config.value[key] = undefined;
+  const target = event.target as HTMLInputElement
+  if (target.value !== '') {
+    config.value[key] = <Decrypted>{ secret: target.value }
+  } else {
+    config.value[key] = undefined
   }
 }
 
 async function loginToVRChat() {
-  vrchatLoginStatus.value = 'Requesting 2FA...';
+  vrchatLoginStatus.value = 'Requesting 2FA...'
   try {
     const creds: VRChatCredentials = {
       username: config.value.vrchat_username!.secret,
-      password: config.value.vrchat_password!.secret
-    };
-    const result = await sp2any_api.vrchat_request_2fa(creds);
-    if ("Left" in result) {
-      config.value.vrchat_cookie = { secret: result.Left.cookie };
-      vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL;
+      password: config.value.vrchat_password!.secret,
+    }
+    const result = await sp2any_api.vrchat_request_2fa(creds)
+    if ('Left' in result) {
+      config.value.vrchat_cookie = { secret: result.Left.cookie }
+      vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL
     } else {
-      vrchatTmpCookie.value = result.Right.tmp_cookie;
-      vrchatTwoFactorMethod.value = result.Right.method;
-      vrchatLoginStatus.value = `Please enter 2FA code from ${result.Right.method}.`;
+      vrchatTmpCookie.value = result.Right.tmp_cookie
+      vrchatTwoFactorMethod.value = result.Right.method
+      vrchatLoginStatus.value = `Please enter 2FA code from ${result.Right.method}.`
     }
   } catch (e) {
-    console.warn(e);
-    vrchatLoginStatus.value = 'Failed to login to VRChat.';
+    console.warn(e)
+    vrchatLoginStatus.value = 'Failed to login to VRChat.'
   }
 }
 
 async function submitVRChat2FA() {
-  vrchatLoginStatus.value = 'Submitting 2FA code...';
+  vrchatLoginStatus.value = 'Submitting 2FA code...'
   try {
     const creds_with_tfa: VRChatCredentialsWithTwoFactorAuth = {
       creds: {
         username: config.value.vrchat_username!.secret,
-        password: config.value.vrchat_password!.secret
+        password: config.value.vrchat_password!.secret,
       },
       code: { inner: vrchatTwoFactor.value },
       tmp_cookie: vrchatTmpCookie.value,
-      method: vrchatTwoFactorMethod.value!
-    };
-    const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa);
-    config.value.vrchat_cookie = { secret: result.cookie };
-    vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL;
+      method: vrchatTwoFactorMethod.value!,
+    }
+    const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa)
+    config.value.vrchat_cookie = { secret: result.cookie }
+    vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL
   } catch (e) {
-    console.warn(e);
-    vrchatLoginStatus.value = 'Failed to submit 2FA code.';
+    console.warn(e)
+    vrchatLoginStatus.value = 'Failed to submit 2FA code.'
   }
 }
 
 async function fetchConfig() {
   try {
-    config.value = await sp2any_api.get_config();
-    console.log("Received user config: ", config.value);
+    config.value = await sp2any_api.get_config()
+    console.log('Received user config: ', config.value)
   } catch (e) {
-    console.warn(e);
+    console.warn(e)
   }
-};
+}
 
 async function fetchDefaults() {
   try {
-    defaults.value = await sp2any_api.get_defaults();
-    console.log("Received default config: ", defaults.value);
+    defaults.value = await sp2any_api.get_defaults()
+    console.log('Received default config: ', defaults.value)
   } catch (e) {
-    console.warn(e);
+    console.warn(e)
   }
-};
+}
 
 async function saveConfigAndRestart() {
   try {
@@ -204,22 +268,22 @@ async function saveConfigAndRestart() {
     // but allows invalid strings at runtime and simply returns them unchanged.
     for (const key in config.value) {
       if (config.value[key as keyof UserConfigDbEntries] === '') {
-        config.value[key as keyof UserConfigDbEntries] = undefined;
+        config.value[key as keyof UserConfigDbEntries] = undefined
       }
     }
 
-    await sp2any_api.set_config_and_restart(config.value);
-    status.value = 'Config saved successfully and restarted updaters!';
+    await sp2any_api.set_config_and_restart(config.value)
+    status.value = 'Config saved successfully and restarted updaters!'
   } catch (e) {
-    console.warn(e);
-    status.value = 'Failed to save config and restart updaters.';
+    console.warn(e)
+    status.value = 'Failed to save config and restart updaters.'
   }
-};
+}
 
 onMounted(async () => {
-  await fetchConfig();
-  await fetchDefaults();
-});
+  await fetchConfig()
+  await fetchDefaults()
+})
 </script>
 
 <style scoped>

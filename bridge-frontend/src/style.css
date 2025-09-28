@@ -99,7 +99,6 @@ button:focus-visible {
   margin: 0;
 }
 
-
 #variant-info {
   padding: 0.3rem 0.5rem;
   border-radius: 0.2em;
@@ -113,15 +112,14 @@ button:focus-visible {
   /* display toggled by JS */
 }
 
-
 #login-form #variant-container {
   width: 100%;
 
   #sp2any-base-url-input,
   span {
     font-size: 0.7em;
-    padding: 0.0em;
-    margin: 0.0em;
+    padding: 0em;
+    margin: 0em;
   }
 
   span {

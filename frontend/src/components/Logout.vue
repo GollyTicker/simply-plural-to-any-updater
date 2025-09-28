@@ -5,11 +5,11 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/router';
-import { onMounted } from 'vue';
+import router from '@/router'
+import { onMounted } from 'vue'
 
 onMounted(() => {
-  localStorage.removeItem('jwt');
-  router.push('/');
+  localStorage.removeItem('jwt')
+  router.push('/')
 })
 </script>

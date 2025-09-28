@@ -8,6 +8,6 @@ pub enum Never {}
 pub fn get_err(result: Result<Never>) -> anyhow::Error {
     match result {
         Err(e) => e,
-        Ok(_) => unreachable!("never value observerd.")
+        Ok(_) => unreachable!("never value observerd."),
     }
 }

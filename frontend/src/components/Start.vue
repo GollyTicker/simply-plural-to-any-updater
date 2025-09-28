@@ -5,13 +5,11 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/router';
-import { onMounted } from 'vue';
-defineProps<{
-  
-}>()
+import router from '@/router'
+import { onMounted } from 'vue'
+defineProps<{}>()
 
 onMounted(() => {
-  router.push('/login');
+  router.push('/login')
 })
 </script>

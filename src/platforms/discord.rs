@@ -1,5 +1,7 @@
 use crate::{
-    meta_api::SP2ANY_GITHUB_REPOSITORY_URL, plurality, updater, users::{self}
+    meta_api::SP2ANY_GITHUB_REPOSITORY_URL,
+    plurality, updater,
+    users::{self},
 };
 use anyhow::Result;
 use serde::{Deserialize, Serialize};

@@ -2,9 +2,15 @@
   <div id="app-container">
     <nav>
       <div id="app-header">
-          <img src="/favicon.png" alt="logo" />
-          <h1 class="title">SP2Any</h1>
-          <p v-if="variantInfo?.show_in_ui" id="variant-info" :title="variantInfo.description ?? undefined">@{{ variantInfo.variant }}</p>
+        <img src="/favicon.png" alt="logo" />
+        <h1 class="title">SP2Any</h1>
+        <p
+          v-if="variantInfo?.show_in_ui"
+          id="variant-info"
+          :title="variantInfo.description ?? undefined"
+        >
+          @{{ variantInfo.variant }}
+        </p>
       </div>
       <div class="nav-links-container">
         <router-link to="/status">Status</router-link>
@@ -12,7 +18,7 @@
         <router-link to="/logout">Logout</router-link>
       </div>
     </nav>
-    <router-view class="content"/>
+    <router-view class="content" />
     <footer>
       <LicenseInfo />
     </footer>
@@ -20,16 +26,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import LicenseInfo from './components/LicenseInfo.vue';
-import { sp2any_api } from './sp2any_api';
-import type { SP2AnyVariantInfo } from './sp2any.bindings';
+import { onMounted, ref } from 'vue'
+import LicenseInfo from './components/LicenseInfo.vue'
+import { sp2any_api } from './sp2any_api'
+import type { SP2AnyVariantInfo } from './sp2any.bindings'
 
-const variantInfo = ref<SP2AnyVariantInfo | null>(null);
+const variantInfo = ref<SP2AnyVariantInfo | null>(null)
 
 onMounted(async () => {
-  variantInfo.value = await sp2any_api.get_variant_info();
-});
+  variantInfo.value = await sp2any_api.get_variant_info()
+})
 </script>
 
 <style scoped>
@@ -125,5 +131,4 @@ footer {
   color: darkslategray;
   background-color: azure;
 }
-
 </style>

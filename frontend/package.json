@@ -14,7 +14,7 @@
     "e2e": "wdio run ./wdio.conf.ts",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix",
+    "lint": "eslint src --fix",
     "format": "prettier --write src/"
   },
   "dependencies": {
