@@ -13,12 +13,15 @@ tauri-build = { version = "*", features = [] }
 
 [dependencies]
 serde_json = "*"
-serde = { version = "*", features = ["derive"] }
+serde = { version = "*", default-features = false, features = ["derive"] }
 log = "*"
-tokio = { version = "*", features = ["full"] }
-tauri = { version = "*", features = [] }
+tokio = { version = "*", default-features = false }
+tauri = { version = "*", default-features = true , features = [] }
 tauri-plugin-log = "*"
-reqwest = { version = "*", features = ["json", "rustls-tls"] }
+reqwest = { version = "*", default-features = false, features = [
+    "json",
+    "rustls-tls",
+] }
 anyhow = "*"
 sp2any = { path = ".." }
 directories = "*"
@@ -26,4 +29,8 @@ reqwest-eventsource = "*"
 futures = "*"
 discord-rich-presence = { path = "../target/discord-rich-presence-patched" }
 chrono = "*"
-tokio-tungstenite = { version = "*", features = ["rustls-tls-webpki-roots"] }
+tokio-tungstenite = { version = "*", default-features = false, features = [
+    "rustls-tls-webpki-roots",
+    "connect",
+    "handshake",
+] }

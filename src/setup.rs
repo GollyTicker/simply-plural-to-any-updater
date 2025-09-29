@@ -3,12 +3,13 @@ use crate::meta_api;
 use crate::updater;
 use crate::users;
 use anyhow::Result;
-use clap::Parser;
+
 use rocket::http::Method;
 use sqlx::postgres;
+use std::env;
 use std::time::Duration;
 
-pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
+pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<ApplicationSetup> {
     let client: reqwest::Client = reqwest::Client::builder()
         .cookie_store(true)
         .timeout(Duration::from_secs(cli_args.request_timeout))
@@ -71,32 +72,39 @@ pub async fn application_setup(cli_args: &CliArgs) -> Result<ApplicationSetup> {
     })
 }
 
-#[derive(Parser, Debug, Clone, Default)]
-#[clap(author, version, about, long_about = None)]
-pub struct CliArgs {
-    #[arg(long, env)]
+#[derive(Debug, Clone, Default)]
+pub struct ApplicationConfig {
     pub database_url: String,
-
-    #[arg(long, env, default_value_t = 5)]
     pub request_timeout: u64,
-
-    #[arg(long, env)]
-    pub sp2any_variant: String, // e.g. variant in <variant>.sp2any.com
-
-    #[arg(long, env)]
+    pub sp2any_variant: String,
     pub sp2any_variant_description: Option<String>,
-
-    #[arg(long, env, default_value_t = false, action = clap::ArgAction::SetTrue)]
     pub sp2any_variant_hide_in_ui: bool,
-
-    #[arg(long, env)]
     pub jwt_application_secret: String,
-
-    #[arg(long, env)]
     pub application_user_secrets: String,
-
-    #[arg(long, env, default_value_t = false, action = clap::ArgAction::SetTrue)]
     pub discord_status_message_updater_available: bool,
+}
+
+impl ApplicationConfig {
+    pub fn from_env() -> Result<Self> {
+        Ok(Self {
+            database_url: env::var("DATABASE_URL")?,
+            request_timeout: env::var("REQUEST_TIMEOUT")
+                .unwrap_or_else(|_| "5".to_string())
+                .parse()?,
+            sp2any_variant: env::var("SP2ANY_VARIANT")?,
+            sp2any_variant_description: env::var("SP2ANY_VARIANT_DESCRIPTION").ok(),
+            sp2any_variant_hide_in_ui: env::var("SP2ANY_VARIANT_HIDE_IN_UI")
+                .unwrap_or_else(|_| "false".to_string())
+                .parse()?,
+            jwt_application_secret: env::var("JWT_APPLICATION_SECRET")?,
+            application_user_secrets: env::var("APPLICATION_USER_SECRETS")?,
+            discord_status_message_updater_available: env::var(
+                "DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE",
+            )
+            .unwrap_or_else(|_| "false".to_string())
+            .parse()?,
+        })
+    }
 }
 
 #[derive(Clone)]

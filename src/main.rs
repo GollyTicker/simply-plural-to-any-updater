@@ -3,7 +3,6 @@ extern crate rocket;
 
 use anyhow::Result;
 use anyhow::anyhow;
-use clap::Parser;
 
 use sp2any::license;
 use sp2any::{meta_api, platforms, setup, updater, users};
@@ -12,7 +11,7 @@ use sp2any::{meta_api, platforms, setup, updater, users};
 async fn main() -> Result<()> {
     println!("{}", license::info_text());
 
-    let cli_args = setup::CliArgs::parse();
+    let cli_args = setup::ApplicationConfig::from_env()?;
 
     let app_setup = setup::application_setup(&cli_args).await?;
 

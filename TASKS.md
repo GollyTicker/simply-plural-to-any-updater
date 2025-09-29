@@ -9,6 +9,7 @@
 * DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
 * DONE: add download link to bridge frontend in UI
 * DONE: add `enable_website` config
+* fix content security policy issue where images are not allowed
 
 * add status not only for updaters but also for SP itself.
 * remove `0.1.0` from sp2any bridge executable

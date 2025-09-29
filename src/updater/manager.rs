@@ -26,7 +26,7 @@ pub struct UpdaterManager {
 
 impl UpdaterManager {
     #[must_use]
-    pub fn new(cli_args: &setup::CliArgs) -> Self {
+    pub fn new(cli_args: &setup::ApplicationConfig) -> Self {
         Self {
             tasks: Arc::new(Mutex::new(HashMap::new())),
             statuses: Arc::new(Mutex::new(HashMap::new())),

@@ -18,19 +18,18 @@ path = "src/bin/ts-bindings.rs"
 chrono = { version = "*", features = ["serde"] }
 either = "*"
 anyhow = "*"
-dotenvy = "*"
 encoding_rs = "*"
-serde = { version = "*", features = ["derive"] }
-serde_json = "*"
+serde = { version = "*", default-features = false, features = ["derive"] }
+serde_json = { version = "*", default-features = false }
 vrchatapi = "*"
 html-escape = "*"
-clap = { version = "*", features = ["derive", "env"] }
-tokio = { version = "*", features = ["full"] }
+tokio = { version = "*", default-features = false, features = [] }
 tokio-util = { version = "*" }
 log = "*"
-sqlx = { version = "*", features = [
+sqlx = { version = "*", default-features = false, features = [
     "runtime-tokio-rustls",
     "postgres",
+    "migrate",
     "chrono",
     "uuid",
     "macros",
@@ -45,9 +44,15 @@ argon2 = "*"
 jsonwebtoken = "*"
 rand = "*"
 sha2 = "*"
-rocket = { version = "*", features = ["json", "http2"] }
-strum = "*"
-specta = { version = "*", features = ["serde", "typescript", "export"] }
+rocket = { version = "*", default-features = false, features = [
+    "json",
+    "http2",
+] }
+specta = { version = "*", default-features = false, features = [
+    "serde",
+    "typescript",
+    "export",
+] }
 specta-typescript = "*"
 rocket_cors = { version = "*", default-features = false }
 rocket_ws = "*"
