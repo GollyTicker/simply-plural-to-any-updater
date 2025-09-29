@@ -13,9 +13,9 @@
         </p>
       </div>
       <div class="nav-links-container">
-        <router-link to="/status">Status</router-link>
-        <router-link to="/config">Settings</router-link>
-        <router-link to="/logout">Logout</router-link>
+        <router-link v-if="loggedIn" to="/status">Status</router-link>
+        <router-link v-if="loggedIn" to="/config">Settings</router-link>
+        <router-link v-if="loggedIn" to="/logout">Logout</router-link>
       </div>
     </nav>
     <router-view class="content" />
@@ -30,6 +30,7 @@ import { onMounted, ref } from 'vue'
 import LicenseInfo from './components/LicenseInfo.vue'
 import { sp2any_api } from './sp2any_api'
 import type { SP2AnyVariantInfo } from './sp2any.bindings'
+import { loggedIn } from './jwt'
 
 const variantInfo = ref<SP2AnyVariantInfo | null>(null)
 
