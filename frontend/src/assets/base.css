@@ -38,9 +38,11 @@
   --color-primary: hsl(153, 47%, 49%);
   --color-secondary: hsl(175, 83%, 31%);
   --color-warn: hsl(39, 95%, 36%);
+
+  color-scheme: light; /* we only support light theme */
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --color-background: var(--vt-c-black);
     --color-background-soft: var(--vt-c-black-soft);
@@ -52,7 +54,7 @@
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
   }
-}
+} */
 
 *,
 *::before,

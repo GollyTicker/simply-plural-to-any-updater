@@ -11,7 +11,7 @@
 * DONE: add download link to bridge frontend in UI
 * DONE: add `enable_website` config
 * DONE: fix content security policy issue where images are not allowed
-* ignore dark/light mode and always use light mode in frontend and bridge-frontend
+* DONE: ignore dark/light mode and always use light mode in frontend and bridge-frontend
 * add link to Ko-Fi for donations.
 
 * configs changing didnt quite work 

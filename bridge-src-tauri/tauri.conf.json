@@ -16,7 +16,8 @@
         "width": 500,
         "height": 550,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "theme": "Light"
       }
     ],
     "security": {
