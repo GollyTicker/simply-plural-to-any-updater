@@ -17,9 +17,9 @@ inputs:
   VRCHAT_COOKIE:
     required: true
   SKIP_SETUP:
-    required: false
+    required: true
   RUN_TESTS:
-    required: false
+    required: true
 runs:
   using: "composite"
   steps:

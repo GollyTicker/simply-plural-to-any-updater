@@ -1,43 +1,34 @@
-export type Email = { inner: string }
-export type UserProvidedPassword = { inner: string }
-export type UserLoginCredentials = { email: Email; password: UserProvidedPassword }
-export type Decrypted = { secret: string }
-export type SP2AnyVariantInfo = { variant: string; description: string | null; show_in_ui: boolean }
-export const CANONICAL_SP2ANY_BASE_URL: string = 'https://public-test.sp2any.ayake.net'
-export const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: string =
-  'https://github.com/GollyTicker/simply-plural-to-any-updater/releases'
+export type Email = { inner: string };
+export type UserProvidedPassword = { inner: string };
+export type UserLoginCredentials = { email: Email; password: UserProvidedPassword };
+export type Decrypted = { secret: string };
+export type SP2AnyVariantInfo = { variant: string; description: string | null; show_in_ui: boolean };
+export const CANONICAL_SP2ANY_BASE_URL: string = "https://public-test.sp2any.ayake.net";
+export const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: string = "https://github.com/GollyTicker/simply-plural-to-any-updater/releases";
 export type UserConfigDbEntries = {
-  wait_seconds?: number
-  system_name?: string
-  status_prefix?: string
-  status_no_fronts?: string
-  status_truncate_names_to?: number
-  enable_discord?: boolean
-  enable_discord_status_message?: boolean
-  enable_vrchat?: boolean
-  simply_plural_token?: Decrypted
-  discord_status_message_token?: Decrypted
-  vrchat_username?: Decrypted
-  vrchat_password?: Decrypted
-  vrchat_cookie?: Decrypted
-}
-export type JwtString = { inner: string }
-export type Platform = 'VRChat' | 'Discord' | 'DiscordStatusMessage'
-export type UpdaterStatus = 'Disabled' | 'Running' | { Error: string } | 'Starting'
-export type UserUpdatersStatuses = { [p in Platform]?: UpdaterStatus }
-export const LICENSE_INFO_SHORT_HTML: string =
-  '<p class="license-short"><a href="https://github.com/GollyTicker/simply-plural-to-any-updater" target="_blank">SP2Any</a> © 2025 by <a href="https://github.com/GollyTicker/" target="_blank">Ayake / GollyTicker</a> licensed Copyleft <a href="https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0" target="_blank">AGPL</a></p>'
-export type VRChatCredentials = { username: string; password: string }
-export type VRChatCredentialsWithCookie = { creds: VRChatCredentials; cookie: string }
-export type TwoFactorAuthMethod = 'TwoFactorAuthMethodEmail' | 'TwoFactorAuthMethodApp'
-export type TwoFactorCodeRequiredResponse = { method: TwoFactorAuthMethod; tmp_cookie: string }
-export type TwoFactorAuthCode = { inner: string }
-export type VRChatCredentialsWithTwoFactorAuth = {
-  creds: VRChatCredentials
-  method: TwoFactorAuthMethod
-  code: TwoFactorAuthCode
-  tmp_cookie: string
-}
-export type VrchatAuthResponse =
-  | { Left: VRChatCredentialsWithCookie }
-  | { Right: TwoFactorCodeRequiredResponse }
+    wait_seconds?: number;
+    system_name?: string;
+    status_prefix?: string;
+    status_no_fronts?: string;
+    status_truncate_names_to?: number;
+    enable_discord?: boolean;
+    enable_discord_status_message?: boolean;
+    enable_vrchat?: boolean;
+    simply_plural_token?: Decrypted;
+    discord_status_message_token?: Decrypted;
+    vrchat_username?: Decrypted;
+    vrchat_password?: Decrypted;
+    vrchat_cookie?: Decrypted;
+};
+export type JwtString = { inner: string };
+export type Platform = "VRChat" | "Discord" | "DiscordStatusMessage";
+export type UpdaterStatus = "Disabled" | "Running" | { "Error": string } | "Starting";
+export type UserUpdatersStatuses = { [p in Platform]?: UpdaterStatus };
+export const LICENSE_INFO_SHORT_HTML: string = "<p class=\"license-short\"><a href=\"https://github.com/GollyTicker/simply-plural-to-any-updater\" target=\"_blank\">SP2Any</a> © 2025 by <a href=\"https://github.com/GollyTicker/\" target=\"_blank\">Ayake / GollyTicker</a> licensed Copyleft <a href=\"https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0\" target=\"_blank\">AGPL</a></p>";
+export type VRChatCredentials = { username: string; password: string };
+export type VRChatCredentialsWithCookie = { creds: VRChatCredentials; cookie: string };
+export type TwoFactorAuthMethod = "TwoFactorAuthMethodEmail" | "TwoFactorAuthMethodApp";
+export type TwoFactorCodeRequiredResponse = { method: TwoFactorAuthMethod; tmp_cookie: string };
+export type TwoFactorAuthCode = { inner: string };
+export type VRChatCredentialsWithTwoFactorAuth = { creds: VRChatCredentials; method: TwoFactorAuthMethod; code: TwoFactorAuthCode; tmp_cookie: string };
+export type VrchatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse };
