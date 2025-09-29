@@ -1,20 +1,24 @@
 # !! UNDER DEVELOPMENT !!
-**Project is actively moving from v1 to v2 and v2 isn't there where it wants to be yet**
 
-v1: Simple local CLI to sync SP to VRChat and Discord
-
-v2: Cloud Service where users can register and have SP synced to other platforms via a GUI and where self-hosting isn't necessary.
-
-Once v2 is done, this warnijg will be removed. If you try to use the v2 codebase before, it'll likely not work.
+**Project is actively under development. Some things work. Some don't.**
 
 ----
 
-# simply-plural-to-any-updater
+# SP2Any - Simply Plural to *Any* Updater
 
-Update your [Simply Plural](https://apparyllis.com/) system fronting status automatically to
-* your [VRChat](https://hello.vrchat.com/) status message
-* yout [Discord](https://discord.com) custom status message
-* your website as HTML
+A cloud service where users can automatically sync their [Simply Plural](https://apparyllis.com/) fronting status
+to various social platforms such as [VRChat](https://hello.vrchat.com/), [Discord](https://discord.com) or their own website. Users of SimplyPlural (plural systems, DID/OSDD systems, etc.) benefit from this as it makes it easier for them to communicate who's fronting while only
+needing to update their fronting on Simply Plural.
+
+An unstable / public test version can be found online at [SP2Any](https://public-test.sp2any.ayake.net). (*Use this at your own risk.*)
+
+We, the developers, take data security and privacy seriously. The data to synchronise between the services
+is stored encrypted and at industry-standard security. Additionally, we're planning to add an local app-based version
+where the data is stored on the smartphone only and not on our servers. Self hosting is possible if you have some tech knowledge.
+
+Developed with ❤️ by Ayake\*.
+
+* TODO: Move explanations to Config.vue
 
 ## SimplyPlural to VRChat Status
 
@@ -42,15 +46,6 @@ When running as a website via `--webserver`, it serves an endpoint `/fronting`
 and provides a HTML page with the current fronting status (from SimplyPlural)
 as a well-rendered UI.
 
-To run the webserver (Linux only):
-1. Download the binary from the latest release
-2. Populate `sp2any.json` with the relevant variables. Use `release/config/example.json` as guideline for the format and contents.
-3. Run the dockerized setup via `docker compose up -d`.
-
-Now on `http://localhost:8000/fronting` you can GET the fronting status.
-
-Use the the deployment example files as guidelines to your custom deployment setup.
-
 ## FAQ
 
 **Why is my member name not shown correctly in VRChat?**
@@ -68,90 +63,28 @@ something readable in VRChat.
 Further note, that even if your status is updated from this program, the _menu in VRChat won't update for **you** (this is a a bug in VRChat...)_.
 Others will see the new fronting status message - and you can always check the website, that your status message is indeed updated.
 
-## Migrate from v1 to v2
-
-There are a few breaking changes in how to run this program:
-* `SERVE_API` is removed. If it was `true`, then instead invoke the program with `--webserver`. Otherwise don't use this argument.
-* The program now opens a GUI by default. If you want to keep on using the console only (old behavior), invoke the program with `--no-gui`.
-
 ## For Developers
 
 Prerequisites:
 * Rust toolchain (ideally via rustup)
-* `cargo install sqlx-cli`
+* node + npm
+* `./steps/03-install-dependencies.sh`
 
 Build: `./steps/12-backend-cargo-build.sh`
 
 Lint and Format: `./steps/10-lint.sh`
 
-The environment variables are documented in `defaults.env` and `vrcupdater.sample.env`.
-
-All functionality is implemented using Rust and various libraries.
-
-For developers, one can use `/dev/*.run.sh` for local quick running.
+Deployment environment variables are currently undocumented. But you can checkout `docker/local.env` as a starting point.
 
 Codebase size: `./dev/codebase-size.sh`
 
 And run the files in `test` for testing. For the integration tests,
 you'll need to export the `SPS_API_TOKEN` and `SPS_API_WRITE_TOKEN` of the plural system used for tests - 
-as well as `VRCHAT_USERNAME`, `VRCHAT_PASSWORD` and `VRCHAT_COOKIE` of the VRC test user.
+as well as `VRCHAT_USERNAME`, `VRCHAT_PASSWORD` and `VRCHAT_COOKIE` of the VRC test user etc.
 
 To create a release, simply push a corresponding tag - e.g. `v1.2.3`.
 
-Use `--config <filepath>` to specify an alternate directory where the config is stored and retrieved from.
-
 Check dependencies bloat via `cargo bloat --release --bin sp2any`.
 
-Use the following prompt against the code agent to put it to work:
-```
-Ensure the project adheres to the coding guidelines.
-```
-or
-```
-Update the dependencies.
-```
+`v1` was the previous version of this tool. It didn't have any UI but was a simple CLI-based tool to run a small server which would sync SP status to VRChat as well as serve a website with the fronting.
 
----
-
-## TODOs
-
-### First deployment
-* DONE: make SP2ANY_BASE_URL configureable for frontend-dist
-* DONE: deploy on private space once and share with friend
-* DONE: add hint on all deployments where it warns about which variant one is on on the nav bar
-* DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
-* test that workflows work with deployed dev-online
-* add download link to bridge frontend in UI
-* deploy for discord test server users
-* security: make it such that on my private instance, only handpicked users may register and use it.
-
-* remove `0.1.0` from sp2any bridge executable
-* add `enable_website` config
-* add status not only for updaters but also for SP itself.
-* Add automatic sync to PluralKit
-* complete migration to webapp
-* Rename 'VRChat Status Name' field to 'SP2Any Simple Name' field
-* Ask on Reddit and various discord servers for what features the users want
-* persistent deployment:
-  * cheap free tier VMs and docker based deployment?
-  * using [free managed postgres](https://www.bytebase.com/blog/postgres-hosting-options-pricing-comparison/) with free tier serverless functions?
-  * alternatively a mixture of the above?
-* make it such that the code can ALSO run in a mobile app.
-  * UI should be easily adapted to be running in mobile app in additional to a web-app
-  * backend would be mostly in the cloud OR locally on the modile.
-  * database needs to support both postgres and SQLite, since the database will be different based on mobile vs. cloud
-* On UI:
-  * add quick and easy feedback field
-  * add link to Discord Server
-  * add link to KoFi and ask for kind donations
-  * add link to source code
-* make sure, that during production, only my own domains are allowed and not localhost or so.
-
-#### User Feedback
-* sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
-* add a warning, that using the discord self-botting comes with a risk for both the user and the dev
-  * [artcle by discord](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots)
-  * [self-botting](https://gist.github.com/nomsi/2684f5692cad5b0ceb52e308631859fd)
-  * [reddit 1](https://old.reddit.com/r/Discord_selfbots/comments/t9o5xf/anyone_got_banned/), [reddit 2](https://old.reddit.com/r/discordapp/comments/7nl35v/regarding_the_ban_on_selfbots/)
-  * perhaps use the same approach as used by the discord chat exporter? this might actually work well.
-* share with refactionvr server mods before sharing in channel

@@ -19,10 +19,10 @@ export const http = axios.create({
 http.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginAttempt = error.request.responseURL === http.defaults.baseURL! + '/api/user/login';
+    const isLoginAttempt = error.request.responseURL === http.defaults.baseURL! + '/api/user/login'
     if (error.response && [401, 403].includes(error.response.status) && !isLoginAttempt) {
       console.warn('Auth failed with 401/403 on request. Now redirecting to login. Error:', error)
-      logoutAndBackToStart();
+      logoutAndBackToStart()
     }
     return Promise.reject(error)
   },
