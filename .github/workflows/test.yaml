@@ -18,6 +18,7 @@ jobs:
     - name: Run Tests
       uses: ./.github/actions/build-test-lint
       with:
+        SKIP_SETUP: false
         RUN_TESTS: false
         SPS_API_TOKEN: ${{ secrets.SPS_API_TOKEN }}
         SPS_API_WRITE_TOKEN: ${{ secrets.SPS_API_WRITE_TOKEN }}
