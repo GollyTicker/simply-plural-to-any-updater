@@ -43,13 +43,15 @@ pub async fn get_user(
     sqlx::query_as(
         "SELECT
             wait_seconds,
-            system_name,
+            website_system_name,
+            website_url_name,
             status_prefix,
             status_no_fronts,
             status_truncate_names_to,
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
+            enable_website,
             '' AS simply_plural_token,
             '' AS discord_status_message_token,
             '' AS vrchat_username,
@@ -76,7 +78,7 @@ pub async fn set_user_config_secrets(
         "UPDATE users
         SET
             wait_seconds = $2,
-            system_name = $3,
+            website_system_name = $3,
             status_prefix = $4,
             status_no_fronts = $5,
             status_truncate_names_to = $6,
@@ -87,12 +89,14 @@ pub async fn set_user_config_secrets(
             enc__vrchat_username = pgp_sym_encrypt($12, $9),
             enc__vrchat_password = pgp_sym_encrypt($13, $9),
             enc__vrchat_cookie = pgp_sym_encrypt($14, $9),
-            enable_discord = $15
+            enable_discord = $15,
+            enable_website = $16,
+            website_url_name = $17
         WHERE id = $1",
     )
     .bind(user_id.inner)
     .bind(config.wait_seconds)
-    .bind(&config.system_name)
+    .bind(&config.website_system_name)
     .bind(&config.status_prefix)
     .bind(&config.status_no_fronts)
     .bind(config.status_truncate_names_to)
@@ -105,6 +109,8 @@ pub async fn set_user_config_secrets(
     .bind(config.vrchat_password.map(|s| s.secret))
     .bind(config.vrchat_cookie.map(|s| s.secret))
     .bind(config.enable_discord)
+    .bind(config.enable_website)
+    .bind(config.website_url_name)
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -122,10 +128,12 @@ pub async fn get_user_secrets(
     sqlx::query_as(
         "SELECT
             wait_seconds,
-            system_name,
+            website_system_name,
+            website_url_name,
             status_prefix,
             status_no_fronts,
             status_truncate_names_to,
+            enable_website,
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
@@ -188,6 +196,25 @@ pub async fn get_user_info(db_pool: &PgPool, user_id: UserId) -> Result<UserInfo
             created_at
             FROM users WHERE id = $1",
         user_id.inner
+    )
+    .fetch_one(db_pool)
+    .await
+    .map_err(|e| anyhow!(e))
+}
+
+pub async fn find_user_by_website_url_name(
+    db_pool: &PgPool,
+    website_url_name: &str,
+) -> Result<UserInfo> {
+    sqlx::query_as!(
+        UserInfo,
+        "SELECT
+            id,
+            email,
+            password_hash,
+            created_at
+            FROM users WHERE website_url_name = $1",
+        website_url_name
     )
     .fetch_one(db_pool)
     .await

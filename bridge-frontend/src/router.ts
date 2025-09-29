@@ -1,5 +1,5 @@
-import Navigo from "navigo";
+import Navigo from 'navigo'
 
-const router = new Navigo("/");
+const router = new Navigo('/')
 
-export default router;
+export default router

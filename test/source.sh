@@ -5,7 +5,7 @@ set -euo pipefail
 export SP2ANY_STAGE=local
 
 export SECONDS_BETWEEN_UPDATES=10
-export SYSTEM_PUBLIC_NAME=ayake-test
+export WEBSITE_SYSTEM_NAME=ayake-test
 
 source docker/source.sh # await
 
@@ -45,13 +45,15 @@ get_user_config_json() {
         \"enable_discord_status_message\": ${ENABLE_DISCORD_STATUS_MESSAGE},
         \"enable_vrchat\": ${ENABLE_VRCHAT},
         \"enable_discord\": ${ENABLE_DISCORD},
+        \"enable_website\": ${ENABLE_WEBSITE},
+        \"website_url_name\": \"${WEBSITE_URL_NAME}\",
         \"discord_user_id\": { \"secret\": \"invalid\" },
         $SIMPLY_PLURAL_TOKEN_LINE
         $DISCORD_STATUS_MESSAGE_TOKEN_LINE
         $VRCHAT_USERNAME_LINE
         $VRCHAT_PASSWORD_LINE
         $VRCHAT_COOKIE_LINE
-        \"system_name\": \"${SYSTEM_PUBLIC_NAME-null}\",
+        \"website_system_name\": \"${WEBSITE_SYSTEM_NAME-null}\",
         \"wait_seconds\": ${SECONDS_BETWEEN_UPDATES-null}
     }"
 }

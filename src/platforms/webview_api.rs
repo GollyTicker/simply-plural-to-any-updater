@@ -2,23 +2,21 @@ use crate::communication::HttpResult;
 use crate::database;
 use crate::plurality;
 use crate::users;
-use crate::users::UserId;
 use rocket::{
     State,
     response::{self, content::RawHtml},
 };
 use sqlx::PgPool;
 
-#[get("/api/fronting/<user_id>")]
+#[get("/fronting/<website_url_name>")]
 pub async fn get_api_fronting_by_user_id(
-    user_id: &str, // todo. actually use system name here instead of user-id
+    website_url_name: &str,
     db_pool: &State<PgPool>,
     application_user_secrets: &State<database::ApplicationUserSecrets>,
     client: &State<reqwest::Client>,
 ) -> HttpResult<RawHtml<String>> {
-    eprintln!("GET /fronting/{user_id}.");
-
-    let user_id: UserId = user_id.try_into()?;
+    let user_info = database::find_user_by_website_url_name(db_pool, website_url_name).await?;
+    let user_id = user_info.id;
 
     eprintln!("GET /fronting/{user_id}. Getting user secrets");
 
@@ -38,13 +36,13 @@ pub async fn get_api_fronting_by_user_id(
 
     eprintln!("GET /fronting/{user_id}. Rendering HTML");
 
-    let html = generate_html(&updater_config.system_name, fronts);
+    let html = generate_html(&updater_config.website_system_name, fronts);
 
     eprintln!("GET /fronting/{user_id}. OK");
     Ok(RawHtml(html))
 }
 
-fn generate_html(system_name: &str, fronts: Vec<plurality::Fronter>) -> String {
+fn generate_html(website_system_name: &str, fronts: Vec<plurality::Fronter>) -> String {
     let fronts_formatted = fronts
         .into_iter()
         .map(|m| -> String {
@@ -113,7 +111,7 @@ fn generate_html(system_name: &str, fronts: Vec<plurality::Fronter>) -> String {
         {}
     </body>
 </html>",
-        html_escape::encode_text(system_name),
+        html_escape::encode_text(website_system_name),
         fronts_formatted
     )
 }

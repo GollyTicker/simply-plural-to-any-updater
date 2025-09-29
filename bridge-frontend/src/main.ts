@@ -1,23 +1,23 @@
-import "./style.css";
-import router from "./router";
-import { renderLoginPage } from "./pages/login-page";
-import { renderStatusPage } from "./pages/status-page";
-import { renderStartPage } from "./pages/start-page";
-import { renderLicenseInfo } from "./license";
+import './style.css'
+import router from './router'
+import { renderLoginPage } from './pages/login-page'
+import { renderStatusPage } from './pages/status-page'
+import { renderStartPage } from './pages/start-page'
+import { renderLicenseInfo } from './license'
 
-import { attachConsole } from "@tauri-apps/plugin-log";
-import { fetchAndRenderVariantInfo } from "./variant-info";
-await attachConsole(); // show tauri backend logs in console
+import { attachConsole } from '@tauri-apps/plugin-log'
+import { fetchAndRenderVariantInfo } from './variant-info'
+await attachConsole() // show tauri backend logs in console
 
 router
-  .on("/", renderStartPage)
-  .on("/login", renderLoginPage)
-  .on("/status", renderStatusPage)
-  .on("*", () => {
-    router.navigate("/");
+  .on('/', renderStartPage)
+  .on('/login', renderLoginPage)
+  .on('/status', renderStatusPage)
+  .on('*', () => {
+    router.navigate('/')
   })
-  .resolve();
+  .resolve()
 
-renderLicenseInfo();
+renderLicenseInfo()
 
-await fetchAndRenderVariantInfo();
+await fetchAndRenderVariantInfo()

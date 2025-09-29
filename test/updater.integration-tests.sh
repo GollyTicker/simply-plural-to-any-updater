@@ -16,6 +16,7 @@ export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=true
 ENABLE_DISCORD_STATUS_MESSAGE=true
 ENABLE_VRCHAT=true
 ENABLE_DISCORD=false
+ENABLE_WEBSITE=false
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh

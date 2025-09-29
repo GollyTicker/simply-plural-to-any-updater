@@ -8,7 +8,7 @@
 * DONE: add hint on all deployments where it warns about which variant one is on on the nav bar
 * DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
 * DONE: add download link to bridge frontend in UI
-* add `enable_website` config
+* DONE: add `enable_website` config
 
 * add status not only for updaters but also for SP itself.
 * remove `0.1.0` from sp2any bridge executable
@@ -30,6 +30,7 @@
   * add link to KoFi and ask for kind donations
   * add link to source code
 * make sure, that during production, only my own domains are allowed and not localhost or so.
+* make website view such that it doesn't eagery fetch data from simply plural every time but instead uses the latest values from a channel
 * DONE: complete migration to webapp
 
 * add initial suggestions by ChatAI (e.g. privacy, configurability, etc.)

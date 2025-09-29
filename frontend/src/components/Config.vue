@@ -26,19 +26,6 @@
               :placeholder="defaults.wait_seconds?.toString()"
             />
           </div>
-          <div class="config-item">
-            <label for="system_name">System Name</label>
-            <p class="config-description">
-              The name of your system. Currently, it's only shown in the title of the webpage view
-              of the fronting status.
-            </p>
-            <input
-              id="system_name"
-              type="text"
-              v-model="config.system_name"
-              :placeholder="defaults.system_name"
-            />
-          </div>
         </div>
       </div>
       <div class="config-section">
@@ -57,6 +44,49 @@
               type="password"
               :value="config.simply_plural_token?.secret"
               @input="setSecret('simply_plural_token', $event)"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="config-section">
+        <h2>Website</h2>
+        <div class="config-grid">
+          <div class="config-item">
+            <label for="enable_website">Enable Website</label>
+            <p class="config-description">
+              Let SP2Any display your fronting status (avatars included) as a webpage. Others can
+              simply open the link and see the current fronters without needing to be logged in in
+              any of the other platforms.
+            </p>
+            <input id="enable_website" type="checkbox" v-model="config.enable_website" />
+          </div>
+          <div class="config-item">
+            <label for="website_system_name">System Name</label>
+            <p class="config-description">
+              The name of your system as the title of the website view.
+            </p>
+            <input
+              id="website_system_name"
+              type="text"
+              v-model="config.website_system_name"
+              :placeholder="defaults.website_system_name"
+            />
+          </div>
+          <div class="config-item">
+            <label for="website_url_name">Website Link Part</label>
+            <p class="config-description">
+              Adapt the link at which your fronting website is shown. For example, if you want your
+              link to be "{{ baseUrl }}/fronting/ocean-collective", then set this field to
+              "ocean-collective". Once activated, your link will be
+              <a :href="baseUrl + '/fronting/' + config.website_url_name" target="_blank">{{
+                baseUrl + '/fronting/' + config.website_url_name
+              }}</a>
+            </p>
+            <input
+              id="website_url_name"
+              type="text"
+              v-model="config.website_url_name"
+              :placeholder="defaults.website_url_name"
             />
           </div>
         </div>
@@ -259,8 +289,9 @@ import {
   type TwoFactorAuthMethod,
   SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
 } from '@/sp2any.bindings'
-import { sp2any_api } from '@/sp2any_api'
+import { http, sp2any_api } from '@/sp2any_api'
 
+const baseUrl = http.defaults.baseURL!
 const config: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries)
 const defaults: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries)
 type SecretKeys =
@@ -356,6 +387,7 @@ async function saveConfigAndRestart() {
     // but allows invalid strings at runtime and simply returns them unchanged.
     for (const key in config.value) {
       if (config.value[key as keyof UserConfigDbEntries] === '') {
+        console.log('before save: setting key ' + key + ' to undefined.')
         config.value[key as keyof UserConfigDbEntries] = undefined
       }
     }
