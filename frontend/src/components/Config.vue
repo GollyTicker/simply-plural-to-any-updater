@@ -154,6 +154,8 @@
               the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
               <br />
               Then start it on the computer where Discord Desktop is running.
+              You might get a warning, that the executable is not signed. Simply accept that and
+              run it. (For small projects, it's infeasible to get this signed.)
               <br />
               Once started, you can login to SP2Any. When you have discord running on the same
               computer, SP2Any will show itself as a rich presence activity and display the fronting
