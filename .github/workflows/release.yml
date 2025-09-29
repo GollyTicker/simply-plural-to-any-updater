@@ -32,12 +32,8 @@ jobs:
     - name: Run build script
       run: "./steps/30-build-release.sh"
 
-    - name: Generate changelog
-      id: changelog
+    - name: Configure Release
       run: |
-        ./steps/40-generate-changelog.sh "${{ github.ref_name }}" RELEASE_NOTES.md
-        echo "notes_file=RELEASE_NOTES.md" >> $GITHUB_OUTPUT
-        
         IS_PRERELEASE="$( [[ "${{ github.ref_name }}" == *"-"* ]] && echo "true" || echo "false" )"
         echo "IS_PRERELEASE=$IS_PRERELEASE" >> $GITHUB_ENV
 
@@ -46,6 +42,5 @@ jobs:
       with:
         token: ${{ secrets.DEPLOY_PR_TOKEN }}
         files: "target/release_builds/*"
-        body_path: ${{ steps.changelog.outputs.notes_file }}
         prerelease: ${{ env.IS_PRERELEASE }}
         draft: false
