@@ -12,6 +12,7 @@
 * DONE: add `enable_website` config
 * DONE: fix content security policy issue where images are not allowed
 * ignore dark/light mode and always use light mode in frontend and bridge-frontend
+* add link to Ko-Fi for donations.
 
 * configs changing didnt quite work 
 * add status not only for updaters but also for SP itself.

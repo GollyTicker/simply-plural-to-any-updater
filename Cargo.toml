@@ -24,7 +24,7 @@ serde_json = { version = "*", default-features = false }
 vrchatapi = "*"
 html-escape = "*"
 tokio = { version = "*", default-features = false, features = [] }
-tokio-util = { version = "*" }
+tokio-util = { version = "*" , default-features = false }
 log = "*"
 sqlx = { version = "*", default-features = false, features = [
     "runtime-tokio-rustls",
