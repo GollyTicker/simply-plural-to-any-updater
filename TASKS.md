@@ -36,6 +36,8 @@
   * add link to source code
 * make sure, that during production, only my own domains are allowed and not localhost or so.
 * make website view such that it doesn't eagery fetch data from simply plural every time but instead uses the latest values from a channel
+* reduce compile times by removing vrchatapi library and using http rest requests directly
+* better split sp2any crate into what is exported to bridge-src-tauri and what is not. makes for much faster compiles
 * DONE: complete migration to webapp
 
 * add initial suggestions by ChatAI (e.g. privacy, configurability, etc.)
