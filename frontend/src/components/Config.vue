@@ -162,7 +162,7 @@
               status from there.
               <br />
               The benefit of this method, is that it is Discord ToS compliant. The drawback of this
-              is that these updates only work as long as your SP2Any bridge is running.
+              is that these updates only work as long as your SP2Any bridge and Discord are running locally. 
             </p>
           </div>
         </div>

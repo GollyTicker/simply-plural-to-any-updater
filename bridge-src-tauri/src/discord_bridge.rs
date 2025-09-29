@@ -48,7 +48,7 @@ pub async fn discord_ipc_loop(
         updater_status_channel.send(updater::UpdaterStatus::Error(format!(
             "Discord RPC disconnected: {error}"
         )));
-        notify_user_on_status(app, format!("Discord RPC disconnected: {error}"));
+        notify_user_on_status(app, format!("⚠️ Discord RPC disconnected: {error} | Discord needs to be running for the bridge to work."));
         sleep(Duration::from_secs(5)).await;
     }
 }
@@ -70,7 +70,7 @@ async fn activity_loop(
             updater_status_channel.send(updater::UpdaterStatus::Running);
             notify_user_on_status(
                 app,
-                "Connected to SP2Any and syncing to local Discord client.",
+                "Connected to SP2Any and syncing to local Discord client ✅",
             );
         } else {
             clear_activity(client)?;

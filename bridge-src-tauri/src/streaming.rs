@@ -45,7 +45,7 @@ pub fn stream_updater_status_to_ws_messages_task(
                             notify_user_on_status(
                                 &app,
                                 format!(
-                                    "Ending connection to SP2Any. Some problem happened: {err}"
+                                    "⚠️ Ending connection to SP2Any. Some problem happened: {err}"
                                 ),
                             );
                             break;
@@ -85,7 +85,7 @@ pub fn stream_ws_messages_to_rich_presence_task(
                             notify_user_on_status(
                                 &app,
                                 format!(
-                                    "Some problem occurred when applying updates from SP2Any: {e}"
+                                    "⚠️ Some problem occurred when applying updates from SP2Any: {e}"
                                 ),
                             );
                         });
@@ -94,19 +94,19 @@ pub fn stream_ws_messages_to_rich_presence_task(
                 Ok(x) => log::warn!("Uknown message type: {x:?}"),
                 Err(tungstenite::Error::AlreadyClosed) => {
                     log::info!("WS: AlreadyClosed. Ending.");
-                    notify_user_on_status(&app, "Connection to SP2Any closed.");
+                    notify_user_on_status(&app, "⚠️ Connection to SP2Any closed.");
                     break;
                 }
                 Err(tungstenite::Error::ConnectionClosed) => {
                     log::info!("WS: ConnectionClosed. Ending.");
-                    notify_user_on_status(&app, "Connection to SP2Any closed.");
+                    notify_user_on_status(&app, "⚠️ Connection to SP2Any closed.");
                     break;
                 }
                 Err(err) => {
                     log::warn!("WS: Ending due to error: {err}");
                     notify_user_on_status(
                         &app,
-                        format!("Ending connection to SP2Any due to some problem: {err}"),
+                        format!("⚠️ Ending connection to SP2Any due to some problem: {err}"),
                     );
                     break;
                 }
@@ -115,7 +115,7 @@ pub fn stream_ws_messages_to_rich_presence_task(
         // connection closed. todo. we should try to reconnect in a while.
         notify_user_on_status(
             &app,
-            "Connection to SP2Any ended. (We haven't implemented automatic retries yet.)",
+            "⚠️ Connection to SP2Any ended. (Please restart the bridge to try again. We haven't implemented automatic restarts yet.)",
         );
     })
 }

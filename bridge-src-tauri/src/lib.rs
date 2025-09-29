@@ -90,7 +90,7 @@ async fn subscribe_to_bridge_channel_anyhow(
         .insert("Authorization", format!("Bearer {}", jwt.inner).parse()?);
 
     log::info!("Connecting to WebSocket at {ws_url}");
-    notify_user_on_status(&app, "Connecting to SP2Any to received updates ...");
+    notify_user_on_status(&app, "Connecting to SP2Any to receive updates ...");
 
     // todo. add retries of connections when they are closed etc.
     // This websocket stream receives text messages of the type DiscordRichPresence and
