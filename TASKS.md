@@ -1,18 +1,22 @@
 
-# First deployment
-* DONE: test that workflows work with deployed dev-online. WORKED WELL ON WINDOWS ON FIRST TRY!!
-* DONE: add note that running the exec on windows will show a signature warning. ask users to accept it.
-* DONE: deploy for discord test server users
+# First feedbac post-deployment
+**Priority**
+* member privacy
+  * custom fronts configuration
+  * archived members configuration / hiding
+  * make lists of members / CFs / archived members collapeble and searchable to manage large systems
+  * probably start with defualts for actives / archived / CFs and integration with privacy buckets from SP
+  * bidrectional sync of privacy bucket membership and "show in SP2Any" setting
+    > If I search for myself, and toggle the "show as fronting" button in SP2A, it autoadds me to the privacy bucket in SP.
+    > And if I add myself to the PB in SP, it toggles me as "show as fronting"
+* websocket connection restarts
+* better error messages which the users can also understand and which handle most common error paths
+
+* registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
-* DONE: make SP2ANY_BASE_URL configureable for frontend-dist
-* DONE: deploy on private space once and share with friend
-* DONE: add hint on all deployments where it warns about which variant one is on on the nav bar
-* DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
-* DONE: add download link to bridge frontend in UI
-* DONE: add `enable_website` config
-* DONE: fix content security policy issue where images are not allowed
-* DONE: ignore dark/light mode and always use light mode in frontend and bridge-frontend
-* DONE: add link to Ko-Fi for donations.
+* configureable order in which fronts are shown
+* make it more clear, what the people need to do make the discord bridge thing work. maybe a list of steps and if they're working.
+* support large systems. i.e. members search and bulk edit.
 
 * configs changing didnt quite work 
 * add status not only for updaters but also for SP itself.
@@ -51,3 +55,18 @@
   * perhaps use the same approach as used by the discord chat exporter? this might actually work well.
 * share with refactionvr server mods before sharing in channel
 
+---
+
+# First deployment
+* DONE: test that workflows work with deployed dev-online. WORKED WELL ON WINDOWS ON FIRST TRY!!
+* DONE: add note that running the exec on windows will show a signature warning. ask users to accept it.
+* DONE: deploy for discord test server users
+* DONE: make SP2ANY_BASE_URL configureable for frontend-dist
+* DONE: deploy on private space once and share with friend
+* DONE: add hint on all deployments where it warns about which variant one is on on the nav bar
+* DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
+* DONE: add download link to bridge frontend in UI
+* DONE: add `enable_website` config
+* DONE: fix content security policy issue where images are not allowed
+* DONE: ignore dark/light mode and always use light mode in frontend and bridge-frontend
+* DONE: add link to Ko-Fi for donations.
