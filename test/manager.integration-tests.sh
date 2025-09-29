@@ -43,6 +43,7 @@ main() {
     [[ "$((BEFORE_COUNT + 1))" == "$AFTER_COUNT" ]]
     echo "✅ no duplicate updater tasks"
 
+    # todo. this fails currently! need to debug this! likely a test issue and not an actual prod-code bug.
     setup_sp_rest_failure
     set_user_config_and_restart
     sleep 7s # startup time for restart

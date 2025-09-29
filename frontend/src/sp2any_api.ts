@@ -39,14 +39,14 @@ export const sp2any_api = {
     await http.post('/api/user/register', creds)
   },
   get_updater_status: async function (): Promise<UserUpdatersStatuses> {
-    const jwtString = getJwt()
+    const jwtString = await getJwt()
     const response = await http.get<UserUpdatersStatuses>('/api/updaters/status', {
       headers: { Authorization: `Bearer ${jwtString.inner}` },
     })
     return response.data
   },
   get_config: async function (): Promise<UserConfigDbEntries> {
-    const jwtString = getJwt()
+    const jwtString = await getJwt()
     const response = await http.get<UserConfigDbEntries>('/api/user/config', {
       headers: { Authorization: `Bearer ${jwtString.inner}` },
     })
@@ -57,13 +57,13 @@ export const sp2any_api = {
     return response.data
   },
   set_config_and_restart: async function (config: UserConfigDbEntries): Promise<void> {
-    const jwtString = getJwt()
+    const jwtString = await getJwt()
     await http.post('/api/user/config_and_restart', config, {
       headers: { Authorization: `Bearer ${jwtString.inner}` },
     })
   },
   vrchat_request_2fa: async function (creds: VRChatCredentials): Promise<VrchatAuthResponse> {
-    const jwtString = getJwt()
+    const jwtString = await getJwt()
     const response = await http.post<VrchatAuthResponse>(
       '/api/user/platform/vrchat/auth_2fa/request',
       creds,
@@ -74,7 +74,7 @@ export const sp2any_api = {
   vrchat_resolve_2fa: async function (
     creds_with_tfa: VRChatCredentialsWithTwoFactorAuth,
   ): Promise<VRChatCredentialsWithCookie> {
-    const jwtString = getJwt()
+    const jwtString = await getJwt()
     const response = await http.post<VRChatCredentialsWithCookie>(
       '/api/user/platform/vrchat/auth_2fa/resolve',
       creds_with_tfa,

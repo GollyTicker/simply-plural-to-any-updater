@@ -16,7 +16,7 @@ We, the developers, take data security and privacy seriously. The data to synchr
 is stored encrypted and at industry-standard security. Additionally, we're planning to add an local app-based version
 where the data is stored on the smartphone only and not on our servers. Self hosting is possible if you have some tech knowledge.
 
-Developed with ❤️ by Ayake\*.
+Developed with ❤️ by [Ayake](https://github.com/GollyTicker)\*.
 
 * TODO: Move explanations to Config.vue
 

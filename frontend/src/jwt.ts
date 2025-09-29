@@ -4,8 +4,15 @@ import type { JwtString } from './sp2any.bindings'
 
 export const loggedIn = ref<boolean>(false)
 
-export function getJwt(): JwtString {
-  return JSON.parse(localStorage.getItem('jwt')!)
+export async function getJwt(): Promise<JwtString> {
+  const stored = localStorage.getItem('jwt')
+  if (!stored) {
+    logoutAndBackToStart()
+    return Promise.reject('Not logged in.')
+  }
+  const result = JSON.parse(stored!)
+  loggedIn.value = true
+  return Promise.resolve(result)
 }
 
 export function setJwt(jwtString: JwtString) {
@@ -16,6 +23,7 @@ export function setJwt(jwtString: JwtString) {
 export function clearJwt() {
   localStorage.removeItem('jwt')
   loggedIn.value = false
+  console.log('loggedin value: ', loggedIn.value)
 }
 
 export function logoutAndBackToStart() {

@@ -29,7 +29,7 @@ async function navigateToStatus() {
 }
 
 async function loggedInAndOnConfigPage() {
-    await expect($('.config-container h1')).toHaveText('Config');
+    await expect($('.config-container h1')).toHaveText('Settings');
 }
 
 async function navigateToConfig() {

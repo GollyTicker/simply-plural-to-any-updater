@@ -1,6 +1,11 @@
 <template>
   <div class="config-container">
-    <h1>Config</h1>
+    <h1>Settings</h1>
+    <p>
+      Configure the various updaters to synchronize your fronting status. At any point, you can
+      remove your login information from here by disabling the corresponding updater, emptying the
+      field and saving the changes.
+    </p>
     <form @submit.prevent="saveConfigAndRestart" autocomplete="off">
       <button type="submit">Save and Restart</button>
       <p id="config-update-status">{{ status }}</p>
@@ -8,7 +13,12 @@
         <h2>General</h2>
         <div class="config-grid">
           <div class="config-item">
-            <label for="wait_seconds">Wait Seconds</label>
+            <label for="wait_seconds">Update Interval Seconds</label>
+            <p class="config-description">
+              The number of seconds to wait before SP2Any checks for changes at SimplyPlural before
+              syncing them to other services. Set to at least
+              <span style="font-weight: bold">60</span> seconds.
+            </p>
             <input
               id="wait_seconds"
               type="number"
@@ -16,22 +26,12 @@
               :placeholder="defaults.wait_seconds?.toString()"
             />
           </div>
-        </div>
-      </div>
-      <div class="config-section">
-        <h2>Simply Plural</h2>
-        <div class="config-grid">
-          <div class="config-item">
-            <label for="simply_plural_token">Simply Plural Token</label>
-            <input
-              id="simply_plural_token"
-              type="password"
-              :value="config.simply_plural_token?.secret"
-              @input="setSecret('simply_plural_token', $event)"
-            />
-          </div>
           <div class="config-item">
             <label for="system_name">System Name</label>
+            <p class="config-description">
+              The name of your system. Currently, it's only shown in the title of the webpage view
+              of the fronting status.
+            </p>
             <input
               id="system_name"
               type="text"
@@ -42,10 +42,34 @@
         </div>
       </div>
       <div class="config-section">
-        <h2>Status Message</h2>
+        <h2>Simply Plural</h2>
         <div class="config-grid">
           <div class="config-item">
-            <label for="status_prefix">Status Prefix</label>
+            <label for="simply_plural_token">Simply Plural Token</label>
+            <p class="config-description">
+              The private READ-token used by SP2Any to access your Simply Plural system to check for
+              changes. To make one, open
+              <a href="https://app.apparyllis.com/" target="_blank">SimplyPlural</a>, go to Settings
+              > Account > Tokens, create a READ token and copy-paste it here.
+            </p>
+            <input
+              id="simply_plural_token"
+              type="password"
+              :value="config.simply_plural_token?.secret"
+              @input="setSecret('simply_plural_token', $event)"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="config-section">
+        <h2>Fronting Status Text</h2>
+        <div class="config-grid">
+          <div class="config-item">
+            <label for="status_prefix">Fronting Text Prefix</label>
+            <p class="config-description">
+              What to begin the fronting status message with. E.g. the "F: " in the example "F:
+              Ania, Björn, Claire".
+            </p>
             <input
               id="status_prefix"
               type="text"
@@ -54,7 +78,8 @@
             />
           </div>
           <div class="config-item">
-            <label for="status_no_fronts">Status No Fronts</label>
+            <label for="status_no_fronts">Fronting Text When 0 Fronters</label>
+            <p class="config-description">What to show, when no fronters are currently active.</p>
             <input
               id="status_no_fronts"
               type="text"
@@ -63,7 +88,15 @@
             />
           </div>
           <div class="config-item">
-            <label for="status_truncate_names_to">Status Truncate Names To</label>
+            <label for="status_truncate_names_to">Name Shortening</label>
+            <p class="config-description">
+              The platforms have limits on how long the status message can be. If the fronting
+              status would be too long for the platform (due to fronters with long names or due to a
+              many simultanous fronters), then SP2Any will shorten the fronters names to a specific
+              length to fit the length. E.g. "Claire" would become "Cla" if this is set to "3". If
+              the shorted version is still to long, then SP2Any will simply show the number of
+              fronters.
+            </p>
             <input
               id="status_truncate_names_to"
               type="number"
@@ -74,32 +107,61 @@
         </div>
       </div>
       <div class="config-section">
-        <h2>Discord</h2>
+        <h2>Discord via Bridge</h2>
         <div class="config-grid">
           <div class="config-item">
-            <label for="enable_discord">Enable Discord (via bridge)</label>
+            <label for="enable_discord">Enable Discord Rich Presence</label>
             <input id="enable_discord" type="checkbox" v-model="config.enable_discord" />
-            <p id="sp2any-brige-info">
-              To use this, open
+            <p class="config-description">
+              If enabled, shows your fronting status as a
+              <a href="https://discord.com/developers/docs/rich-presence/overview"
+                >Rich Presence on Discord</a
+              >.
+              <br />
+              This option only works via the SP2Any-Bridge, which you need to run on the same
+              computer as your discord. For that, open
               <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">this</a>, then open
               the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
-              Then run it on the computer where Discord Desktop is running.
+              <br />
+              Then start it on the computer where Discord Desktop is running.
+              <br />
+              Once started, you can login to SP2Any. When you have discord running on the same
+              computer, SP2Any will show itself as a rich presence activity and display the fronting
+              status from there.
+              <br />
+              The benefit of this method, is that it is Discord ToS compliant. The drawback of this
+              is that these updates only work as long as your SP2Any bridge is running.
             </p>
           </div>
+        </div>
+      </div>
+      <div class="config-section">
+        <h2>Discord via Token ⚠️</h2>
+        <div class="config-grid">
           <div class="config-item">
-            <label for="enable_discord_status_message"
-              >Enable Discord Status Message (Discord ToS violation!)</label
-            >
+            <label for="enable_discord_status_message">Enable Discord Status Message ⚠️</label>
             <input
               id="enable_discord_status_message"
               type="checkbox"
               v-model="config.enable_discord_status_message"
             />
+            <p class="config-description">
+              You can also directly set the custom status on your discord account.
+              <br />
+              For that, SP2Any will need a discord token. SP2Any will update the discord status for
+              you regularly.
+              <br />
+              <span class="warning"
+                >WARNING! This violates Discord Terms of Service. Use at your own risk! This option
+                might be removed at any point!</span
+              >
+              <br />
+              This method produces a more visible fronting status, but isn't as clean ToS-compliant
+              as the previous option. (Because Discord may remove this at any point.)
+            </p>
           </div>
           <div class="config-item">
-            <label for="discord_status_message_token"
-              >Discord Status Message Token (Discord ToS violation!)</label
-            >
+            <label for="discord_status_message_token">Discord Status Message Token ⚠️</label>
             <input
               id="discord_status_message_token"
               type="password"
@@ -113,11 +175,26 @@
         <h2>VRChat</h2>
         <div class="config-grid">
           <div class="config-item">
-            <label for="enable_vrchat">Enable VRChat</label>
+            <label for="enable_vrchat">Enable VRChat Status Message ⚠️</label>
             <input id="enable_vrchat" type="checkbox" v-model="config.enable_vrchat" />
+            <p class="config-description">
+              Shows the fronting status on VRChat in the custom status at your profile in VR and on
+              the website.
+              <br />
+              For that, you will need to login into VRChat such that SP2Any can set the fronting
+              status on VRChat's side.
+              <br />
+              <span class="warning"
+                >WARNING! This violates VRChat Terms of Service. Use at your own risk! This option
+                might be removed at any point!</span
+              >
+              <br />
+              This method produces a more visible fronting status than using OSC, but isn't as clean
+              ToS-compliant.
+            </p>
           </div>
           <div class="config-item">
-            <label for="vrchat_username">VRChat Username</label>
+            <label for="vrchat_username">VRChat Username ⚠️</label>
             <input
               id="vrchat_username"
               type="password"
@@ -126,7 +203,7 @@
             />
           </div>
           <div class="config-item">
-            <label for="vrchat_password">VRChat Password</label>
+            <label for="vrchat_password">VRChat Password ⚠️</label>
             <input
               id="vrchat_password"
               type="password"
@@ -135,16 +212,28 @@
             />
           </div>
           <div class="config-item">
+            <p class="config-description">
+              After entering your username and password, you can let SP2Any login into your account.
+            </p>
             <button @click.prevent="loginToVRChat">Login to VRChat</button>
           </div>
           <div class="config-item">
-            <label for="vrchat_2fa_code">VRChat 2FA Code</label>
+            <label for="vrchat_2fa_code">VRChat 2FA Code ⚠️</label>
+            <p class="config-description">
+              You may be asked for a Two-Factor-Authentication code. If so, enter it here and submit
+              for SP2Any to complete the login.
+            </p>
             <input id="vrchat_2fa_code" type="text" v-model="vrchatTwoFactor" />
             <button @click.prevent="submitVRChat2FA">Submit 2FA</button>
           </div>
           <p id="vrchat-login-status">{{ vrchatLoginStatus }}</p>
           <div class="config-item">
-            <label for="vrchat_cookie">VRChat Cookie</label>
+            <label for="vrchat_cookie">VRChat Cookie ⚠️</label>
+            <p class="config-description">
+              This is the VRChat cookie which SP2Any retrieved from VRChat and which it uses to
+              update your status. You will not usually need to edit this yourself. It is
+              automatically set by SP2Any.
+            </p>
             <input
               id="vrchat_cookie"
               type="password"
@@ -292,7 +381,7 @@ onMounted(async () => {
 }
 
 .config-section {
-  margin-top: 1rem;
+  margin-top: 2.5rem;
   border-top: 1px solid #ccc;
   padding-top: 0.5rem;
 }
@@ -304,10 +393,10 @@ onMounted(async () => {
 }
 
 .config-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .config-item {
@@ -326,8 +415,23 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
-#sp2any-brige-info {
+.config-item button {
+  width: 10rem;
   font-size: smaller;
+  background-color: gray;
+}
+
+.config-item button:hover {
+  background-color: black;
+}
+
+.config-description {
+  font-size: smaller;
+}
+
+.warning {
+  font-weight: bold;
+  color: orange;
 }
 
 button {
