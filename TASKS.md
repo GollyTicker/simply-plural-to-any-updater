@@ -1,7 +1,8 @@
 
 # First deployment
-* test that workflows work with deployed dev-online
-* deploy for discord test server users
+* DONE: test that workflows work with deployed dev-online. WORKED WELL ON WINDOWS ON FIRST TRY!!
+* add note that running the exec on windows will show a signature warning. ask users to accept it.
+* DONE: deploy for discord test server users
 * security: make it such that on my private instance, only handpicked users may register and use it.
 * DONE: make SP2ANY_BASE_URL configureable for frontend-dist
 * DONE: deploy on private space once and share with friend
@@ -9,8 +10,10 @@
 * DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
 * DONE: add download link to bridge frontend in UI
 * DONE: add `enable_website` config
-* fix content security policy issue where images are not allowed
+* DONE: fix content security policy issue where images are not allowed
+* ignore dark/light mode and always use light mode in frontend and bridge-frontend
 
+* configs changing didnt quite work 
 * add status not only for updaters but also for SP itself.
 * remove `0.1.0` from sp2any bridge executable
 * Add automatic sync to PluralKit
