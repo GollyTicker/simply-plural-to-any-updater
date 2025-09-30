@@ -21,7 +21,7 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
     let fronters = filter_frontables_by_front_entries(front_entries, frontables);
 
     for f in &fronters {
-        eprintln!("Fronter: {f:?}");
+        log::info!("# | fetch_fronts | fronter[*] {f:?}");
     }
 
     Ok(fronters)
@@ -84,7 +84,11 @@ fn filter_frontables_by_front_entries(
 async fn simply_plural_http_request_get_fronters(
     config: &users::UserConfigForUpdater,
 ) -> Result<Vec<FrontEntry>> {
-    eprintln!("Fetching fronts from SimplyPlural...");
+    log::info!(
+        "# | simply_plural_http_request_get_fronters | {}",
+        config.user_id
+    );
+
     let fronts_url = format!("{}/fronters", &config.simply_plural_base_url);
     let result = config
         .client
@@ -103,7 +107,7 @@ async fn get_vrchat_status_name_field_id(
     config: &users::UserConfigForUpdater,
     system_id: &String,
 ) -> Result<Option<String>> {
-    eprintln!("Fetching custom fields from SimplyPlural...");
+    log::info!("# | get_vrchat_status_name_field_id | {}", config.user_id);
     let custom_fields_url = format!(
         "{}/customFields/{}",
         &config.simply_plural_base_url, system_id
@@ -124,6 +128,12 @@ async fn get_vrchat_status_name_field_id(
 
     let field_id = vrchat_status_name_field.map(|field| &field.id);
 
+    log::info!(
+        "# | get_vrchat_status_name_field_id | {} | field_id {:?}",
+        config.user_id,
+        field_id
+    );
+
     Ok(field_id.cloned())
 }
 
@@ -131,7 +141,7 @@ async fn simply_plural_http_get_members(
     config: &users::UserConfigForUpdater,
     system_id: &String,
 ) -> Result<Vec<Member>> {
-    eprintln!("Fetching all members from SimplyPlural..");
+    log::info!("# | simply_plural_http_get_members | {}", config.user_id);
     let fronts_url = format!("{}/members/{}", &config.simply_plural_base_url, system_id);
     let result = config
         .client
@@ -150,7 +160,10 @@ async fn simply_plural_http_get_custom_fronts(
     config: &users::UserConfigForUpdater,
     system_id: &String,
 ) -> Result<Vec<CustomFront>> {
-    eprintln!("Fetching all Custom Fronts from SimplyPlural...");
+    log::info!(
+        "# | simply_plural_http_get_custom_fronts | {}",
+        config.user_id
+    );
     let custom_fronts_url = format!(
         "{}/customFronts/{}",
         &config.simply_plural_base_url, system_id

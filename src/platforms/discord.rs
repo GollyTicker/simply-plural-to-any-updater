@@ -115,7 +115,7 @@ pub fn render_fronts_to_discord_rich_presence(
         .max()
         .map(|dt| dt.timestamp());
 
-    let response = DiscordRichPresence {
+    let rich_presence = DiscordRichPresence {
         activity_type: DiscordActivityType::Playing,
         status_display_type: DiscordStatusDisplayType::Details,
         details: Some(short_fronters_string),
@@ -134,7 +134,15 @@ pub fn render_fronts_to_discord_rich_presence(
         button_url: None,   // future: link to fronting web url
     };
 
-    Ok(response)
+    log::info!(
+        "# | render_fronts_to_discord_rich_presence | {} | {:?} | {:?} | {:?}",
+        config.user_id,
+        &rich_presence.details,
+        rich_presence.party_current,
+        rich_presence.start_time
+    );
+
+    Ok(rich_presence)
 }
 
 // Formatting based on activity type: https://discord.com/developers/docs/events/gateway-events#activity-object-activity-types

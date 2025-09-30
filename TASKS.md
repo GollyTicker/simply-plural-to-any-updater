@@ -1,5 +1,5 @@
 
-# First feedbac post-deployment
+# First feedback post-deployment
 **Priority**
 * member privacy
   * custom fronts configuration
@@ -11,6 +11,7 @@
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
 * websocket connection restarts
 * better error messages which the users can also understand and which handle most common error paths
+* add metrics for easier understanding of performance, latency as well as resource footprint and scales of users/systems
 
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.

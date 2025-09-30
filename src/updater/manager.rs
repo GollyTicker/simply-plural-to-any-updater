@@ -45,7 +45,9 @@ impl UpdaterManager {
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
-            .ok_or_else(|| anyhow!("No fronter channel found for {user_id}"))?
+            .ok_or_else(|| {
+                anyhow!("subscribe_fronter_channel: No fronter channel found for {user_id}")
+            })?
             .subscribe();
 
         Ok(receiver)
@@ -61,10 +63,14 @@ impl UpdaterManager {
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
-            .ok_or_else(|| anyhow!("No fronter channel found for  {user_id}"))?
+            .ok_or_else(|| {
+                anyhow!("send_fronter_channel_update: No fronter channel found for  {user_id}")
+            })?
             .send(fronters);
 
-        eprintln!("{user_id}: Send fronter update to {receiver_count} receivers.");
+        log::info!(
+            "# | send_fronter_channel_update | {user_id} | Send fronter update to {receiver_count} receivers."
+        );
 
         Ok(())
     }
@@ -81,9 +87,9 @@ impl UpdaterManager {
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?;
 
-        let specific_channel = locked
-            .get(user_id)
-            .ok_or_else(|| anyhow!("No foreign status channel found for {user_id}"))?;
+        let specific_channel = locked.get(user_id).ok_or_else(|| {
+            anyhow!("get_foreign_status_channel: No foreign status channel found for {user_id}")
+        })?;
 
         Ok(specific_channel.clone())
     }
@@ -97,7 +103,7 @@ impl UpdaterManager {
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
-            .ok_or_else(|| anyhow!("No updaters found!"))?
+            .ok_or_else(|| anyhow!("get_updaters_statuses: No updaters found!"))?
             .to_owned())
     }
 
@@ -109,12 +115,12 @@ impl UpdaterManager {
     ) -> Result<()> {
         let mut locked = self.statuses.lock().map_err(|e| anyhow!(e.to_string()))?;
 
-        let statuses = locked
-            .get_mut(user_id)
-            .ok_or_else(|| anyhow!("shouldn't happen. no statuses for user."))?;
+        let statuses = locked.get_mut(user_id).ok_or_else(|| {
+            anyhow!("notify_updater_statuses: shouldn't happen. no statuses for user.")
+        })?;
 
         for (p, new_status) in updater_state {
-            eprintln!("Setting updater status: {user_id} {p} {new_status}");
+            log::info!("# | notify_updater_statuses | {user_id} | {p} is {new_status}");
             statuses.insert(p, new_status);
         }
 
@@ -131,7 +137,7 @@ impl UpdaterManager {
     ) -> Result<()> {
         let mut locked_task = self.tasks.lock().map_err(|e| anyhow!(e.to_string()))?;
 
-        eprintln!("Aborting updaters {user_id}");
+        log::info!("# | restart_updater | {user_id} | aborting updaters");
         if let Some(task) = locked_task.get_mut(user_id) {
             communication::blocking_abort_and_clear_tasks(task, |x| x);
         }
@@ -150,7 +156,7 @@ impl UpdaterManager {
             user_id.clone(),
             vec![work_loop_task, foreign_status_updater_task],
         );
-        eprintln!("Restarted updater {user_id}");
+        log::info!("# | restart_updater | {user_id} | aborting updaters | restarted");
 
         Ok(())
     }
@@ -178,14 +184,22 @@ impl UpdaterManager {
             loop {
                 if let Some(status) = receiver.recv().await {
                     match owned_self.notify_updater_statuses(&user_id, HashMap::from_iter(status)) {
-                        Ok(()) => eprintln!("foreign status update ok."),
+                        Ok(()) => {
+                            log::info!(
+                                "# | foreign_status_updater | {user_id} | status update ok."
+                            );
+                        }
                         Err(err) => {
-                            eprintln!("ending receiver due to foreign status update err {err}");
+                            log::info!(
+                                "# | foreign_status_updater | {user_id} | ending_receiver_due_to_foreign_status_update_err {err}"
+                            );
                             break;
                         }
                     }
                 } else {
-                    eprintln!("foreign status updater sender dropped. terminating receiver.");
+                    log::info!(
+                        "# | foreign_status_updater | {user_id} | foreign_status_updater_sender_droppped terminiating_receiver"
+                    );
                     break;
                 }
             }

@@ -15,6 +15,12 @@ impl From<String> for Email {
     }
 }
 
+impl Display for Email {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Email({})", self.inner)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type, Eq, Hash, PartialEq)]
 pub struct UserId {
     pub inner: Uuid,

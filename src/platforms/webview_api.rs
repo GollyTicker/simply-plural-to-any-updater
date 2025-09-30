@@ -15,30 +15,33 @@ pub async fn get_api_fronting_by_user_id(
     application_user_secrets: &State<database::ApplicationUserSecrets>,
     client: &State<reqwest::Client>,
 ) -> HttpResult<RawHtml<String>> {
+    log::info!("# | GET /fronting/{website_url_name}");
+
     let user_info = database::find_user_by_website_url_name(db_pool, website_url_name).await?;
     let user_id = user_info.id;
 
-    eprintln!("GET /fronting/{user_id}. Getting user secrets");
+    log::info!("# | GET /fronting/{website_url_name} | {user_id}");
 
     let user_config =
         database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
 
-    eprintln!("GET /fronting/{user_id}. Creating config");
-
     let (updater_config, _) =
         users::create_config_with_strong_constraints(&user_id, client, &user_config)?;
 
-    eprintln!("GET /fronting/{user_id}. Fetching fronts");
+    log::info!("# | GET /fronting/{website_url_name} | {user_id} | got_config");
 
     let fronts = plurality::fetch_fronts(&updater_config)
         .await
         .map_err(response::Debug)?;
 
-    eprintln!("GET /fronting/{user_id}. Rendering HTML");
+    log::info!("# | GET /fronting/{website_url_name} | {user_id} | got_config | fetched_fronts");
 
     let html = generate_html(&updater_config.website_system_name, fronts);
 
-    eprintln!("GET /fronting/{user_id}. OK");
+    log::info!(
+        "# | GET /fronting/{website_url_name} | {user_id} | got_config | fetched_fronts | HTML generated"
+    );
+
     Ok(RawHtml(html))
 }
 

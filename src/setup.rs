@@ -10,10 +10,14 @@ use std::env;
 use std::time::Duration;
 
 pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<ApplicationSetup> {
+    log::info!("# | application_setup");
+
     let client: reqwest::Client = reqwest::Client::builder()
         .cookie_store(true)
         .timeout(Duration::from_secs(cli_args.request_timeout))
         .build()?;
+
+    log::info!("# | application_setup | client_created");
 
     let jwt_secret = users::ApplicationJwtSecret {
         inner: cli_args.jwt_application_secret.clone(),
@@ -30,6 +34,8 @@ pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<Applicati
     };
 
     let shared_updaters = updater::UpdaterManager::new(cli_args);
+
+    log::info!("# | application_setup | client_created | basic_info_and_secrets");
 
     let allowed_origins = rocket_cors::AllowedOrigins::All;
     let allowed_methods = vec![
@@ -52,14 +58,24 @@ pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<Applicati
     }
     .to_cors()?;
 
+    log::info!("# | application_setup | client_created | basic_info_and_secrets | cors_configured");
+
     let db_pool = postgres::PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(Duration::from_secs(3))
         .connect(&cli_args.database_url)
         .await?;
 
+    log::info!(
+        "# | application_setup | client_created | basic_info_and_secrets | cors_configured | db_connection_created"
+    );
+
     // the macro integrates these files from compile-time!
     let () = sqlx::migrate!("docker/migrations").run(&db_pool).await?;
+
+    log::info!(
+        "# | application_setup | client_created | basic_info_and_secrets | cors_configured | db_connection_created | db_migrated"
+    );
 
     Ok(ApplicationSetup {
         db_pool,

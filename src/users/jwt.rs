@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::users::model::UserId;
 use anyhow::{Result, anyhow};
 use chrono::{Duration, Utc};
@@ -27,7 +29,7 @@ impl Jwt {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     /// `SP2Any` `user_id`
     pub sub: String,
@@ -47,6 +49,13 @@ pub struct JwtString {
     pub inner: String,
 }
 
+impl Display for JwtString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s: String = self.inner.chars().take(5).collect();
+        write!(f, "JwtString({s}...)")
+    }
+}
+
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for Jwt {
     type Error = rocket::response::Debug<anyhow::Error>;
@@ -55,7 +64,7 @@ impl<'r> FromRequest<'r> for Jwt {
         fn no_jwt_provided_outcome() -> Outcome<Jwt, response::Debug<anyhow::Error>> {
             Outcome::Error((
                 Status::Unauthorized,
-                response::Debug::from(anyhow!("No Jwt provided")),
+                response::Debug::from(anyhow!("from_request: No Jwt provided")),
             ))
         }
 
@@ -69,10 +78,14 @@ impl<'r> FromRequest<'r> for Jwt {
                     .trim()
                     .to_owned(),
             };
+            log::info!("# | jwt verification | {token}");
             match verify_jwt(&token, jwt_secret) {
-                Ok(claims) => Outcome::Success(Jwt { claims }),
+                Ok((claims, user_id)) => {
+                    log::info!("# | jwt verification | {token} | verified | {user_id}");
+                    Outcome::Success(Jwt { claims })
+                }
                 Err(err) => {
-                    eprintln!("Token verification failed: {err}");
+                    log::info!("# | jwt verification | {token} | failed | {err}");
                     Outcome::Error((
                         Status::Forbidden,
                         response::Debug(anyhow!("Token verification failed")),
@@ -100,7 +113,7 @@ const JWT_VALID_DAYS: i64 = 25;
 pub fn create_token(user_id: &UserId, jwt_secret: &ApplicationJwtSecret) -> Result<JwtString> {
     let expiration: usize = Utc::now()
         .checked_add_signed(Duration::days(JWT_VALID_DAYS))
-        .ok_or_else(|| anyhow!("invalid timestamp"))?
+        .ok_or_else(|| anyhow!("create_token: invalid timestamp"))?
         .timestamp()
         .try_into()?;
 
@@ -118,14 +131,17 @@ pub fn create_token(user_id: &UserId, jwt_secret: &ApplicationJwtSecret) -> Resu
     Ok(JwtString { inner: token })
 }
 
-pub fn verify_jwt(token: &JwtString, jwt_secret: &ApplicationJwtSecret) -> Result<Claims> {
+pub fn verify_jwt(
+    token: &JwtString,
+    jwt_secret: &ApplicationJwtSecret,
+) -> Result<(Claims, UserId)> {
     let token_data = jsonwebtoken::decode::<Claims>(
         &token.inner,
         &jsonwebtoken::DecodingKey::from_secret(jwt_secret.inner.as_bytes()),
         &jsonwebtoken::Validation::default(),
     )?;
 
-    eprintln!("Validated token for user {}", token_data.claims.sub);
+    let user_id_str: &str = &token_data.claims.sub.clone();
 
-    Ok(token_data.claims)
+    Ok((token_data.claims, user_id_str.try_into()?))
 }

@@ -24,8 +24,9 @@ serde_json = { version = "*", default-features = false }
 vrchatapi = "*"
 html-escape = "*"
 tokio = { version = "*", default-features = false, features = [] }
-tokio-util = { version = "*" , default-features = false }
+tokio-util = { version = "*", default-features = false }
 log = "*"
+env_logger = "*"
 sqlx = { version = "*", default-features = false, features = [
     "runtime-tokio-rustls",
     "postgres",
@@ -41,7 +42,9 @@ reqwest = { version = "*", default-features = false, features = [
 ] }
 strum_macros = "*"
 argon2 = "*"
-jsonwebtoken = "*"
+jsonwebtoken = { version = "*", default-features = false, features = [
+    "rust_crypto",
+] }
 rand = "*"
 sha2 = "*"
 rocket = { version = "*", default-features = false, features = [

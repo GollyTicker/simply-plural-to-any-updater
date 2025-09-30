@@ -161,7 +161,7 @@ pub fn create_config_with_strong_constraints<Constraints>(
 where
     Constraints: database::ConstraintsType,
 {
-    eprintln!("Loading config ...");
+    log::info!("# | create_config_with_strong_constraints | {user_id}");
 
     let db_config = database::downgrade(db_config);
     let local_config_with_defaults = db_config.with_defaults();
@@ -219,21 +219,18 @@ where
         )?
         .try_into()?,
         vrchat_cookie: config_value!(local_config_with_defaults, vrchat_cookie)
-            .inspect(|_| eprintln!("A VRChat cookie was found and will be used."))
+            .inspect(|_| log::info!("create_config_with_strong_constraints | {user_id} | vrchat cookie found and will be used."))
             .unwrap_or_default(),
     };
 
-    if !config.vrchat_username.secret.is_empty() {
-        eprintln!(
-            "Credentials loaded. VRChat Username is '{}'",
-            config.vrchat_username.secret
-        );
-    }
+    log::info!("# | create_config_with_strong_constraints | {user_id} | created");
 
     let valid_config =
         database::only_use_this_function_to_mark_validation_after_you_have_actually_validated_it(
             &db_config,
         );
+
+    log::info!("# | create_config_with_strong_constraints | {user_id} | created | validated");
 
     Ok((config, valid_config))
 }

@@ -18,7 +18,7 @@ pub async fn run_loop(
     db_pool: sqlx::PgPool,
     application_user_secrets: &database::ApplicationUserSecrets,
 ) -> ! {
-    eprintln!("Running Updater ...");
+    log::info!("# | updater run_loop | {}", config.user_id);
 
     let mut updaters: UserUpdaters =
         platforms::sp2any_server_updaters(shared_updaters.discord_status_message_available)
@@ -31,6 +31,7 @@ pub async fn run_loop(
             log_error_and_continue(
                 &u.platform().to_string(),
                 u.setup(&config, &db_pool, application_user_secrets).await,
+                &config,
             );
         }
     }
@@ -39,27 +40,32 @@ pub async fn run_loop(
     log_error_and_continue(
         "update statues",
         shared_updaters.notify_updater_statuses(&config.user_id, statues),
+        &config,
     );
 
     loop {
-        eprintln!(
-            "\n\n======================= UTC {}",
+        log::info!(
+            "\n\n# | updater run_loop | {} | ======================= UTC {}",
+            config.user_id,
             Utc::now().format("%Y-%m-%d %H:%M:%S")
         );
 
         log_error_and_continue(
             "Updater Logic",
             loop_logic(&config, &mut updaters, &shared_updaters).await,
+            &config,
         );
 
         let statues = get_statuses(&updaters, &config);
         log_error_and_continue(
             "update statues",
             shared_updaters.notify_updater_statuses(&config.user_id, statues),
+            &config,
         );
 
-        eprintln!(
-            "Waiting {}s for next update trigger...",
+        log::info!(
+            "# | updater run_loop | {} | Waiting {}s for next update trigger...",
+            config.user_id,
             config.wait_seconds.inner.as_secs()
         );
 
@@ -89,6 +95,7 @@ async fn loop_logic(
             log_error_and_continue(
                 &updater.platform().to_string(),
                 updater.update_fronting_status(config, &fronts).await,
+                config,
             );
         }
     }
@@ -98,11 +105,19 @@ async fn loop_logic(
     Ok(())
 }
 
-fn log_error_and_continue(loop_part_name: &str, res: Result<()>) {
+fn log_error_and_continue(
+    loop_part_name: &str,
+    res: Result<()>,
+    config: &users::UserConfigForUpdater,
+) {
     match res {
-        core::result::Result::Ok(()) => {}
-        Err(err) => {
-            eprintln!("Error in {loop_part_name}. Skipping. Error: {err}");
-        }
+        Ok(()) => log::info!(
+            "# | updater run_loop | {} | {loop_part_name} | ok",
+            config.user_id
+        ),
+        Err(err) => log::info!(
+            "# | updater run_loop | {} | {loop_part_name} | skipping due to error {err}",
+            config.user_id
+        ),
     }
 }

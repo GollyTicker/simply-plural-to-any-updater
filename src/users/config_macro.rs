@@ -3,7 +3,7 @@ macro_rules! config_value {
     ($config:expr, $field:ident) => {
         $config.$field.clone().ok_or_else(|| {
             anyhow!(format!(
-                "Mandatory field undefined or invalid: '{}'",
+                "config_value: Mandatory field undefined or invalid: '{}'",
                 stringify!($field)
             ))
         })

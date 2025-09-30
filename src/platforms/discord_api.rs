@@ -21,6 +21,9 @@ pub async fn get_api_user_platform_discord_bridge_events(
     application_user_secrets: &State<database::ApplicationUserSecrets>,
 ) -> Result<ws::Stream!['static], response::Debug<anyhow::Error>> {
     let user_id = jwt.user_id()?;
+    let user_id_c = user_id.clone();
+    log::info!("# | GET /api/user/platform/discord/bridge-events | {user_id}");
+
     let config = database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
     let (config, _) = users::create_config_with_strong_constraints(&user_id, client, &config)?;
 
@@ -35,31 +38,33 @@ pub async fn get_api_user_platform_discord_bridge_events(
         ..Default::default()
     });
 
+    log::info!("# | GET /api/user/platform/discord/bridge-events | {user_id} | setup");
+
     let stream = {
         ws::Stream! { ws =>
             let mut ws = ws.fuse();
 
             #[allow(clippy::needless_continue)]
             loop {
-                eprintln!("{user_id}: Waiting...");
+                log::info!("# | fronters_chan <-> WS | {user_id} | Waiting...");
                 tokio::select! {
                     message = ws.next() => {
-                        eprintln!("{user_id}: WS received: {message:?}");
+                        log::info!("# | fronters_chan <-> WS | {user_id} | WS received {message:?}");
                         match message {
                             Some(close) if is_closed(&close) => {
-                                eprintln!("{user_id}: ended ws stream {close:?}");
-                                notify(UpdaterStatus::Error("No connection to bridge.".to_owned()));
+                                log::info!("# | fronters_chan <-> WS | {user_id} | WS received | ws_stream_is_closed {close:?}");
+                                notify(UpdaterStatus::Error("SP2Any-Bridge -> websocket -> SP2Any-Server | No connection to bridge.".to_owned()));
                                 break;
                             },
                             Some(Ok(ws::Message::Text(str))) => {
                                 let message: BridgeToServerSseMessage = match serde_json::from_str(&str) {
                                     Ok(s) => {
-                                        eprintln!("{user_id}: WS: message deserialised: {s:?}");
+                                        log::info!("# | fronters_chan <-> WS | {user_id} | WS received | deserialised to {s:?}");
                                         s
                                     },
                                     Err(e) => {
-                                        eprintln!("{user_id}: WS message deserialisation error: {e}");
-                                        notify(UpdaterStatus::Error(format!("message deserialisation error: {e}")));
+                                        log::info!("# | fronters_chan <-> WS | {user_id} | WS received | deserialise_err {e}");
+                                        notify(UpdaterStatus::Error(format!("SP2Any-Bridge -> websocket -> SP2Any-Server | Message deserialisation error: {e}")));
                                         break; // end on reading error
                                     }
                                 };
@@ -67,18 +72,18 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                 continue;
                             },
                             Some(Ok(unknown_message)) => {
-                                eprintln!("{user_id}: WS unknown message received: {unknown_message:?}");
+                                log::info!("# | fronters_chan <-> WS | {user_id} | WS received | unknown_msg_type {unknown_message:?}");
                                 continue; // unknown message ignored
                             }
                             Some(Err(_)) | None => {
-                                eprintln!("{user_id}: Generic WS next() error: {message:?}. Ending.");
-                                notify(UpdaterStatus::Error(format!("Generic WS next() error: {message:?}. Ending.")));
+                                log::info!("# | fronters_chan <-> WS | {user_id} | WS received | ending_due_to_error {message:?}");
+                                notify(UpdaterStatus::Error(format!("SP2Any-Bridge -> websocket -> SP2Any-Server: Server ending due to websocket error '{message:?}'.")));
                                 break;
                             }, // client disconnected
                         }
                     },
                     fronters_msg = fronting_channel.recv() => {
-                        eprintln!("{user_id}: fronts received.");
+                        log::info!("# | fronters_chan <-> WS | {user_id} | fronters received");
                         if let Some(fronters) = fronters_msg {
                             let rich_presence_result = discord::render_fronts_to_discord_rich_presence(fronters, &config);
                             match rich_presence_result {
@@ -87,34 +92,36 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                     let payload = match rocket::serde::json::to_string(&message) {
                                         Ok(p) => p,
                                         Err(e) => {
-                                            eprintln!("{user_id}: Failed to serialize rich presence: {e}");
-                                            notify(UpdaterStatus::Error(format!("serialiisation error: {e}")));
+                                            log::info!("# | fronters_chan <-> WS | {user_id} | fronters received | serialisation_failed {e}");
+                                            notify(UpdaterStatus::Error(format!("SP2Any-Server -> websocket -> SP2Any-Bridge: Server couldn't serialise fronters. Error: {e}")));
                                             break;
                                         }
                                     };
-                                    eprintln!("{user_id}: Sending rich presence to bridge via WebSocket...");
+                                    log::info!("# | fronters_chan <-> WS | {user_id} | fronters received | sending_via_websocket");
                                     yield ws::Message::Text(payload);
                                 }
                                 Err(err) => {
-                                    eprintln!(
-                                        "{user_id}: Error while rendering fronts for discord rich presence. Continuing nonetheless. {err}"
-                                    );
-                                    notify(UpdaterStatus::Error(format!("Rendering error: {err}")));
+                                    log::info!("# | fronters_chan <-> WS | {user_id} | fronters received | rendering_error {err}");
+                                    notify(UpdaterStatus::Error(format!("SP2Any-Server -> websocket -> SP2Any-Bridge: Server rendering error: {err}")));
                                     break;
                                 }
                             }
                         } else {
-                            eprintln!("{user_id}: Shared updater closed?");
-                            notify(UpdaterStatus::Error("fronter channel closed".into()));
+                            log::info!("# | fronters_chan <-> WS | {user_id} | fronters_chan_closed?");
+                            notify(UpdaterStatus::Error("SP2Any-Server: Couldn't retrieve any fronters. (internal bug?)".into()));
                             break;
                         }
                     },
                 }
             }
-            eprintln!("{user_id}: WebSocket stream end.");
+            log::info!("# | fronters_chan <-> WS | {user_id} | ws_stream_end");
             yield ws::Message::Close(None);
         }
     };
+
+    log::info!(
+        "# | GET /api/user/platform/discord/bridge-events | {user_id_c} | setup | returning_stream"
+    );
 
     Ok(stream)
 }

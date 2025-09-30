@@ -35,7 +35,7 @@ impl<'r> Decode<'r, Postgres> for ValidConstraints {
         if valid_constraints {
             Ok(Self {})
         } else {
-            Err(anyhow!("Implementation bug! (49273)").into())
+            Err(anyhow!("decode: ValidConstraints. Implementation bug!").into())
         }
     }
 }
@@ -56,7 +56,7 @@ impl<'r> Decode<'r, Postgres> for InvalidConstraints {
         let valid_constraints = <bool as Decode<Postgres>>::decode(value)?;
 
         if valid_constraints {
-            Err(anyhow!("Implementation bug! (49273)").into())
+            Err(anyhow!("decode: InvalidConstraints. Implementation bug!").into())
         } else {
             Ok(Self {})
         }

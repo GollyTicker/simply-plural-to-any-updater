@@ -16,8 +16,12 @@ pub fn get_api_updaters_status(
 ) -> HttpResult<Json<work_loop::UserUpdatersStatuses>> {
     let user_id = jwt.user_id()?;
 
+    log::info!("# | GET /api/updaters/status | {user_id}");
+
     let updaters_state: work_loop::UserUpdatersStatuses =
         shared_updaters.get_updaters_statuses(&user_id)?;
+
+    log::info!("# | GET /api/updaters/status | {user_id} | retrieved");
 
     Ok(Json(updaters_state))
 }
@@ -25,11 +29,11 @@ pub fn get_api_updaters_status(
 pub async fn restart_all_user_updaters_for_app_startups(
     setup: setup::ApplicationSetup,
 ) -> Result<()> {
-    eprintln!("Starting all user updaters ...");
+    log::info!("# | restart_all_user_updaters_for_app_startups");
 
     let all_users = database::get_all_users(&setup.db_pool).await?;
 
-    eprintln!("Users: {all_users:?}");
+    log::info!("# | restart_all_user_updaters_for_app_startups | all_users {all_users:?}");
 
     for user in all_users {
         restart_updater_for_user(
@@ -42,7 +46,7 @@ pub async fn restart_all_user_updaters_for_app_startups(
         .await?;
     }
 
-    eprintln!("Starting all user updaters. DONE.");
+    log::info!("# | restart_all_user_updaters_for_app_startups | all_users | ok");
 
     Ok(())
 }
@@ -54,7 +58,7 @@ pub async fn restart_updater_for_user(
     client: &reqwest::Client,
     shared_updaters: &manager::UpdaterManager,
 ) -> Result<()> {
-    eprintln!("Restarting user updaters {user_id} ...");
+    log::info!("# | restart_updater_for_user | {user_id}");
 
     let db_config = database::get_user_secrets(db_pool, user_id, application_user_secrets).await?;
 
@@ -67,7 +71,7 @@ pub async fn restart_updater_for_user(
         application_user_secrets,
     )?;
 
-    eprintln!("Restarting user updaters {user_id}. DONE.");
+    log::info!("# | restart_updater_for_user | {user_id} | ok");
 
     Ok(())
 }

@@ -66,7 +66,10 @@ async fn set_discord_status(
     config: &users::UserConfigForUpdater,
     status_string: String,
 ) -> Result<()> {
-    eprintln!("Setting Discord Status: {status_string}");
+    log::info!(
+        "# | set_discord_status | {} | {status_string}",
+        config.user_id
+    );
 
     let discord_status_url = format!(
         "{}{}",
@@ -75,11 +78,11 @@ async fn set_discord_status(
 
     let body = User {
         custom_status: Status {
-            text: status_string,
+            text: status_string.clone(),
         },
     };
 
-    let result: User = config
+    let result_user: User = config
         .client
         .patch(discord_status_url)
         .header("Authorization", &config.discord_status_message_token.secret)
@@ -91,7 +94,10 @@ async fn set_discord_status(
         .json()
         .await?;
 
-    eprintln!("Changed Discord User: {result:?}");
+    log::info!(
+        "# | set_discord_status | {} | {status_string} | result {result_user:?}",
+        config.user_id
+    );
 
     Ok(())
 }

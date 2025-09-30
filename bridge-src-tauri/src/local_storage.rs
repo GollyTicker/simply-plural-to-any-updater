@@ -59,7 +59,7 @@ pub fn get_logs_dir() -> Result<PathBuf> {
 
 fn get_data_dir() -> Result<PathBuf> {
     let proj_dirs = ProjectDirs::from("io", "sp2any", "sp2any.bridge")
-        .ok_or_else(|| anyhow!("Failed to get project directories"))
+        .ok_or_else(|| anyhow!("get_data_dir: Failed to get project directories"))
         .map(|p| p.data_local_dir().to_path_buf());
 
     let data_dir = env::var("SP2ANY_DATA_DIR")

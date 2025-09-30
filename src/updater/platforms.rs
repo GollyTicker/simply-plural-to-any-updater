@@ -40,7 +40,7 @@ pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
     }
 
     for p in platforms.iter().by_ref() {
-        eprintln!("Available Platform: {p}");
+        log::info!("# | available_updaters | available {p}");
     }
 
     platforms
@@ -53,7 +53,7 @@ pub fn sp2any_server_updaters(discord_status_message: bool) -> Vec<Platform> {
     platforms.retain(|p| !p.foreign_managed());
 
     for p in platforms.iter().by_ref() {
-        eprintln!("Available Platform (managed): {p}");
+        log::info!("# | sp2any_server_updaters | available (managed) {p}");
     }
 
     platforms

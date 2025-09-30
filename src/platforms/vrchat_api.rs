@@ -13,8 +13,13 @@ pub async fn post_api_user_platform_vrchat_auth_2fa_request(
     _jwt: users::Jwt, // request should be authenticated, but we don't need user id
 ) -> HttpResult<Json<Either<VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse>>> {
     let creds = creds.into_inner();
+    log::info!("# | POST /api/user/platform/vrchat/auth_2fa/request | {creds}");
 
-    let creds_or_tfa_method = vrchat_auth::authenticate_vrchat_for_new_cookie(creds).await?;
+    let creds_or_tfa_method = vrchat_auth::authenticate_vrchat_for_new_cookie(&creds).await?;
+
+    log::info!(
+        "# | POST /api/user/platform/vrchat/auth_2fa/request | {creds} | {creds_or_tfa_method}"
+    );
 
     Ok(Json(creds_or_tfa_method))
 }
@@ -28,9 +33,14 @@ pub async fn post_api_user_platform_vrchat_auth_2fa_resolve(
     creds_with_tfa: Json<VRChatCredentialsWithTwoFactorAuth>,
 ) -> HttpResult<Json<VRChatCredentialsWithCookie>> {
     let creds_with_tfa = creds_with_tfa.into_inner();
+    log::info!("# | POST /api/user/platform/vrchat/auth_2fa/request | {creds_with_tfa}");
 
     let valid_creds =
-        vrchat_auth::authenticate_vrchat_for_new_cookie_with_2fa(creds_with_tfa).await?;
+        vrchat_auth::authenticate_vrchat_for_new_cookie_with_2fa(&creds_with_tfa).await?;
+
+    log::info!(
+        "# | POST /api/user/platform/vrchat/auth_2fa/request | {creds_with_tfa} | ok {valid_creds}"
+    );
 
     Ok(Json(valid_creds))
 }

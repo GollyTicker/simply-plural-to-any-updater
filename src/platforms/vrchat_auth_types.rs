@@ -1,10 +1,10 @@
-use std::sync::Arc;
+use std::{fmt::Display, sync::Arc};
 
 use crate::users;
 
 use serde::{Deserialize, Serialize};
 use specta;
-use strum_macros::Display;
+use strum_macros;
 use vrchatapi::models::current_user::RequiresTwoFactorAuth;
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
@@ -20,10 +20,26 @@ pub struct VRChatCredentials {
     pub password: String,
 }
 
+impl Display for VRChatCredentials {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "VRChatCredentials({}, <password>)", self.username)
+    }
+}
+
 #[derive(Clone, Serialize, Debug, specta::Type)]
 pub struct VRChatCredentialsWithCookie {
     pub creds: VRChatCredentials,
     pub cookie: String,
+}
+
+impl Display for VRChatCredentialsWithCookie {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "VRChatCredentialsWithCookie({}, <password>, <cookie>)",
+            self.creds.username
+        )
+    }
 }
 
 impl VRChatCredentialsWithCookie {
@@ -55,7 +71,17 @@ pub struct TwoFactorCodeRequiredResponse {
     pub tmp_cookie: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, Display, Debug, specta::Type)]
+impl Display for TwoFactorCodeRequiredResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "TwoFactorCodeRequiredResponse({}, <tmp_cookie>)",
+            self.method
+        )
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, strum_macros::Display, Debug, specta::Type)]
 pub enum TwoFactorAuthMethod {
     TwoFactorAuthMethodEmail,
     TwoFactorAuthMethodApp,
@@ -81,6 +107,12 @@ pub struct TwoFactorAuthCode {
     inner: String,
 }
 
+impl Display for TwoFactorAuthCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "TwoFactorAuthCode({})", self.inner)
+    }
+}
+
 impl From<TwoFactorAuthCode> for String {
     fn from(val: TwoFactorAuthCode) -> Self {
         val.inner
@@ -93,4 +125,14 @@ pub struct VRChatCredentialsWithTwoFactorAuth {
     pub method: TwoFactorAuthMethod,
     pub code: TwoFactorAuthCode,
     pub tmp_cookie: String,
+}
+
+impl Display for VRChatCredentialsWithTwoFactorAuth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "VRChatCredentialsWithTwoFactorAuth({}, {}, {}, <tmp_cookie>)",
+            self.creds, self.method, self.code
+        )
+    }
 }

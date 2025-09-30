@@ -20,8 +20,11 @@ pub async fn get_api_user_config(
 ) -> HttpResult<Json<config::UserConfigDbEntries<database::Decrypted, database::ValidConstraints>>>
 {
     let user_id = jwt.user_id()?;
+    log::info!("# | GET /api/user/config | {user_id}");
 
     let user_config = database::get_user_secrets(db_pool, &user_id, app_user_secrets).await?;
+
+    log::info!("# | GET /api/user/config | {user_id} | got_config");
 
     Ok(Json(user_config))
 }
@@ -36,11 +39,15 @@ pub async fn post_api_user_config(
     shared_updaters: &State<updater::UpdaterManager>,
 ) -> HttpResult<()> {
     let user_id = jwt.user_id()?;
+    log::info!("# | POST /api/user/config_and_restart | {user_id}");
 
     // check that config satisfies contraints
     let (_, valid_db_config) =
         config::create_config_with_strong_constraints(&user_id, client, &config)?;
 
+    log::info!("# | POST /api/user/config_and_restart | {user_id} | config_valid");
+
+    // todo. this config change should be rolled-back, if the update fails!
     let () = database::set_user_config_secrets(
         db_pool,
         &user_id,
@@ -48,6 +55,8 @@ pub async fn post_api_user_config(
         application_user_secrets,
     )
     .await?;
+
+    log::info!("# | POST /api/user/config_and_restart | {user_id} | config_valid | config_saved");
 
     let () = updater::api::restart_updater_for_user(
         &user_id,
@@ -57,6 +66,10 @@ pub async fn post_api_user_config(
         shared_updaters,
     )
     .await?;
+
+    log::info!(
+        "# | POST /api/user/config_and_restart | {user_id} | config_valid | config_saved | updaters_restarted"
+    );
 
     Ok(())
 }

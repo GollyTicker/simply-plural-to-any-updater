@@ -48,7 +48,12 @@ pub async fn discord_ipc_loop(
         updater_status_channel.send(updater::UpdaterStatus::Error(format!(
             "Discord RPC disconnected: {error}"
         )));
-        notify_user_on_status(app, format!("⚠️ Discord RPC disconnected: {error} | Discord needs to be running for the bridge to work."));
+        notify_user_on_status(
+            app,
+            format!(
+                "⚠️ Discord RPC disconnected: {error} | Discord needs to be running for the bridge to work."
+            ),
+        );
         sleep(Duration::from_secs(5)).await;
     }
 }
