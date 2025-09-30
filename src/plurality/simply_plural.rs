@@ -1,25 +1,29 @@
 use anyhow::Result;
 
 use crate::{
-    plurality::{
-        CustomField, CustomFront, FETCH_FRONTS_CUSTOM_FRONTS_COUNT, FETCH_FRONTS_FRONTERS_COUNT,
-        FETCH_FRONTS_MEMBERS_COUNT, FETCH_FRONTS_TOTAL_COUNTER, FrontEntry, Fronter, Member,
-    },
+    int_counter_metric, int_gauge_metric,
+    plurality::{CustomField, CustomFront, FrontEntry, Fronter, Member},
     users,
 };
 
+int_counter_metric!(SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER);
+int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_FRONTERS_COUNT);
+int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT);
+int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT);
+
 #[allow(clippy::cast_possible_wrap)]
 pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fronter>> {
-    let user_id_label = config.user_id.to_string();
-    FETCH_FRONTS_TOTAL_COUNTER
-        .with_label_values(&[&user_id_label])
+    let user_id = &config.user_id;
+
+    SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER
+        .with_label_values(&[&user_id.to_string()])
         .inc();
 
     let front_entries = simply_plural_http_request_get_fronters(config).await?;
 
     if front_entries.is_empty() {
-        FETCH_FRONTS_FRONTERS_COUNT
-            .with_label_values(&[&user_id_label])
+        SIMPLY_PLURAL_FETCH_FRONTS_FRONTERS_COUNT
+            .with_label_values(&[&user_id.to_string()])
             .set(0);
         return Ok(vec![]);
     }
@@ -36,8 +40,8 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
         log::info!("# | fetch_fronts | fronter[*] {f:?}");
     }
 
-    FETCH_FRONTS_FRONTERS_COUNT
-        .with_label_values(&[&user_id_label])
+    SIMPLY_PLURAL_FETCH_FRONTS_FRONTERS_COUNT
+        .with_label_values(&[&user_id.to_string()])
         .set(fronters.len() as i64);
 
     Ok(fronters)
@@ -63,7 +67,7 @@ async fn get_all_members_and_custom_fronters(
         .map(Fronter::from)
         .collect();
 
-    FETCH_FRONTS_MEMBERS_COUNT
+    SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT
         .with_label_values(&[&config.user_id.to_string()])
         .set(all_members.len() as i64);
 
@@ -74,7 +78,7 @@ async fn get_all_members_and_custom_fronters(
         .map(Fronter::from)
         .collect();
 
-    FETCH_FRONTS_CUSTOM_FRONTS_COUNT
+    SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT
         .with_label_values(&[&config.user_id.to_string()])
         .set(all_members.len() as i64);
 

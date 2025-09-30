@@ -4,6 +4,7 @@ extern crate rocket;
 mod communication;
 pub mod database;
 pub mod meta_api;
+pub mod metrics;
 pub mod platforms;
 pub mod plurality;
 pub mod setup;
