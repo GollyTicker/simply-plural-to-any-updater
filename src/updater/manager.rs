@@ -1,11 +1,12 @@
 use crate::plurality::{self};
 use crate::updater::{self, work_loop};
-use crate::users::UserId;
-use crate::{communication, setup};
+use crate::{communication, int_counter_metric, metric, setup};
 use crate::{database, users};
+use crate::{updater::UpdaterStatus, users::UserId};
 use anyhow::{Result, anyhow};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use strum::VariantNames;
 use tokio::task::JoinHandle;
 
 type SharedMutable<T> = Arc<Mutex<T>>;
@@ -14,6 +15,15 @@ type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
 type FronterChannel = communication::FireAndForgetChannel<Vec<plurality::Fronter>>;
 type ForeignStatusChannel =
     communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>;
+
+int_counter_metric!(UPDATER_MANAGER_RESTART_TOTAL_COUNT);
+int_counter_metric!(UPDATER_MANAGER_RESTART_SUCCESS_COUNT);
+metric!(
+    rocket_prometheus::prometheus::IntGaugeVec,
+    UPDATER_PLATFORM_STATUS,
+    "updater_platform_status",
+    &["user_id", "platform", "status"]
+);
 
 #[derive(Clone)]
 pub struct UpdaterManager {
@@ -121,6 +131,8 @@ impl UpdaterManager {
 
         for (p, new_status) in updater_state {
             log::info!("# | notify_updater_statuses | {user_id} | {p} is {new_status}");
+
+            record_status_in_metrics(user_id, p, &new_status);
             statuses.insert(p, new_status);
         }
 
@@ -135,6 +147,10 @@ impl UpdaterManager {
         db_pool: sqlx::PgPool,
         application_user_secrets: &database::ApplicationUserSecrets,
     ) -> Result<()> {
+        UPDATER_MANAGER_RESTART_TOTAL_COUNT
+            .with_label_values(&[&user_id.to_string()])
+            .inc();
+
         let mut locked_task = self.tasks.lock().map_err(|e| anyhow!(e.to_string()))?;
 
         log::info!("# | restart_updater | {user_id} | aborting updaters");
@@ -157,6 +173,9 @@ impl UpdaterManager {
             vec![work_loop_task, foreign_status_updater_task],
         );
         log::info!("# | restart_updater | {user_id} | aborting updaters | restarted");
+        UPDATER_MANAGER_RESTART_SUCCESS_COUNT
+            .with_label_values(&[&user_id.to_string()])
+            .inc();
 
         Ok(())
     }
@@ -226,4 +245,21 @@ impl UpdaterManager {
 
         Ok(())
     }
+}
+
+fn record_status_in_metrics(
+    user_id: &UserId,
+    p: updater::Platform,
+    new_status: &updater::UpdaterStatus,
+) {
+    // By using strum's EnumVariantNames, we don't need to manually maintain a list of status strings.
+    for old_status in UpdaterStatus::VARIANTS {
+        UPDATER_PLATFORM_STATUS
+            .with_label_values(&[&user_id.to_string(), &p.to_string(), old_status])
+            .set(0);
+    }
+
+    UPDATER_PLATFORM_STATUS
+        .with_label_values(&[&user_id.to_string(), &p.to_string(), new_status.into()])
+        .set(1);
 }

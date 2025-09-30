@@ -3,7 +3,7 @@ use tokio::time::sleep;
 
 use crate::updater::platforms::{Platform, Updater, UpdaterStatus};
 use crate::updater::{manager, platforms};
-use crate::{database, plurality, users};
+use crate::{database, int_counter_metric, plurality, users};
 use anyhow::Result;
 use chrono::Utc;
 
@@ -12,13 +12,17 @@ pub type CancleableUpdater = Vec<tokio::task::JoinHandle<()>>;
 pub type UserUpdatersStatuses = HashMap<Platform, UpdaterStatus>;
 type UserUpdaters = HashMap<Platform, Updater>;
 
+int_counter_metric!(UPDATER_WORK_LOOP_START_TOTAL_COUNT);
+int_counter_metric!(UPDATER_WORK_LOOP_START_SUCCESS_COUNT);
+
 pub async fn run_loop(
     config: users::UserConfigForUpdater,
     shared_updaters: manager::UpdaterManager,
     db_pool: sqlx::PgPool,
     application_user_secrets: &database::ApplicationUserSecrets,
 ) -> ! {
-    log::info!("# | updater run_loop | {}", config.user_id);
+    let user_id = &config.user_id;
+    log::info!("# | updater run_loop | {user_id}");
 
     let mut updaters: UserUpdaters =
         platforms::sp2any_server_updaters(shared_updaters.discord_status_message_available)
@@ -39,7 +43,7 @@ pub async fn run_loop(
     let statues = get_statuses(&updaters, &config);
     log_error_and_continue(
         "update statues",
-        shared_updaters.notify_updater_statuses(&config.user_id, statues),
+        shared_updaters.notify_updater_statuses(user_id, statues),
         &config,
     );
 
@@ -49,6 +53,9 @@ pub async fn run_loop(
             config.user_id,
             Utc::now().format("%Y-%m-%d %H:%M:%S")
         );
+        UPDATER_WORK_LOOP_START_TOTAL_COUNT
+            .with_label_values(&[&user_id.to_string()])
+            .inc();
 
         log_error_and_continue(
             "Updater Logic",
@@ -59,15 +66,18 @@ pub async fn run_loop(
         let statues = get_statuses(&updaters, &config);
         log_error_and_continue(
             "update statues",
-            shared_updaters.notify_updater_statuses(&config.user_id, statues),
+            shared_updaters.notify_updater_statuses(user_id, statues),
             &config,
         );
 
         log::info!(
             "# | updater run_loop | {} | Waiting {}s for next update trigger...",
-            config.user_id,
+            user_id,
             config.wait_seconds.inner.as_secs()
         );
+        UPDATER_WORK_LOOP_START_SUCCESS_COUNT
+            .with_label_values(&[&user_id.to_string()])
+            .inc();
 
         sleep(config.wait_seconds.inner).await;
     }

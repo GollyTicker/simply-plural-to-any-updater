@@ -1,5 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use strum_macros;
 
 use crate::{database, platforms, plurality, users};
 
@@ -13,7 +14,15 @@ pub enum Platform {
 }
 
 // NOTE: specta::Type is manually exported in bindings
-#[derive(Clone, Serialize, Deserialize, strum_macros::Display, Debug)]
+#[derive(
+    Clone,
+    Serialize,
+    Deserialize,
+    strum_macros::Display,
+    Debug,
+    strum_macros::IntoStaticStr,
+    strum_macros::VariantNames,
+)]
 pub enum UpdaterStatus {
     /// User has not enabled this updater in the settings.
     Disabled,

@@ -5,6 +5,7 @@ use std::time::Duration;
 use crate::{
     config_value, config_value_if,
     database::{self, SecretType},
+    int_counter_metric,
     users::model::UserId,
 };
 use serde::{Deserialize, Serialize};
@@ -150,6 +151,9 @@ impl From<i32> for WaitSeconds {
     }
 }
 
+int_counter_metric!(CONFIG_CREATE_WITH_STRONG_CONSTRAINTS_TOTAL_COUNT);
+int_counter_metric!(CONFIG_CREATE_WITH_STRONG_CONSTRAINTS_SUCCESS_COUNT);
+
 pub fn create_config_with_strong_constraints<Constraints>(
     user_id: &UserId,
     client: &reqwest::Client,
@@ -162,6 +166,9 @@ where
     Constraints: database::ConstraintsType,
 {
     log::info!("# | create_config_with_strong_constraints | {user_id}");
+    CONFIG_CREATE_WITH_STRONG_CONSTRAINTS_TOTAL_COUNT
+        .with_label_values(&[&user_id.to_string()])
+        .inc();
 
     let db_config = database::downgrade(db_config);
     let local_config_with_defaults = db_config.with_defaults();
@@ -231,6 +238,9 @@ where
         );
 
     log::info!("# | create_config_with_strong_constraints | {user_id} | created | validated");
+    CONFIG_CREATE_WITH_STRONG_CONSTRAINTS_SUCCESS_COUNT
+        .with_label_values(&[&user_id.to_string()])
+        .inc();
 
     Ok((config, valid_config))
 }

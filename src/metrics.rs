@@ -1,6 +1,6 @@
 use std::sync;
 
-use crate::plurality;
+use crate::{plurality, updater};
 
 macro_rules! register_metrics {
     ($pm:ident, $($metric:expr),*) => {
@@ -12,11 +12,11 @@ macro_rules! register_metrics {
 
 #[macro_export]
 macro_rules! metric {
-    ($metric_type:ty, $metric_name:ident, $metric_name_str:expr) => {
+    ($metric_type:ty, $metric_name:ident, $metric_name_str:expr, $labels:expr) => {
         pub static $metric_name: std::sync::LazyLock<$metric_type> = {
             use rocket_prometheus::prometheus::opts;
             std::sync::LazyLock::new(|| {
-                <$metric_type>::new(opts!($metric_name_str, "."), &["user_id"]).unwrap()
+                <$metric_type>::new(opts!($metric_name_str, "."), $labels).unwrap()
             })
         };
     };
@@ -28,7 +28,8 @@ macro_rules! int_gauge_metric {
         $crate::metric!(
             rocket_prometheus::prometheus::IntGaugeVec,
             $metric_name,
-            stringify!($metric_name).to_lowercase()
+            stringify!($metric_name).to_lowercase(),
+            &["user_id"]
         );
     };
 }
@@ -39,7 +40,8 @@ macro_rules! int_counter_metric {
         $crate::metric!(
             rocket_prometheus::prometheus::IntCounterVec,
             $metric_name,
-            stringify!($metric_name).to_lowercase()
+            stringify!($metric_name).to_lowercase(),
+            &["user_id"]
         );
     };
 }
@@ -53,7 +55,8 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
             plurality::SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER,
             plurality::SIMPLY_PLURAL_FETCH_FRONTS_FRONTERS_COUNT,
             plurality::SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT,
-            plurality::SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT
+            plurality::SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT,
+            updater::UPDATER_PLATFORM_STATUS
         );
 
         promtheus_metrics
