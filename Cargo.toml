@@ -63,3 +63,5 @@ rocket_ws = "*"
 reqwest_cookie_store = { version = "0.8", features = ["serde"] }
 base64 = "*"
 async-scoped = { version = "*", features = ["use-tokio"] }
+prometheus = "*"
+rocket_prometheus = "*"

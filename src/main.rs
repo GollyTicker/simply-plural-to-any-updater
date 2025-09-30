@@ -4,6 +4,7 @@ extern crate rocket;
 use anyhow::Result;
 use anyhow::anyhow;
 
+use rocket_prometheus;
 use sp2any::license;
 use sp2any::{meta_api, platforms, setup, updater, users};
 
@@ -47,6 +48,8 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
         .manage(setup.client)
         .manage(setup.shared_updaters)
         .manage(setup.sp2any_variant_info)
+        .attach(rocket_prometheus::PrometheusMetrics::new()) // todo. fix /metrics not available
+        .attach(setup.cors_policy)
         .mount(
             "/",
             routes![
@@ -64,7 +67,6 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
                 meta_api::get_api_meta_sp2any_variant,
             ],
         )
-        .attach(setup.cors_policy)
         .launch()
         .await
         .map_err(|e| anyhow!(e))?;
