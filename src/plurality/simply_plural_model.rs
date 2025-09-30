@@ -40,6 +40,7 @@ pub struct Fronter {
 }
 
 impl Fronter {
+    #[must_use]
     pub fn preferred_vrchat_status_name(&self) -> &str {
         self.vrchat_status_name.as_ref().unwrap_or(&self.name)
     }

@@ -47,7 +47,7 @@ pub async fn restart_all_user_updaters_for_app_startups(
         .inspect_err(|e| {
             log::warn!(
                 "# restart_all_user_updaters_for_app_startups | {user} failed. skipping. {e}"
-            )
+            );
         });
     }
 

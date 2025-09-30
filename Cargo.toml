@@ -65,3 +65,4 @@ base64 = "*"
 async-scoped = { version = "*", features = ["use-tokio"] }
 prometheus = "*"
 rocket_prometheus = "*"
+once_cell = "*"

@@ -5,7 +5,7 @@ mod communication;
 pub mod database;
 pub mod meta_api;
 pub mod platforms;
-mod plurality;
+pub mod plurality;
 pub mod setup;
 pub mod updater;
 pub mod users;

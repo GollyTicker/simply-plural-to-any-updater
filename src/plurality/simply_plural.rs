@@ -1,14 +1,26 @@
 use anyhow::Result;
 
 use crate::{
-    plurality::{CustomField, CustomFront, FrontEntry, Fronter, Member},
+    plurality::{
+        CustomField, CustomFront, FETCH_FRONTS_CUSTOM_FRONTS_COUNT, FETCH_FRONTS_FRONTERS_COUNT,
+        FETCH_FRONTS_MEMBERS_COUNT, FETCH_FRONTS_TOTAL_COUNTER, FrontEntry, Fronter, Member,
+    },
     users,
 };
 
+#[allow(clippy::cast_possible_wrap)]
 pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fronter>> {
+    let user_id_label = config.user_id.to_string();
+    FETCH_FRONTS_TOTAL_COUNTER
+        .with_label_values(&[&user_id_label])
+        .inc();
+
     let front_entries = simply_plural_http_request_get_fronters(config).await?;
 
     if front_entries.is_empty() {
+        FETCH_FRONTS_FRONTERS_COUNT
+            .with_label_values(&[&user_id_label])
+            .set(0);
         return Ok(vec![]);
     }
 
@@ -24,9 +36,14 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
         log::info!("# | fetch_fronts | fronter[*] {f:?}");
     }
 
+    FETCH_FRONTS_FRONTERS_COUNT
+        .with_label_values(&[&user_id_label])
+        .set(fronters.len() as i64);
+
     Ok(fronters)
 }
 
+#[allow(clippy::cast_possible_wrap)]
 async fn get_all_members_and_custom_fronters(
     system_id: &String,
     vrcsn_field_id: Option<String>,
@@ -46,12 +63,20 @@ async fn get_all_members_and_custom_fronters(
         .map(Fronter::from)
         .collect();
 
+    FETCH_FRONTS_MEMBERS_COUNT
+        .with_label_values(&[&config.user_id.to_string()])
+        .set(all_members.len() as i64);
+
     let all_custom_fronts: Vec<Fronter> = simply_plural_http_get_custom_fronts(config, system_id)
         .await?
         .iter()
         .cloned()
         .map(Fronter::from)
         .collect();
+
+    FETCH_FRONTS_CUSTOM_FRONTS_COUNT
+        .with_label_values(&[&config.user_id.to_string()])
+        .set(all_members.len() as i64);
 
     let all_frontables: Vec<Fronter> =
         [all_members.as_slice(), all_custom_fronts.as_slice()].concat();

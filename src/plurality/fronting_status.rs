@@ -18,6 +18,7 @@ pub enum CleanForPlatform {
     VRChat,
 }
 
+#[must_use]
 pub fn format_fronting_status(fronting_format: &FrontingFormat, fronts: &[Fronter]) -> String {
     let cleaned_fronter_names = collect_clean_fronter_names(fronting_format, fronts);
     log::info!("# | format_fronting_status | cleaned to '{cleaned_fronter_names:?}'");
@@ -138,6 +139,7 @@ pub fn string_unicode_codepoints_length<S: Into<String>>(s: S) -> usize {
 // VRChat status messages does not display all UTF-8 characters.
 // This function removes all characters which are not of a specific encoding from the string.
 // We also trim the name, in case the cleanup made new spaces appear.
+#[must_use]
 pub fn clean_name_for_vrchat_status(dirty_name: &str) -> String {
     dirty_name
         .chars()
