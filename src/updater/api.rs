@@ -36,14 +36,19 @@ pub async fn restart_all_user_updaters_for_app_startups(
     log::info!("# | restart_all_user_updaters_for_app_startups | all_users {all_users:?}");
 
     for user in all_users {
-        restart_updater_for_user(
+        let _ = restart_updater_for_user(
             &user,
             &setup.db_pool,
             &setup.application_user_secrets,
             &setup.client,
             &setup.shared_updaters,
         )
-        .await?;
+        .await
+        .inspect_err(|e| {
+            log::warn!(
+                "# restart_all_user_updaters_for_app_startups | {user} failed. skipping. {e}"
+            )
+        });
     }
 
     log::info!("# | restart_all_user_updaters_for_app_startups | all_users | ok");
