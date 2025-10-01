@@ -6,6 +6,12 @@
   * archived members configuration / hiding
   * make lists of members / CFs / archived members collapeble and searchable to manage large systems
   * probably start with defualts for actives / archived / CFs and integration with privacy buckets from SP
+    * [privacy buckets in SimplyPlual](https://docs.apparyllis.com/docs/help/features/buckets/intro). Perhaps
+      we can also instead make a singleton "SP2Any" account on SP and people can add that one as a friend.
+      This way, they can simply assign SP2Any to existing privacy bucket groups and chose what should be shown.
+      This is an alternative to asking the users to make a new privacy bucket with the name "SP2Any" which is then read by the API.
+    * privacy bucket API doesn't seem to be documented. I'll have to reverse-engineer that.
+      * https://api.apparyllis.com/v1/privacyBuckets/
   * bidrectional sync of privacy bucket membership and "show in SP2Any" setting
     > If I search for myself, and toggle the "show as fronting" button in SP2A, it autoadds me to the privacy bucket in SP.
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
