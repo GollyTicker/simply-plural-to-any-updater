@@ -14,7 +14,7 @@
   "devDependencies": {
     "@tauri-apps/api": "^2.8.0",
     "@tauri-apps/cli": "^2.8.4",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.6.1",
     "@wdio/cli": "^9.20.0",
     "@wdio/local-runner": "^9.20.0",
     "@wdio/mocha-framework": "^9.20.0",
@@ -22,7 +22,7 @@
     "@wdio/types": "^9.20.0",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
-    "typescript": "~5.9.2",
+    "typescript": "~5.9.3",
     "vite": "^7.1.7",
     "webdriverio": "^9.20.0"
   },

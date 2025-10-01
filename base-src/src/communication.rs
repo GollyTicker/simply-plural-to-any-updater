@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
 use tokio::{sync::broadcast, task::JoinHandle};
 
-pub type HttpResult<T> = Result<T, rocket::response::Debug<anyhow::Error>>;
+use crate::{platforms, updater};
 
 pub fn blocking_abort_and_clear_tasks<T, F>(tasks: &mut Vec<T>, f: F)
 where
@@ -72,4 +73,15 @@ impl<T: Clone> LatestReceiver<T> {
             }
         }
     }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct ServerToBridgeSseMessage {
+    // If None, then remove old actvity and show nothing.
+    pub discord_rich_presence: Option<platforms::DiscordRichPresence>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct BridgeToServerSseMessage {
+    pub discord_updater_status: updater::UpdaterStatus,
 }

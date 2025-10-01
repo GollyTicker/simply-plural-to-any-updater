@@ -1,11 +1,12 @@
 use crate::{
-    meta_api::SP2ANY_GITHUB_REPOSITORY_URL,
-    plurality, updater,
+    plurality,
     users::{self},
 };
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
-use strum_macros::FromRepr;
+use sp2any_base::{
+    meta,
+    platforms::{DiscordActivityType, DiscordRichPresence, DiscordStatusDisplayType},
+};
 
 pub struct DiscordUpdater {
     pub last_operation_error: Option<String>,
@@ -40,55 +41,6 @@ impl DiscordUpdater {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct ServerToBridgeSseMessage {
-    // If None, then remove old actvity and show nothing.
-    pub discord_rich_presence: Option<DiscordRichPresence>,
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct BridgeToServerSseMessage {
-    pub discord_updater_status: updater::UpdaterStatus,
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct DiscordRichPresence {
-    pub activity_type: DiscordActivityType,
-    pub status_display_type: DiscordStatusDisplayType,
-    pub details: Option<String>,
-    pub details_url: Option<String>,
-    pub state: Option<String>,
-    pub state_url: Option<String>,
-    pub start_time: Option<i64>,
-    pub end_time: Option<i64>,
-    pub large_image_url: Option<String>,
-    pub large_image_text: Option<String>,
-    pub small_image_url: Option<String>,
-    pub small_image_text: Option<String>,
-    pub party_current: Option<i32>,
-    pub party_max: Option<i32>,
-    pub button_label: Option<String>,
-    pub button_url: Option<String>,
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug, FromRepr)]
-#[repr(u8)]
-pub enum DiscordActivityType {
-    Playing = 0,
-    Listening = 2,
-    Watching = 3,
-    Custom = 4,
-    Competing = 5,
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug, FromRepr)]
-#[repr(u8)]
-pub enum DiscordStatusDisplayType {
-    Name = 0,
-    State = 1,
-    Details = 2,
-}
-
 #[allow(clippy::needless_pass_by_value)]
 pub fn render_fronts_to_discord_rich_presence(
     fronters: Vec<plurality::Fronter>,
@@ -119,7 +71,7 @@ pub fn render_fronts_to_discord_rich_presence(
         activity_type: DiscordActivityType::Playing,
         status_display_type: DiscordStatusDisplayType::Details,
         details: Some(short_fronters_string),
-        details_url: Some(SP2ANY_GITHUB_REPOSITORY_URL.to_owned()), // // future: link to fronting web url
+        details_url: Some(meta::SP2ANY_GITHUB_REPOSITORY_URL.to_owned()), // // future: link to fronting web url
         state: Some(long_fronters_string),
         state_url: None,
         start_time: most_recent_fronting_change,

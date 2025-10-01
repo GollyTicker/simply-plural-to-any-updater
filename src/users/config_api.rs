@@ -1,5 +1,5 @@
-use crate::communication::HttpResult;
 use crate::database;
+use crate::meta_api::HttpResult;
 use crate::updater;
 use crate::users::config;
 use crate::users::jwt;

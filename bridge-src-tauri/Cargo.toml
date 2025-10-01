@@ -12,18 +12,18 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "*", features = [] }
 
 [dependencies]
+sp2any-base = { path = "../base-src" }
 serde_json = "*"
 serde = { version = "*", default-features = false, features = ["derive"] }
 log = "*"
 tokio = { version = "*", default-features = false }
-tauri = { version = "*", default-features = true , features = [] }
+tauri = { version = "*", default-features = true, features = [] }
 tauri-plugin-log = "*"
 reqwest = { version = "*", default-features = false, features = [
     "json",
     "rustls-tls",
 ] }
 anyhow = "*"
-sp2any = { path = ".." }
 directories = "*"
 reqwest-eventsource = "*"
 futures = "*"

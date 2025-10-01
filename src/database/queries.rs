@@ -1,10 +1,11 @@
 use anyhow::{Result, anyhow};
 use sha2::{Digest, Sha256};
+use sp2any_base::users::Email;
 use sqlx::{FromRow, PgPool};
 
 use crate::{
     database::{Decrypted, ValidConstraints, constraints, secrets},
-    users::{self, Email, UserConfigDbEntries, UserId},
+    users::{self, UserConfigDbEntries, UserId},
 };
 
 pub async fn create_user(

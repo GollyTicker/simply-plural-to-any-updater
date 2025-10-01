@@ -43,6 +43,15 @@ runs:
       with:
         path: |
           ~/.cargo/
+          base-src/target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('base-src/Cargo.lock') }}
+
+    - name: Get cached Cargo dependencies
+      uses: actions/cache@v4
+      if: inputs.SKIP_SETUP == 'false'
+      with:
+        path: |
+          ~/.cargo/
           bridge-src-tauri/target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('bridge-src-tauri/Cargo.lock') }}
 
@@ -65,7 +74,7 @@ runs:
       if: inputs.SKIP_SETUP == 'false'
       run: |
         sudo apt-get update
-        ./steps/03-install-dependencies.sh
+        ./steps/02-install-dependencies.sh
 
     - name: Build
       shell: bash

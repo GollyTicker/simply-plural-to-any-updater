@@ -1,14 +1,12 @@
 use anyhow::Result;
 use sp2any::{
     database::Decrypted,
-    for_discord_bridge::UserLoginCredentials,
-    license,
-    meta_api::{SP2AnyVariantInfo, CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL},
     platforms::{
-        TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
-        VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
+        TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth
     },
-    users::{Email, JwtString, UserProvidedPassword},
+};
+use sp2any_base::{
+    license, meta::{SP2AnyVariantInfo, CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL}, users::{Email, JwtString, UserLoginCredentials, UserProvidedPassword}
 };
 use specta::{
     self,

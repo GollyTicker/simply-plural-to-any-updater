@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::users::model::UserId;
 use anyhow::{Result, anyhow};
 use chrono::{Duration, Utc};
@@ -11,7 +9,7 @@ use rocket::{
     response,
 };
 use serde::{Deserialize, Serialize};
-use specta;
+use sp2any_base::users::JwtString;
 
 #[derive(Clone)]
 pub struct ApplicationJwtSecret {
@@ -41,18 +39,6 @@ impl Claims {
         Ok(UserId {
             inner: self.sub.clone().try_into()?,
         })
-    }
-}
-
-#[derive(Serialize, Deserialize, specta::Type)]
-pub struct JwtString {
-    pub inner: String,
-}
-
-impl Display for JwtString {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s: String = self.inner.chars().take(5).collect();
-        write!(f, "JwtString({s}...)")
     }
 }
 

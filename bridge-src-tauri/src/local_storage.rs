@@ -1,7 +1,7 @@
 use anyhow::{Result, anyhow};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
-use sp2any::for_discord_bridge;
+use sp2any_base::for_discord_bridge;
 use std::path::PathBuf;
 use std::{env, fs};
 

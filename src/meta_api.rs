@@ -1,16 +1,8 @@
 use rocket::State;
 use rocket::serde::json::Json;
-use serde::{Deserialize, Serialize};
+use sp2any_base::meta::SP2AnyVariantInfo;
 
-use crate::communication::HttpResult;
-
-pub const CANONICAL_SP2ANY_BASE_URL: &str = "https://public-test.sp2any.ayake.net";
-
-pub const SP2ANY_GITHUB_REPOSITORY_URL: &str =
-    "https://github.com/GollyTicker/simply-plural-to-any-updater";
-
-pub const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: &str =
-    "https://github.com/GollyTicker/simply-plural-to-any-updater/releases";
+pub type HttpResult<T> = Result<T, rocket::response::Debug<anyhow::Error>>;
 
 #[get("/api/meta/sp2any-variant-info")]
 pub fn get_api_meta_sp2any_variant(
@@ -22,11 +14,4 @@ pub fn get_api_meta_sp2any_variant(
         variant.variant
     );
     Ok(Json(variant))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
-pub struct SP2AnyVariantInfo {
-    pub variant: String,
-    pub description: Option<String>,
-    pub show_in_ui: bool,
 }

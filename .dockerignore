@@ -2,5 +2,6 @@ target/*
 !target/debug/sp2any
 bridge-src-tauri/target/*
 !bridge-src-tauri/target/debug/sp2any-bridge
+!base-src/target/*
 frontend/node_modules
 bridge-frontend/node_modules

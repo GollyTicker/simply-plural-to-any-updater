@@ -1,7 +1,8 @@
+use sp2any_base::updater::UpdaterStatus;
 use std::collections::HashMap;
 use tokio::time::sleep;
 
-use crate::updater::platforms::{Platform, Updater, UpdaterStatus};
+use crate::updater::platforms::{Platform, Updater};
 use crate::updater::{manager, platforms};
 use crate::{database, int_counter_metric, plurality, users};
 use anyhow::Result;

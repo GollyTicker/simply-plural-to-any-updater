@@ -18,7 +18,7 @@ jobs:
 
     - name: Install prerequisites
       shell: bash
-      run: ./steps/03-install-dependencies.sh
+      run: ./steps/02-install-dependencies.sh
 
     - name: Update Rust dependencies
       run: |

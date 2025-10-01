@@ -68,7 +68,7 @@ Others will see the new fronting status message - and you can always check the w
 Prerequisites:
 * Rust toolchain (ideally via rustup)
 * node + npm
-* `./steps/03-install-dependencies.sh`
+* `./steps/02-install-dependencies.sh`
 
 Build: `./steps/12-backend-cargo-build.sh`
 

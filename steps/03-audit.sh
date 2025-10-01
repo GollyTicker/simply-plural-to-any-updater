@@ -4,9 +4,16 @@ set -euo pipefail
 
 set +e
 
-echo "Rust cargo audit"
-# RUSTSEC-2023-0071: No fix available. Also doesn't seem to really impact us currently.
-cargo audit --ignore RUSTSEC-2023-0071
+echo "base-src audit"
+(cd base-src && cargo audit)
+EXIT_CODE="$?"
+
+echo "src audit"
+cargo audit
+EXIT_CODE="$?"
+
+echo "bridge-src-tauri audit"
+(cd bridge-src-tauri && cargo audit)
 EXIT_CODE="$?"
 
 echo "frontend audit"

@@ -1,0 +1,17 @@
+[package]
+name = "sp2any-base"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90.0"
+
+[lib]
+
+[dependencies]
+serde = { version = "*", default-features = false, features = ["derive"] }
+tokio = { version = "*", default-features = false, features = [] }
+log = "*"
+sqlx = { version = "*", default-features = false, features = ["macros"] }
+strum = "*"
+strum_macros = "*"
+specta = { version = "*", default-features = false, features = [] }
+async-scoped = { version = "*", features = ["use-tokio"] }

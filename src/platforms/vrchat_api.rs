@@ -1,4 +1,4 @@
-use crate::communication::HttpResult;
+use crate::meta_api::HttpResult;
 use crate::platforms::vrchat_auth_types::{
     TwoFactorCodeRequiredResponse, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
 };

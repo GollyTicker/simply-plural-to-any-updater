@@ -12,9 +12,8 @@ path = "src/main.rs"
 name = "ts-bindings"
 path = "src/bin/ts-bindings.rs"
 
-[lib]
-
 [dependencies]
+sp2any-base = { path = "base-src" }
 chrono = { version = "*", features = ["serde"] }
 either = "*"
 anyhow = "*"
@@ -24,7 +23,6 @@ serde_json = { version = "*", default-features = false }
 vrchatapi = "*"
 html-escape = "*"
 tokio = { version = "*", default-features = false, features = [] }
-tokio-util = { version = "*", default-features = false }
 log = "*"
 env_logger = "*"
 sqlx = { version = "*", default-features = false, features = [
@@ -52,18 +50,13 @@ rocket = { version = "*", default-features = false, features = [
     "json",
     "http2",
 ] }
-specta = { version = "*", default-features = false, features = [
-    "serde",
-    "typescript",
-    "export",
-] }
+specta = { version = "*", default-features = false, features = ["typescript"] }
 specta-typescript = "*"
 rocket_cors = { version = "*", default-features = false }
 rocket_ws = "*"
 # using later version to ensure same cookie_store is used as in reqwest
 reqwest_cookie_store = { version = "0.8", features = ["serde"] }
 base64 = "*"
-async-scoped = { version = "*", features = ["use-tokio"] }
 prometheus = "*"
 rocket_prometheus = "*"
 once_cell = "*"

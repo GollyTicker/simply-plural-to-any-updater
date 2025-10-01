@@ -23,10 +23,10 @@ web_frontend_lint() {
 
 
 
+(cd base-src && rust_lint)
 rust_lint
-
 (cd bridge-src-tauri && rust_lint)
 
-(cd frontend && web_frontend_lint)
 
+(cd frontend && web_frontend_lint)
 (cd bridge-frontend && web_frontend_lint)

@@ -1,8 +1,9 @@
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, stream::StreamExt};
-use sp2any::for_discord_bridge::FireAndForgetChannel;
-use sp2any::platforms::{BridgeToServerSseMessage, ServerToBridgeSseMessage};
-use sp2any::updater;
+use sp2any_base::for_discord_bridge::{
+    BridgeToServerSseMessage, FireAndForgetChannel, ServerToBridgeSseMessage,
+};
+use sp2any_base::updater::UpdaterStatus;
 use tauri::Manager;
 use tauri::async_runtime::JoinHandle;
 use tokio::net::TcpStream;
@@ -19,7 +20,7 @@ pub fn stream_updater_status_to_ws_messages_task(
     mut ws_send: WsSender,
 ) -> JoinHandle<()> {
     tauri::async_runtime::spawn(async move {
-        let updater_status_channel = app.state::<FireAndForgetChannel<updater::UpdaterStatus>>();
+        let updater_status_channel = app.state::<FireAndForgetChannel<UpdaterStatus>>();
         let mut updater_status_receiver = updater_status_channel.subscribe();
         log::info!("WS: Starting sender");
         loop {

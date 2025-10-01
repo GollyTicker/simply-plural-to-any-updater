@@ -5,11 +5,10 @@ mod streaming;
 
 use anyhow::{Result, anyhow};
 use futures::stream::StreamExt;
-use sp2any::for_discord_bridge;
-use sp2any::for_discord_bridge::FireAndForgetChannel;
-use sp2any::license;
-use sp2any::platforms::ServerToBridgeSseMessage;
-use sp2any::updater;
+use sp2any_base::for_discord_bridge::{
+    FireAndForgetChannel, JwtString, SP2AnyVariantInfo, ServerToBridgeSseMessage, UpdaterStatus,
+    UserLoginCredentials, blocking_abort_and_clear_tasks, fire_and_forget_channel, license,
+};
 use std::env;
 use std::sync::Arc;
 use tauri::Emitter;
@@ -24,16 +23,14 @@ use tokio_tungstenite::{connect_async, tungstenite::client::IntoClientRequest};
 const MEGABYTES: u128 = 10 ^ 6;
 
 #[tauri::command]
-async fn fetch_base_url_and_variant_info()
--> Result<(String, for_discord_bridge::SP2AnyVariantInfo), String> {
+async fn fetch_base_url_and_variant_info() -> Result<(String, SP2AnyVariantInfo), String> {
     let result = fetch_base_url_and_variant_info_anyhow()
         .await
         .map_err(|e| e.to_string())?;
     Ok(result)
 }
 
-async fn fetch_base_url_and_variant_info_anyhow()
--> Result<(String, for_discord_bridge::SP2AnyVariantInfo)> {
+async fn fetch_base_url_and_variant_info_anyhow() -> Result<(String, SP2AnyVariantInfo)> {
     let base_url = local_storage::get_base_url()?;
     let client = reqwest::Client::new();
     let variant_info_url = format!("{}{}", base_url, "/api/meta/sp2any-variant-info");
@@ -55,7 +52,7 @@ async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
         .inner()
         .clone();
     let updater_status_channel = app
-        .state::<FireAndForgetChannel<updater::UpdaterStatus>>()
+        .state::<FireAndForgetChannel<UpdaterStatus>>()
         .inner()
         .clone();
     tauri::async_runtime::spawn(async move {
@@ -64,20 +61,14 @@ async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
 }
 
 #[tauri::command]
-async fn subscribe_to_bridge_channel(
-    app: tauri::AppHandle,
-    jwt: for_discord_bridge::JwtString,
-) -> Result<(), String> {
+async fn subscribe_to_bridge_channel(app: tauri::AppHandle, jwt: JwtString) -> Result<(), String> {
     log::debug!("subscribe_to_bridge_channel");
     subscribe_to_bridge_channel_anyhow(app, jwt)
         .await
         .map_err(|e| e.to_string())
 }
 
-async fn subscribe_to_bridge_channel_anyhow(
-    app: tauri::AppHandle,
-    jwt: for_discord_bridge::JwtString,
-) -> Result<()> {
+async fn subscribe_to_bridge_channel_anyhow(app: tauri::AppHandle, jwt: JwtString) -> Result<()> {
     let base_url = local_storage::get_base_url()?;
     let ws_url = format!(
         "{}/api/user/platform/discord/bridge-events",
@@ -126,23 +117,19 @@ async fn abort_background_task(app: tauri::AppHandle) -> () {
     let state = app.state::<Arc<Mutex<Vec<JoinHandle<()>>>>>();
     let thread_shared_tasks = state.inner().clone();
     let mut locked_tasks = thread_shared_tasks.lock().await;
-    for_discord_bridge::blocking_abort_and_clear_tasks(
+    blocking_abort_and_clear_tasks(
         &mut locked_tasks,
         |tauri::async_runtime::JoinHandle::Tokio(task)| task,
     );
 }
 
 #[tauri::command]
-async fn login(
-    creds: for_discord_bridge::UserLoginCredentials,
-) -> Result<for_discord_bridge::JwtString, String> {
+async fn login(creds: UserLoginCredentials) -> Result<JwtString, String> {
     log::debug!("login");
     login_anyhow(creds).await.map_err(|e| e.to_string())
 }
 
-async fn login_anyhow(
-    creds: for_discord_bridge::UserLoginCredentials,
-) -> Result<for_discord_bridge::JwtString> {
+async fn login_anyhow(creds: UserLoginCredentials) -> Result<JwtString> {
     let client = reqwest::Client::new();
     let base_url = local_storage::get_base_url()?;
     let login_url = format!("{}{}", base_url, "/api/user/login");
@@ -155,7 +142,7 @@ async fn login_anyhow(
         .send()
         .await?
         .error_for_status()?
-        .json::<for_discord_bridge::JwtString>()
+        .json::<JwtString>()
         .await?;
 
     log::info!("Login successful for {:?}", &creds.email);
@@ -164,10 +151,7 @@ async fn login_anyhow(
 }
 
 #[tauri::command]
-async fn store_credentials(
-    creds: for_discord_bridge::UserLoginCredentials,
-    base_url: String,
-) -> Result<(), String> {
+async fn store_credentials(creds: UserLoginCredentials, base_url: String) -> Result<(), String> {
     log::debug!("store_credentials");
     local_storage::set_base_url(base_url).map_err(|e| e.to_string())?;
     local_storage::set_user_credentials(&creds).map_err(|e| e.to_string())?;
@@ -175,7 +159,7 @@ async fn store_credentials(
 }
 
 #[tauri::command]
-async fn login_with_stored_credentials() -> Result<for_discord_bridge::JwtString, String> {
+async fn login_with_stored_credentials() -> Result<JwtString, String> {
     log::debug!("login_with_stored_credentials");
     let creds = local_storage::get_user_credentials().map_err(|e| e.to_string())?;
     let jwt_string = login(creds).await?;
@@ -196,9 +180,8 @@ pub fn run() -> Result<()> {
     let logs_dir = local_storage::get_logs_dir()?;
 
     let rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage> =
-        for_discord_bridge::fire_and_forget_channel();
-    let updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus> =
-        for_discord_bridge::fire_and_forget_channel();
+        fire_and_forget_channel();
+    let updater_status_channel: FireAndForgetChannel<UpdaterStatus> = fire_and_forget_channel();
 
     let logging_plugin = tauri_plugin_log::Builder::default()
         .level(tauri_plugin_log::log::LevelFilter::Debug)

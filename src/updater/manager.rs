@@ -1,9 +1,11 @@
 use crate::plurality::{self};
 use crate::updater::{self, work_loop};
-use crate::{communication, int_counter_metric, metric, setup};
+use crate::users::UserId;
 use crate::{database, users};
-use crate::{updater::UpdaterStatus, users::UserId};
+use crate::{int_counter_metric, metric, setup};
 use anyhow::{Result, anyhow};
+use sp2any_base::communication;
+use sp2any_base::updater::UpdaterStatus;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use strum::VariantNames;
@@ -14,7 +16,7 @@ type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
 
 type FronterChannel = communication::FireAndForgetChannel<Vec<plurality::Fronter>>;
 type ForeignStatusChannel =
-    communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>;
+    communication::FireAndForgetChannel<Option<(updater::Platform, UpdaterStatus)>>;
 
 int_counter_metric!(UPDATER_MANAGER_RESTART_TOTAL_COUNT);
 int_counter_metric!(UPDATER_MANAGER_RESTART_SUCCESS_COUNT);
@@ -89,9 +91,8 @@ impl UpdaterManager {
     pub fn get_foreign_status_channel(
         &self,
         user_id: &UserId,
-    ) -> Result<
-        communication::FireAndForgetChannel<Option<(updater::Platform, updater::UpdaterStatus)>>,
-    > {
+    ) -> Result<communication::FireAndForgetChannel<Option<(updater::Platform, UpdaterStatus)>>>
+    {
         let locked = self
             .foreign_managed_status_channel
             .lock()
@@ -247,11 +248,7 @@ impl UpdaterManager {
     }
 }
 
-fn record_status_in_metrics(
-    user_id: &UserId,
-    p: updater::Platform,
-    new_status: &updater::UpdaterStatus,
-) {
+fn record_status_in_metrics(user_id: &UserId, p: updater::Platform, new_status: &UpdaterStatus) {
     // By using strum's EnumVariantNames, we don't need to manually maintain a list of status strings.
     for old_status in UpdaterStatus::VARIANTS {
         UPDATER_PLATFORM_STATUS

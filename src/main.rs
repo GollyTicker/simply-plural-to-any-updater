@@ -1,12 +1,14 @@
-#[macro_use]
-extern crate rocket;
-
 use anyhow::Result;
 use anyhow::anyhow;
 
-use sp2any::license;
+use rocket::routes;
+use sp2any::meta_api;
 use sp2any::metrics;
-use sp2any::{meta_api, platforms, setup, updater, users};
+use sp2any::platforms;
+use sp2any::setup;
+use sp2any::updater;
+use sp2any::users;
+use sp2any_base::license;
 
 #[tokio::main]
 async fn main() -> Result<()> {

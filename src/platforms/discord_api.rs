@@ -1,9 +1,11 @@
-use crate::platforms::{BridgeToServerSseMessage, ServerToBridgeSseMessage, discord};
-use crate::updater::{Platform, UpdaterStatus};
+use crate::platforms::discord;
+use crate::updater::Platform;
 use crate::{database, updater, users};
 use anyhow::Result;
 use rocket::futures::StreamExt;
 use rocket::{State, response};
+use sp2any_base::communication;
+use sp2any_base::updater::UpdaterStatus;
 use sqlx::PgPool;
 
 use rocket_ws::{self as ws};
@@ -57,7 +59,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                 break;
                             },
                             Some(Ok(ws::Message::Text(str))) => {
-                                let message: BridgeToServerSseMessage = match serde_json::from_str(&str) {
+                                let message: communication::BridgeToServerSseMessage = match serde_json::from_str(&str) {
                                     Ok(s) => {
                                         log::info!("# | fronters_chan <-> WS | {user_id} | WS received | deserialised to {s:?}");
                                         s
@@ -88,7 +90,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
                             let rich_presence_result = discord::render_fronts_to_discord_rich_presence(fronters, &config);
                             match rich_presence_result {
                                 Ok(rich_presence) => {
-                                    let message = ServerToBridgeSseMessage {discord_rich_presence: Some(rich_presence)};
+                                    let message = communication::ServerToBridgeSseMessage {discord_rich_presence: Some(rich_presence)};
                                     let payload = match rocket::serde::json::to_string(&message) {
                                         Ok(p) => p,
                                         Err(e) => {

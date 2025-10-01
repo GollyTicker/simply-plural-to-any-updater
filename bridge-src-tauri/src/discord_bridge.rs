@@ -6,10 +6,9 @@ use discord_rich_presence::{
     activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
 };
 use serde::Deserialize;
-use sp2any::{
-    for_discord_bridge::{DiscordRichPresence, FireAndForgetChannel},
-    platforms::ServerToBridgeSseMessage,
-    updater::{self},
+use sp2any_base::{
+    for_discord_bridge::{DiscordRichPresence, FireAndForgetChannel, ServerToBridgeSseMessage},
+    updater::UpdaterStatus,
 };
 use tokio::time::sleep;
 
@@ -23,7 +22,7 @@ const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 pub async fn discord_ipc_loop(
     app: &tauri::AppHandle,
     rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage>,
-    updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
+    updater_status_channel: FireAndForgetChannel<UpdaterStatus>,
 ) -> never::Never {
     loop {
         let error = match connect_to_discord_ipc() {
@@ -45,7 +44,7 @@ pub async fn discord_ipc_loop(
                 err
             }
         };
-        updater_status_channel.send(updater::UpdaterStatus::Error(format!(
+        updater_status_channel.send(UpdaterStatus::Error(format!(
             "Discord RPC disconnected: {error}"
         )));
         notify_user_on_status(
@@ -62,7 +61,7 @@ async fn activity_loop(
     app: &tauri::AppHandle,
     client: &mut DiscordIpcClient,
     rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage>,
-    updater_status_channel: FireAndForgetChannel<updater::UpdaterStatus>,
+    updater_status_channel: FireAndForgetChannel<UpdaterStatus>,
 ) -> Result<never::Never> {
     let mut receiver = rich_presence_channel.subscribe();
     loop {
@@ -72,7 +71,7 @@ async fn activity_loop(
                 Some(drp) => set_activity(client, &drp)?,
                 None => clear_activity(client)?,
             }
-            updater_status_channel.send(updater::UpdaterStatus::Running);
+            updater_status_channel.send(UpdaterStatus::Running);
             notify_user_on_status(
                 app,
                 "Connected to SP2Any and syncing to local Discord client ✅",

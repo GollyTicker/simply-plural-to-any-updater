@@ -5,15 +5,10 @@ use argon2::{
 };
 
 use serde::{Deserialize, Serialize};
-use specta;
+use sp2any_base::users::{JwtString, UserProvidedPassword};
 use sqlx::FromRow;
 
 use crate::{database, users::jwt};
-
-#[derive(Serialize, Deserialize, Clone, specta::Type)]
-pub struct UserProvidedPassword {
-    pub inner: String,
-}
 
 #[derive(Debug, Serialize, Deserialize, FromRow, sqlx::Type)]
 pub struct PasswordHashString {
@@ -41,7 +36,7 @@ pub fn verify_password_and_create_token(
     password: &UserProvidedPassword,
     user_info: &database::UserInfo,
     jwt_secret: &jwt::ApplicationJwtSecret,
-) -> Result<jwt::JwtString> {
+) -> Result<JwtString> {
     // don't allow external user to infer what exactly failed
 
     let pwh = PasswordHash::new(&user_info.password_hash.inner)

@@ -1,14 +1,16 @@
-use crate::communication::HttpResult;
 use crate::database;
+use crate::meta_api::HttpResult;
 use crate::users::auth;
 use crate::users::jwt;
-use crate::users::model::{Email, UserId};
+use crate::users::model::UserId;
 use rocket::http;
 use rocket::response;
 use rocket::{State, serde::json::Json};
 use serde::Deserialize;
 use serde::Serialize;
-use specta;
+use sp2any_base::users::Email;
+use sp2any_base::users::JwtString;
+use sp2any_base::users::UserLoginCredentials;
 use sqlx::PgPool;
 
 #[post("/api/user/register", data = "<credentials>")]
@@ -36,7 +38,7 @@ pub async fn post_api_user_login(
     db_pool: &State<PgPool>,
     jwt_app_secret: &State<jwt::ApplicationJwtSecret>,
     credentials: Json<UserLoginCredentials>,
-) -> Result<Json<jwt::JwtString>, (http::Status, String)> {
+) -> Result<Json<JwtString>, (http::Status, String)> {
     log::info!("# | POST /api/user/login | {}", credentials.email);
 
     let user_id = database::get_user_id(db_pool, credentials.email.clone())
@@ -105,10 +107,4 @@ impl From<database::UserInfo> for UserInfoUI {
             created_at,
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Clone, specta::Type)]
-pub struct UserLoginCredentials {
-    pub email: Email,
-    pub password: auth::UserProvidedPassword,
 }

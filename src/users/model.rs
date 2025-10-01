@@ -1,25 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use specta;
 use sqlx::{FromRow, types::Uuid};
-
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type, specta::Type)]
-pub struct Email {
-    pub inner: String,
-}
-
-impl From<String> for Email {
-    fn from(val: String) -> Self {
-        Self { inner: val }
-    }
-}
-
-impl Display for Email {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Email({})", self.inner)
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow, sqlx::Type, Eq, Hash, PartialEq)]
 pub struct UserId {
