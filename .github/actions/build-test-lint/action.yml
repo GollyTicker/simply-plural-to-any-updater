@@ -63,7 +63,9 @@ runs:
     - name: Install prerequisites
       shell: bash
       if: inputs.SKIP_SETUP == 'false'
-      run: ./steps/03-install-dependencies.sh
+      run: |
+        sudo apt-get update
+        ./steps/03-install-dependencies.sh
 
     - name: Build
       shell: bash
