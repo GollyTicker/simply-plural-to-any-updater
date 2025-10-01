@@ -12,30 +12,30 @@ use sp2any_base::license;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug"))
         .format_source_path(true)
         .format_timestamp_millis()
         .init();
 
     println!("{}", license::info_text());
 
-    log::info!("# | app_setup");
+    log::debug!("# | app_setup");
 
     let cli_args = setup::ApplicationConfig::from_env()?;
 
     let app_setup = setup::application_setup(&cli_args).await?;
 
-    log::info!("# | app_setup | configured");
+    log::debug!("# | app_setup | configured");
 
     let () = updater::api::restart_all_user_updaters_for_app_startups(app_setup.clone()).await?;
 
-    log::info!("# | app_setup | configured | updaters_restarted");
+    log::debug!("# | app_setup | configured | updaters_restarted");
 
-    log::info!("# | app_setup | configured | updaters_restarted | webserver_starting");
+    log::debug!("# | app_setup | configured | updaters_restarted | webserver_starting");
 
     let () = run_webserver(app_setup).await?;
 
-    log::info!(
+    log::debug!(
         "# | app_setup | configured | updaters_restarted | webserver_starting | webserver_ended"
     );
 

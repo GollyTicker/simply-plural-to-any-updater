@@ -11,7 +11,7 @@ where
     for task in updaters {
         let task = f(task);
         let task_id = task.id();
-        log::info!("# | task_mgr | task_id={task_id} | aborting...");
+        log::debug!("# | task_mgr | task_id={task_id} | aborting...");
         task.abort();
         async_scoped::TokioScope::scope_and_block(|scope| {
             scope.spawn(async {
@@ -20,7 +20,7 @@ where
         });
         // we can't use await here, because the provided vector from a mutex is not 'static
         // hence the scoped to work with non-'static data
-        log::info!("# | task_mgr | task_id={task_id} | aborting... | aborted_ok");
+        log::debug!("# | task_mgr | task_id={task_id} | aborting... | aborted_ok");
     }
 }
 

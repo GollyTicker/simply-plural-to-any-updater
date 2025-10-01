@@ -25,7 +25,7 @@ pub async fn discord_ipc_loop(
     updater_status_channel: FireAndForgetChannel<UpdaterStatus>,
 ) -> never::Never {
     loop {
-        let error = match connect_to_discord_ipc() {
+        let err = match connect_to_discord_ipc() {
             Ok(mut client) => {
                 let err = never::get_err(
                     activity_loop(
@@ -45,12 +45,12 @@ pub async fn discord_ipc_loop(
             }
         };
         updater_status_channel.send(UpdaterStatus::Error(format!(
-            "Discord RPC disconnected: {error}"
+            "Discord RPC disconnected: {err}"
         )));
         notify_user_on_status(
             app,
             format!(
-                "⚠️ Discord RPC disconnected: {error} | Discord needs to be running for the bridge to work."
+                "⚠️ Discord RPC disconnected: {err} | Discord needs to be running for the bridge to work."
             ),
         );
         sleep(Duration::from_secs(5)).await;

@@ -21,7 +21,7 @@ pub enum CleanForPlatform {
 #[must_use]
 pub fn format_fronting_status(fronting_format: &FrontingFormat, fronts: &[Fronter]) -> String {
     let cleaned_fronter_names = collect_clean_fronter_names(fronting_format, fronts);
-    log::info!("# | format_fronting_status | cleaned to '{cleaned_fronter_names:?}'");
+    log::debug!("# | format_fronting_status | cleaned to '{cleaned_fronter_names:?}'");
 
     let status_strings =
         compute_status_strings_of_decreasing_lengths_for_aesthetics_and_information_tradeoff(
@@ -91,22 +91,22 @@ fn compute_status_strings_of_decreasing_lengths_for_aesthetics_and_information_t
     };
     let count_string = format!("{} {}#", fronting_format.prefix, fronter_names.len());
 
-    log::info!(
+    log::debug!(
         "# | fronting_status_lengths | long:  '{}' ({})",
         long_string,
         string_unicode_codepoints_length(&long_string)
     );
-    log::info!(
+    log::debug!(
         "# | fronting_status_lengths | short: '{}' ({})",
         short_string,
         string_unicode_codepoints_length(&short_string)
     );
-    log::info!(
+    log::debug!(
         "# | fronting_status_lengths | trunc: '{}' ({})",
         truncated_string,
         string_unicode_codepoints_length(&truncated_string)
     );
-    log::info!(
+    log::debug!(
         "# | fronting_status_lengths | count: '{}' ({})",
         count_string,
         string_unicode_codepoints_length(&count_string)

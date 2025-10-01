@@ -11,7 +11,6 @@
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
 * websocket connection restarts
 * better error messages which the users can also understand and which handle most common error paths
-* add metrics for easier understanding of performance, latency as well as resource footprint and scales of users/systems
 
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
@@ -43,9 +42,11 @@
 * make website view such that it doesn't eagery fetch data from simply plural every time but instead uses the latest values from a channel
 * reduce compile times by removing vrchatapi library and using http rest requests directly
 * better split sp2any crate into what is exported to bridge-src-tauri and what is not. makes for much faster compiles
+* merge cargo crates into a single workspace to improve build times
 * DONE: complete migration to webapp
 
 * add initial suggestions by ChatAI (e.g. privacy, configurability, etc.)
+
 
 # User Feedback
 * sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK

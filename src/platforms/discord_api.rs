@@ -65,7 +65,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                         s
                                     },
                                     Err(e) => {
-                                        log::info!("# | fronters_chan <-> WS | {user_id} | WS received | deserialise_err {e}");
+                                        log::warn!("# | fronters_chan <-> WS | {user_id} | WS received | deserialise_err {e}");
                                         notify(UpdaterStatus::Error(format!("SP2Any-Bridge -> websocket -> SP2Any-Server | Message deserialisation error: {e}")));
                                         break; // end on reading error
                                     }
@@ -94,7 +94,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                     let payload = match rocket::serde::json::to_string(&message) {
                                         Ok(p) => p,
                                         Err(e) => {
-                                            log::info!("# | fronters_chan <-> WS | {user_id} | fronters received | serialisation_failed {e}");
+                                            log::warn!("# | fronters_chan <-> WS | {user_id} | fronters received | serialisation_failed {e}");
                                             notify(UpdaterStatus::Error(format!("SP2Any-Server -> websocket -> SP2Any-Bridge: Server couldn't serialise fronters. Error: {e}")));
                                             break;
                                         }
@@ -103,7 +103,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
                                     yield ws::Message::Text(payload);
                                 }
                                 Err(err) => {
-                                    log::info!("# | fronters_chan <-> WS | {user_id} | fronters received | rendering_error {err}");
+                                    log::warn!("# | fronters_chan <-> WS | {user_id} | fronters received | rendering_error {err}");
                                     notify(UpdaterStatus::Error(format!("SP2Any-Server -> websocket -> SP2Any-Bridge: Server rendering error: {err}")));
                                     break;
                                 }

@@ -13,7 +13,7 @@ pub async fn create_user(
     email: Email,
     password_hash: users::PasswordHashString,
 ) -> Result<()> {
-    log::info!("# | db::create_user | {email}");
+    log::debug!("# | db::create_user | {email}");
     sqlx::query!(
         "INSERT INTO users (email, password_hash) VALUES ($1, $2)",
         email.inner,
@@ -26,7 +26,7 @@ pub async fn create_user(
 }
 
 pub async fn get_user_id(db_pool: &PgPool, email: Email) -> Result<UserId> {
-    log::info!("# | db::get_user_id | {email}");
+    log::debug!("# | db::get_user_id | {email}");
     sqlx::query_as!(
         UserId,
         "SELECT
@@ -43,7 +43,7 @@ pub async fn get_user(
     db_pool: &PgPool,
     user_id: &UserId,
 ) -> Result<UserConfigDbEntries<secrets::Encrypted>> {
-    log::info!("# | db::get_user | {user_id}");
+    log::debug!("# | db::get_user | {user_id}");
     sqlx::query_as(
         "SELECT
             wait_seconds,
@@ -76,7 +76,7 @@ pub async fn set_user_config_secrets(
     config: UserConfigDbEntries<secrets::Decrypted, constraints::ValidConstraints>,
     application_user_secret: &secrets::ApplicationUserSecrets,
 ) -> Result<()> {
-    log::info!("# | db::set_user_config_secrets | {user_id}");
+    log::debug!("# | db::set_user_config_secrets | {user_id}");
 
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
@@ -129,7 +129,7 @@ pub async fn get_user_secrets(
     user_id: &UserId,
     application_user_secret: &secrets::ApplicationUserSecrets,
 ) -> Result<UserConfigDbEntries<secrets::Decrypted, constraints::ValidConstraints>> {
-    log::info!("# | db::get_user_secrets | {user_id}");
+    log::debug!("# | db::get_user_secrets | {user_id}");
 
     let secrets_key = compute_user_secrets_key(user_id, application_user_secret);
 
@@ -166,7 +166,7 @@ pub async fn modify_user_secrets(
     application_user_secrets: &secrets::ApplicationUserSecrets,
     modify: impl FnOnce(&mut UserConfigDbEntries<Decrypted, ValidConstraints>),
 ) -> Result<()> {
-    log::info!("# | db::modify_user_secrets | {user_id}");
+    log::debug!("# | db::modify_user_secrets | {user_id}");
 
     let mut user_with_secrets =
         get_user_secrets(db_pool, user_id, application_user_secrets).await?;
@@ -181,13 +181,13 @@ pub async fn modify_user_secrets(
     let () =
         set_user_config_secrets(db_pool, user_id, new_config, application_user_secrets).await?;
 
-    log::info!("# | db::modify_user_secrets | {user_id} | modified");
+    log::debug!("# | db::modify_user_secrets | {user_id} | modified");
 
     Ok(())
 }
 
 pub async fn get_all_users(db_pool: &PgPool) -> Result<Vec<UserId>> {
-    log::info!("# | db::get_all_users");
+    log::debug!("# | db::get_all_users");
 
     let users = sqlx::query_as!(
         UserId,
@@ -199,13 +199,13 @@ pub async fn get_all_users(db_pool: &PgPool) -> Result<Vec<UserId>> {
     .await
     .map_err(|e| anyhow!(e))?;
 
-    log::info!("# | db::get_all_users | retrieved={}", users.len());
+    log::debug!("# | db::get_all_users | retrieved={}", users.len());
 
     Ok(users)
 }
 
 pub async fn get_user_info(db_pool: &PgPool, user_id: UserId) -> Result<UserInfo> {
-    log::info!("# | db::get_user_info | {user_id}");
+    log::debug!("# | db::get_user_info | {user_id}");
     sqlx::query_as!(
         UserInfo,
         "SELECT
@@ -225,7 +225,7 @@ pub async fn find_user_by_website_url_name(
     db_pool: &PgPool,
     website_url_name: &str,
 ) -> Result<UserInfo> {
-    log::info!("# | db::find_user_by_website_url_name | {website_url_name}");
+    log::debug!("# | db::find_user_by_website_url_name | {website_url_name}");
     sqlx::query_as!(
         UserInfo,
         "SELECT

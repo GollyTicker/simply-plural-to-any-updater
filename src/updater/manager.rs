@@ -205,19 +205,19 @@ impl UpdaterManager {
                 if let Some(status) = receiver.recv().await {
                     match owned_self.notify_updater_statuses(&user_id, HashMap::from_iter(status)) {
                         Ok(()) => {
-                            log::info!(
+                            log::debug!(
                                 "# | foreign_status_updater | {user_id} | status update ok."
                             );
                         }
                         Err(err) => {
-                            log::info!(
+                            log::warn!(
                                 "# | foreign_status_updater | {user_id} | ending_receiver_due_to_foreign_status_update_err {err}"
                             );
                             break;
                         }
                     }
                 } else {
-                    log::info!(
+                    log::debug!(
                         "# | foreign_status_updater | {user_id} | foreign_status_updater_sender_droppped terminiating_receiver"
                     );
                     break;

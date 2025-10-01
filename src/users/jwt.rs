@@ -71,7 +71,7 @@ impl<'r> FromRequest<'r> for Jwt {
                     Outcome::Success(Jwt { claims })
                 }
                 Err(err) => {
-                    log::info!("# | jwt verification | {token} | failed | {err}");
+                    log::warn!("# | jwt verification | {token} | failed | {err}");
                     Outcome::Error((
                         Status::Forbidden,
                         response::Debug(anyhow!("Token verification failed")),

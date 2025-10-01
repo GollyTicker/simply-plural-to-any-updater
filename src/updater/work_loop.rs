@@ -126,7 +126,7 @@ fn log_error_and_continue(
             "# | updater run_loop | {} | {loop_part_name} | ok",
             config.user_id
         ),
-        Err(err) => log::info!(
+        Err(err) => log::warn!(
             "# | updater run_loop | {} | {loop_part_name} | skipping due to error {err}",
             config.user_id
         ),
