@@ -449,7 +449,6 @@ onMounted(async () => {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .config-item button {
   width: 10rem;
   font-size: smaller;
@@ -483,4 +482,46 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
+/* better visual checkboxes */
+.config-item input[type='checkbox'] {
+  /* Reset default appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* Dimensions and positioning */
+  position: relative;
+  align-self: flex-start;
+  width: 3.5rem;
+  height: 1.75rem;
+
+  /* Styling the track */
+  background-color: #ccc;
+  border-radius: 1.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.config-item input[type='checkbox']::before {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.45rem;
+  height: 1.45rem;
+  background-color: white;
+  border-radius: 50%;
+  transition: left 0.2s ease-in-out;
+}
+
+.config-item input[type='checkbox']:checked {
+  background-color: #007bff;
+}
+
+.config-item input[type='checkbox']:checked::before {
+  /* Move the toggle to the right */
+  left: 1.9rem;
+}
+
 </style>
