@@ -34,6 +34,10 @@ fn main() -> Result<()> {
     status_prefix?: string;
     status_no_fronts?: string;
     status_truncate_names_to?: number;
+    show_members_non_archived?: boolean,
+    show_members_archived?: boolean,
+    show_custom_fronts?: boolean,
+    respect_front_notifications_disabled?: boolean,
     enable_website?: boolean;
     enable_discord?: boolean;
     enable_discord_status_message?: boolean;
@@ -58,7 +62,7 @@ fn main() -> Result<()> {
         export::<TwoFactorCodeRequiredResponse>(conf)?,
         export::<TwoFactorAuthCode>(conf)?,
         export::<VRChatCredentialsWithTwoFactorAuth>(conf)?,
-        "export type VrchatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse }".to_owned(),
+        "export type VRChatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse }".to_owned(),
     ];
     fs::write(DESTINATION, defs.map(|s| s + ";").join("\n"))?;
     println!("Done.");

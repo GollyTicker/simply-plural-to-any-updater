@@ -52,6 +52,10 @@ pub async fn get_user(
             status_prefix,
             status_no_fronts,
             status_truncate_names_to,
+            show_members_non_archived,
+            show_members_archived,
+            show_custom_fronts,
+            respect_front_notifications_disabled,
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
@@ -97,7 +101,11 @@ pub async fn set_user_config_secrets(
             enc__vrchat_cookie = pgp_sym_encrypt($14, $9),
             enable_discord = $15,
             enable_website = $16,
-            website_url_name = $17
+            website_url_name = $17,
+            show_members_non_archived = $18,
+            show_members_archived = $19,
+            show_custom_fronts = $20,
+            respect_front_notifications_disabled = $21
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -117,6 +125,10 @@ pub async fn set_user_config_secrets(
     .bind(config.enable_discord)
     .bind(config.enable_website)
     .bind(config.website_url_name)
+    .bind(config.show_members_non_archived)
+    .bind(config.show_members_archived)
+    .bind(config.show_custom_fronts)
+    .bind(config.respect_front_notifications_disabled)
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -141,6 +153,10 @@ pub async fn get_user_secrets(
             status_prefix,
             status_no_fronts,
             status_truncate_names_to,
+            show_members_non_archived,
+            show_members_archived,
+            show_custom_fronts,
+            respect_front_notifications_disabled,
             enable_website,
             enable_discord,
             enable_discord_status_message,

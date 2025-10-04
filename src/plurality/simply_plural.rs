@@ -32,7 +32,7 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
 
     let vrcsn_field_id = get_vrchat_status_name_field_id(config, system_id).await?;
 
-    let frontables = get_all_members_and_custom_fronters(system_id, vrcsn_field_id, config).await?;
+    let frontables = get_members_and_custom_fronters_by_privacy_rules(system_id, vrcsn_field_id, config).await?;
 
     let fronters = filter_frontables_by_front_entries(front_entries, frontables);
 
@@ -47,8 +47,21 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
     Ok(fronters)
 }
 
+fn show_member_according_to_privacy_rules(config: &users::UserConfigForUpdater, member_with_content: &Member) -> bool {
+    let member: &super::MemberContent = &member_with_content.content;
+
+    if config.respect_front_notifications_disabled && member.front_notifications_disabled {
+        return false;
+    }
+    if member.archived {
+        return config.show_members_archived;
+    }
+
+    config.show_members_non_archived
+}
+
 #[allow(clippy::cast_possible_wrap)]
-async fn get_all_members_and_custom_fronters(
+async fn get_members_and_custom_fronters_by_privacy_rules(
     system_id: &String,
     vrcsn_field_id: Option<String>,
     config: &users::UserConfigForUpdater,
@@ -56,6 +69,7 @@ async fn get_all_members_and_custom_fronters(
     let all_members: Vec<Fronter> = simply_plural_http_get_members(config, system_id)
         .await?
         .iter()
+        .filter(|m| show_member_according_to_privacy_rules(config, m))
         .map(|m| {
             let mut enriched_member = m.clone();
             enriched_member
@@ -71,16 +85,20 @@ async fn get_all_members_and_custom_fronters(
         .with_label_values(&[&config.user_id.to_string()])
         .set(all_members.len() as i64);
 
-    let all_custom_fronts: Vec<Fronter> = simply_plural_http_get_custom_fronts(config, system_id)
-        .await?
-        .iter()
-        .cloned()
-        .map(Fronter::from)
-        .collect();
+    let all_custom_fronts: Vec<Fronter> = if config.show_custom_fronts {
+        simply_plural_http_get_custom_fronts(config, system_id)
+            .await?
+            .iter()
+            .cloned()
+            .map(Fronter::from)
+            .collect()
+    } else {
+        vec![]
+    };
 
     SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT
         .with_label_values(&[&config.user_id.to_string()])
-        .set(all_members.len() as i64);
+        .set(all_custom_fronts.len() as i64);
 
     let all_frontables: Vec<Fronter> =
         [all_members.as_slice(), all_custom_fronts.as_slice()].concat();

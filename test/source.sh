@@ -6,6 +6,10 @@ export SP2ANY_STAGE=local
 
 export SECONDS_BETWEEN_UPDATES=10
 export WEBSITE_SYSTEM_NAME=ayake-test
+export SHOW_MEMBERS_NON_ARCHIVED=true
+export SHOW_MEMBERS_ARCHIVED=false
+export SHOW_CUSTOM_FRONTS=true
+export RESPECT_FRONT_NOTIFICATIONS_DISABLED=true
 
 source docker/source.sh # await
 
@@ -48,6 +52,10 @@ get_user_config_json() {
         \"enable_website\": ${ENABLE_WEBSITE},
         \"website_url_name\": \"${WEBSITE_URL_NAME}\",
         \"discord_user_id\": { \"secret\": \"invalid\" },
+        \"show_members_non_archived\": ${SHOW_MEMBERS_NON_ARCHIVED},
+        \"show_members_archived\": ${SHOW_MEMBERS_ARCHIVED},
+        \"show_custom_fronts\": ${SHOW_CUSTOM_FRONTS},
+        \"respect_front_notifications_disabled\": ${RESPECT_FRONT_NOTIFICATIONS_DISABLED},
         $SIMPLY_PLURAL_TOKEN_LINE
         $DISCORD_STATUS_MESSAGE_TOKEN_LINE
         $VRCHAT_USERNAME_LINE

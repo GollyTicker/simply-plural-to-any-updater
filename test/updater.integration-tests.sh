@@ -35,6 +35,12 @@ main() {
     set_system_fronts_set "B"
     sleep "$SECONDS_BETWEEN_UPDATES"s
     check_system_fronts_set "B"
+    
+
+
+    set_system_fronts_set "C"
+    sleep "$SECONDS_BETWEEN_UPDATES"s
+    check_system_fronts_set "C-limited-visibility"
 
 
     clear_all_fronts
@@ -52,6 +58,9 @@ check_system_fronts_set() {
     elif [[ "$SET" == "B" ]]; then
         check_vrc_status_string_equals "F˸ tš漢ク汉漢"
         check_discord_status_string_equals "F: tš▶️漢ク汉漢"
+    elif [[ "$SET" == "C-limited-visibility" ]]; then
+        check_vrc_status_string_equals "F˸ NK notif-ok"
+        check_discord_status_string_equals "F: NK notif-ok"
     else
         return 1
     fi

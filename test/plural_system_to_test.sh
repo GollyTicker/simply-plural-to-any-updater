@@ -5,6 +5,9 @@ export BORGNEN_ID="683f23f49aa189caf3000000"
 export CLENNTRO_ID="683f24009aa18acaf3000000"
 export DAENSSA_ID="683f24179aa18bcaf3000000"
 export TEST_MEMBER_ID="683f243e9aa18ccaf3000000"
+export NOTIF_OK="68e1950560bb6cfa4a000000"
+export NOTIF_NOT_OK="68e1952060bb6dfa4a000000"
+export ARCHIVED_NOTIF_OK="68e195b960bb70fa4a000000"
 export CUSTOM_FRONT_1_ID="688d41c8aa2e477e53000000"
 
 
@@ -20,6 +23,10 @@ set_system_fronts_set() {
         set_to_front "$CUSTOM_FRONT_1_ID"
     elif [[ "$SET" == "B" ]]; then
         set_to_front "$TEST_MEMBER_ID"
+    elif [[ "$SET" == "C" ]]; then
+        set_to_front "$NOTIF_OK"
+        set_to_front "$NOTIF_NOT_OK"
+        set_to_front "$ARCHIVED_NOTIF_OK"
     else
         return 1
     fi

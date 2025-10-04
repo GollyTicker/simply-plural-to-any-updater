@@ -28,6 +28,11 @@ where
     pub status_no_fronts: Option<String>,
     pub status_truncate_names_to: Option<i32>,
 
+    pub show_members_non_archived: bool,
+    pub show_members_archived: bool,
+    pub show_custom_fronts: bool,
+    pub respect_front_notifications_disabled: bool,
+
     pub enable_website: bool,
     pub enable_discord: bool,
     pub enable_discord_status_message: bool,
@@ -59,6 +64,11 @@ impl<S: SecretType> UserConfigDbEntries<S> {
             status_truncate_names_to: self
                 .status_truncate_names_to
                 .or(defaults.status_truncate_names_to),
+            show_members_non_archived: self.show_members_non_archived,
+            show_members_archived: self.show_members_archived,
+            show_custom_fronts: self.show_custom_fronts,
+            respect_front_notifications_disabled: self
+                .respect_front_notifications_disabled,
             enable_website: self.enable_website,
             enable_discord: self.enable_discord,
             enable_discord_status_message: self.enable_discord_status_message,
@@ -82,10 +92,14 @@ impl<S: SecretType> UserConfigDbEntries<S> {
 impl<S: SecretType> Default for UserConfigDbEntries<S> {
     fn default() -> Self {
         Self {
+            wait_seconds: Some(60),
             status_prefix: Some(String::from("F:")),
             status_no_fronts: Some(String::from("none?")),
             status_truncate_names_to: Some(3),
-            wait_seconds: Some(60),
+            show_members_non_archived: false,
+            show_members_archived: false,
+            show_custom_fronts: false,
+            respect_front_notifications_disabled: true,
             enable_website: false,
             enable_discord: false,
             enable_discord_status_message: false,
@@ -117,6 +131,11 @@ pub struct UserConfigForUpdater {
     pub status_prefix: String,
     pub status_no_fronts: String,
     pub status_truncate_names_to: usize,
+
+    pub show_members_non_archived: bool,
+    pub show_members_archived: bool,
+    pub show_custom_fronts: bool,
+    pub respect_front_notifications_disabled: bool,
 
     pub enable_website: bool,
     pub enable_discord: bool,
@@ -184,6 +203,18 @@ where
         wait_seconds: config_value!(local_config_with_defaults, wait_seconds)?.into(),
         simply_plural_token: config_value!(local_config_with_defaults, simply_plural_token)?,
         simply_plural_base_url: String::from("https://api.apparyllis.com/v1"),
+        status_prefix: config_value!(local_config_with_defaults, status_prefix)?,
+        status_no_fronts: config_value!(local_config_with_defaults, status_no_fronts)?,
+        status_truncate_names_to: config_value!(
+            local_config_with_defaults,
+            status_truncate_names_to
+        )?
+        .try_into()?,
+        show_members_non_archived: local_config_with_defaults.show_members_non_archived,
+        show_members_archived: local_config_with_defaults.show_members_archived,
+        show_custom_fronts: local_config_with_defaults.show_custom_fronts,
+        respect_front_notifications_disabled: local_config_with_defaults
+            .respect_front_notifications_disabled,
         enable_website,
         enable_discord,
         enable_discord_status_message,
@@ -218,13 +249,6 @@ where
             local_config_with_defaults,
             vrchat_password
         )?,
-        status_prefix: config_value!(local_config_with_defaults, status_prefix)?,
-        status_no_fronts: config_value!(local_config_with_defaults, status_no_fronts)?,
-        status_truncate_names_to: config_value!(
-            local_config_with_defaults,
-            status_truncate_names_to
-        )?
-        .try_into()?,
         vrchat_cookie: config_value!(local_config_with_defaults, vrchat_cookie)
             .inspect(|_| log::info!("create_config_with_strong_constraints | {user_id} | vrchat cookie found and will be used."))
             .unwrap_or_default(),
@@ -268,6 +292,10 @@ mod tests {
             status_prefix: None,
             status_no_fronts: None,
             status_truncate_names_to: None,
+            show_members_non_archived: false,
+            show_members_archived: false,
+            show_custom_fronts: false,
+            respect_front_notifications_disabled: true,
             enable_discord: false,
             enable_discord_status_message: false,
             enable_vrchat: false,
@@ -305,6 +333,10 @@ mod tests {
             status_prefix: Some("SP:".to_string()),
             status_no_fronts: Some("No one fronting".to_string()),
             status_truncate_names_to: Some(5),
+            show_members_non_archived: true,
+            show_members_archived: false,
+            show_custom_fronts: true,
+            respect_front_notifications_disabled: false,
             enable_discord: true,
             enable_discord_status_message: true,
             enable_vrchat: false,
@@ -326,6 +358,10 @@ mod tests {
   "status_prefix": "SP:",
   "status_no_fronts": "No one fronting",
   "status_truncate_names_to": 5,
+  "show_members_non_archived": true,
+  "show_members_archived": false,
+  "show_custom_fronts": true,
+  "respect_front_notifications_disabled": false,
   "enable_website": false,
   "enable_discord": true,
   "enable_discord_status_message": true,

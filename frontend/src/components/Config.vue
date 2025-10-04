@@ -46,6 +46,36 @@
               @input="setSecret('simply_plural_token', $event)"
             />
           </div>
+          <div class="config-item">
+            <p class="warning">{{ !config.show_members_non_archived && !config.show_members_archived && !config.show_custom_fronts ? "Nothing will be shown, since all 'Show' toggles are OFF." : "" }}</p>
+            <label for="show_members_non_archived">Show Active Members</label>
+            <p class="config-description">
+              Show members which are <span style="font-weight: bold;">not archived</span>.
+              They might still be hidden, if the other conditions make them hidden.
+              Recommended to enable.
+            </p>
+            <input id="show_members_non_archived" type="checkbox" v-model="config.show_members_non_archived" />
+          </div>
+          <div class="config-item">
+            <label for="show_members_archived">Show Archived Members</label>
+            <p class="config-description">
+              Show <span style="font-weight: bold;">archived</span> members.
+              They might still be hidden, if the other conditions make them hidden.
+            </p>
+            <input id="show_members_archived" type="checkbox" v-model="config.show_members_archived" />
+          </div>
+          <div class="config-item">
+            <label for="respect_front_notifications_disabled">Respect "Prevent notifications on front change"</label>
+            <p class="config-description">
+              If ON, then the member will be hidden, if their fronting change is configured not notify others.
+              If OFF, then only the other contditions apply.
+            </p>
+            <input id="respect_front_notifications_disabled" type="checkbox" v-model="config.respect_front_notifications_disabled" />
+          </div>
+          <div class="config-item">
+            <label for="show_custom_fronts">Show Custom Fronts</label>
+            <input id="show_custom_fronts" type="checkbox" v-model="config.show_custom_fronts" />
+          </div>
         </div>
       </div>
       <div class="config-section">

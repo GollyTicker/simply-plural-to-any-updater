@@ -8,7 +8,7 @@ import type {
   VRChatCredentials,
   VRChatCredentialsWithCookie,
   VRChatCredentialsWithTwoFactorAuth,
-  VrchatAuthResponse,
+  VRChatAuthResponse,
 } from './sp2any.bindings'
 import { getJwt, logoutAndBackToStart, setJwt } from './jwt'
 
@@ -62,9 +62,9 @@ export const sp2any_api = {
       headers: { Authorization: `Bearer ${jwtString.inner}` },
     })
   },
-  vrchat_request_2fa: async function (creds: VRChatCredentials): Promise<VrchatAuthResponse> {
+  vrchat_request_2fa: async function (creds: VRChatCredentials): Promise<VRChatAuthResponse> {
     const jwtString = await getJwt()
-    const response = await http.post<VrchatAuthResponse>(
+    const response = await http.post<VRChatAuthResponse>(
       '/api/user/platform/vrchat/auth_2fa/request',
       creds,
       { headers: { Authorization: `Bearer ${jwtString.inner}` } },

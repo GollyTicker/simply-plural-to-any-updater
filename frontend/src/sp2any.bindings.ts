@@ -12,6 +12,10 @@ export type UserConfigDbEntries = {
     status_prefix?: string;
     status_no_fronts?: string;
     status_truncate_names_to?: number;
+    show_members_non_archived?: boolean,
+    show_members_archived?: boolean,
+    show_custom_fronts?: boolean,
+    respect_front_notifications_disabled?: boolean,
     enable_website?: boolean;
     enable_discord?: boolean;
     enable_discord_status_message?: boolean;
@@ -33,4 +37,4 @@ export type TwoFactorAuthMethod = "TwoFactorAuthMethodEmail" | "TwoFactorAuthMet
 export type TwoFactorCodeRequiredResponse = { method: TwoFactorAuthMethod; tmp_cookie: string };
 export type TwoFactorAuthCode = { inner: string };
 export type VRChatCredentialsWithTwoFactorAuth = { creds: VRChatCredentials; method: TwoFactorAuthMethod; code: TwoFactorAuthCode; tmp_cookie: string };
-export type VrchatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse };
+export type VRChatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse };
