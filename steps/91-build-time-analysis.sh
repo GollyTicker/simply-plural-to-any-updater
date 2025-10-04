@@ -3,7 +3,7 @@
 set -euo pipefail
 
 echo "base-src"
-(cd base-src && cargo tauri build -- --timings)
+(cd base-src && cargo build --release --timings)
 
 
 echo "src"
