@@ -15,10 +15,10 @@ services:
   sp2any-api:
     container_name: sp2any-api
     build:
-      dockerfile: docker/api.Dockerfile
+      dockerfile: docker/rust-binary.Dockerfile
       context: ..
       args:
-        PATH_TO_SP2ANY_API_EXEC: ${PATH_TO_SP2ANY_API_EXEC}
+        PATH_TO_EXEC: ${PATH_TO_SP2ANY_API_EXEC}
     env_file:
       - ./${SP2ANY_STAGE}.env
     environment:
@@ -44,6 +44,18 @@ services:
     network_mode: host
     # ports:
     #   - 5432:5432
+
+
+  sp2any-global-manager:
+    container_name: sp2any-global-manager
+    build:
+      dockerfile: docker/rust-binary.Dockerfile
+      context: ..
+      args:
+        PATH_TO_EXEC: ${PATH_TO_SP2ANY_GLOBAL_MANAGER_EXEC}
+    env_file:
+      - ./${SP2ANY_STAGE}.env
+    network_mode: host
 
 volumes:
   sp2any-data:

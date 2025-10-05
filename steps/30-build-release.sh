@@ -41,6 +41,15 @@ build_binaries() {
     done
 
 
+    echo "🛠️ sp2any-global-manager $LINUX_TARGET"
+    ./steps/12-backend-cargo-build.sh --release --bin sp2any-global-manager --target "$LINUX_TARGET"
+    src_path="target/$LINUX_TARGET/release/sp2any-global-manager"
+    dest_path="${OUT_DIR}/sp2any-global-manager"
+    cp -v "$src_path" "$dest_path"
+    echo "✅ sp2any-global-manager $target"
+
+    echo ""
+
     echo "🛠️ sp2any-api $LINUX_TARGET"
     ./steps/12-backend-cargo-build.sh --release --target "$LINUX_TARGET"
     src_path="target/$LINUX_TARGET/release/sp2any"

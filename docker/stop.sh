@@ -7,6 +7,7 @@ export SP2ANY_STAGE="$1"
 docker logs sp2any-db > docker/logs/sp2any-db.log 2>&1
 docker logs sp2any-api > docker/logs/sp2any-api.log 2>&1
 docker logs sp2any-entrypoint > docker/logs/sp2any-entrypoint.log 2>&1
+docker logs sp2any-global-manager > docker/logs/sp2any-global-manager.log 2>&1
 
 docker compose -f docker/docker.compose.yml stop
 

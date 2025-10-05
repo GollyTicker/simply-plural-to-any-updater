@@ -1,5 +1,7 @@
 target/*
 !target/debug/sp2any
+!target/debug/sp2any-global-manager
+!target/release_builds
 bridge-src-tauri/target/*
 !bridge-src-tauri/target/debug/sp2any-bridge
 !base-src/target/*

@@ -6,7 +6,8 @@ source docker/source.sh
 export SP2ANY_STAGE=local
 export FRONTEND_DIST=./../frontend/dist
 export PATH_TO_SP2ANY_API_EXEC=../target/debug/sp2any
-    
+export PATH_TO_SP2ANY_GLOBAL_MANAGER_EXEC=../target/debug/sp2any-global-manager
+
 ./docker/stop.sh local || true
 
 docker compose -f docker/docker.compose.yml pull
