@@ -68,7 +68,7 @@
                   : ''
               }}
             </p>
-            <label for="show_members_non_archived">Show Active Members</label>
+            <label for="show_members_non_archived"> Show Active Members </label>
             <p class="config-description">
               Show members which are <span style="font-weight: bold">not archived</span>. They might
               still be hidden, if the other conditions make them hidden. Recommended to enable.
@@ -80,7 +80,7 @@
             />
           </div>
           <div class="config-item">
-            <label for="show_members_archived">Show Archived Members</label>
+            <label for="show_members_archived"> Show Archived Members </label>
             <p class="config-description">
               Show <span style="font-weight: bold">archived</span> members. They might still be
               hidden, if the other conditions make them hidden.
@@ -92,12 +92,12 @@
             />
           </div>
           <div class="config-item">
-            <label for="respect_front_notifications_disabled"
-              >Respect "Prevent notifications on front change"</label
-            >
+            <label for="respect_front_notifications_disabled">
+              Respect "Prevent notifications on front change"
+            </label>
             <p class="config-description">
               If ON, then the member will be hidden, if their fronting change is configured not
-              notify others. If OFF, then only the other contditions apply.
+              notify others. If OFF, then this setting in Simply Plural is ignored.
             </p>
             <input
               id="respect_front_notifications_disabled"
@@ -108,6 +108,56 @@
           <div class="config-item">
             <label for="show_custom_fronts">Show Custom Fronts</label>
             <input id="show_custom_fronts" type="checkbox" v-model="config.show_custom_fronts" />
+          </div>
+          <div class="config-item">
+            <label for="privacy_fine_grained"> Fine-Grained Control using Privacy Buckets </label>
+            <p class="config-description">
+              You can optionally use Simply Plural "Privacy Buckets" to manage the visibility of
+              fronters on a more deailed level. You can use one of these options:
+            </p>
+            <ol class="config-description">
+              <li>Not use privacy buckets at all and only use the above "Show" toggles</li>
+              <li>
+                Add the <span style="font-weight: bold">SP2Any user</span> as a friend on Simply Plural
+                and assign that friend to your existing privacy buckets. SP2Any will then show any
+                fronters which are are in privacy buckets the SP2Any friend is assigned to. The
+                above "Show" toggles still apply. (Note, that the privacy settings you can configure for
+                friends like "They can see your shared members" etc are IGNORED. Only the privacy
+                buckets are used.)
+              </li>
+              <li>
+                Directly choose the privacy buckets on this SP2Any Website here and any fronts
+                assigned to the privacy buckets selected here will be shown. The above "Show"
+                toggles still apply.
+              </li>
+            </ol>
+            <p>  </p>
+            <select v-model="config.privacy_fine_grained">
+              <option value="NoFineGrained">no fine grained control</option>
+              <option value="ViaFriend">via SP2Any-friend on SimplyPlural</option>
+              <option value="ViaPrivacyBuckets">via privacy buckets configured below</option>
+            </select>
+          </div>
+          <div class="config-item">
+            <label for="config.privacy_fine_grained_buckets"></label>
+            <p class="config-description">
+              If you choose "via privacy buckets" above, then you can configure which privacy buckets to use here. You can chose multiple privacy buckets.
+
+              {{ privacyBucketsStatus }}
+            </p>
+            <select
+              v-model="config.privacy_fine_grained_buckets"
+              multiple
+              :disabled="config.privacy_fine_grained !== 'ViaPrivacyBuckets'"
+            >
+              <option
+                v-for="bucket in simply_plural_privacy_buckets"
+                :key="bucket.id"
+                :value="bucket.id"
+              >
+                {{ bucket.name }}
+              </option>
+            </select>
           </div>
         </div>
       </div>
@@ -346,16 +396,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, type Ref } from 'vue'
+import { ref, onMounted, type Ref, watch } from 'vue'
 import {
   type Decrypted,
   type UserConfigDbEntries,
   type VRChatCredentials,
   type VRChatCredentialsWithTwoFactorAuth,
   type TwoFactorAuthMethod,
-  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
+  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL
 } from '@/sp2any.bindings'
 import { http, sp2any_api } from '@/sp2any_api'
+import { get_privacy_buckets, type PrivacyBucket } from '@/simply_plural_api'
 
 const baseUrl = http.defaults.baseURL!
 const config: Ref<UserConfigDbEntries> = ref({} as UserConfigDbEntries)
@@ -367,6 +418,8 @@ type SecretKeys =
   | 'vrchat_username'
   | 'discord_status_message_token'
 
+const simply_plural_privacy_buckets: Ref<PrivacyBucket[]> = ref([])
+const privacyBucketsStatus = ref('')
 const status = ref('')
 const vrchatTwoFactor = ref('')
 const vrchatLoginStatus = ref('')
@@ -390,7 +443,7 @@ async function loginToVRChat() {
   try {
     const creds: VRChatCredentials = {
       username: config.value.vrchat_username!.secret,
-      password: config.value.vrchat_password!.secret,
+      password: config.value.vrchat_password!.secret
     }
     const result = await sp2any_api.vrchat_request_2fa(creds)
     if ('Left' in result) {
@@ -413,11 +466,11 @@ async function submitVRChat2FA() {
     const creds_with_tfa: VRChatCredentialsWithTwoFactorAuth = {
       creds: {
         username: config.value.vrchat_username!.secret,
-        password: config.value.vrchat_password!.secret,
+        password: config.value.vrchat_password!.secret
       },
       code: { inner: vrchatTwoFactor.value },
       tmp_cookie: vrchatTmpCookie.value,
-      method: vrchatTwoFactorMethod.value!,
+      method: vrchatTwoFactorMethod.value!
     }
     const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa)
     config.value.vrchat_cookie = { secret: result.cookie }
@@ -466,9 +519,32 @@ async function saveConfigAndRestart() {
   }
 }
 
+async function refreshPrivacyBuckets(token: string) {
+  privacyBucketsStatus.value = 'Retrieving privacy buckets from Simply Plural ...'
+  try {
+    simply_plural_privacy_buckets.value = await get_privacy_buckets(token)
+    console.log('Privacy buckets:', simply_plural_privacy_buckets.value)
+    privacyBucketsStatus.value = 'Your privacy buckets from Simply Plural:'
+  } catch (e) {
+    console.warn(e)
+    simply_plural_privacy_buckets.value = []
+    privacyBucketsStatus.value =
+      "Couldn't fetch privacy buckets from Simply Plural. Did you correctly set the token?"
+  }
+}
+
+watch(
+  () => config.value.simply_plural_token,
+  newToken => {
+    newToken?.secret && refreshPrivacyBuckets(newToken.secret)
+  }
+)
+
 onMounted(async () => {
   await fetchConfig()
   await fetchDefaults()
+  config.value.simply_plural_token?.secret &&
+    (await refreshPrivacyBuckets(config.value.simply_plural_token.secret))
 })
 </script>
 
@@ -507,7 +583,10 @@ onMounted(async () => {
   margin-bottom: 0.5rem;
 }
 
-.config-item input {
+.config-item input,
+.config-item select {
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;

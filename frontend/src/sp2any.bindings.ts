@@ -12,10 +12,12 @@ export type UserConfigDbEntries = {
     status_prefix?: string;
     status_no_fronts?: string;
     status_truncate_names_to?: number;
-    show_members_non_archived?: boolean,
-    show_members_archived?: boolean,
-    show_custom_fronts?: boolean,
-    respect_front_notifications_disabled?: boolean,
+    privacy_fine_grained?: FineGrainedPrivacy;
+    privacy_fine_grained_buckets?: string[];
+    show_members_non_archived?: boolean;
+    show_members_archived?: boolean;
+    show_custom_fronts?: boolean;
+    respect_front_notifications_disabled?: boolean;
     enable_website?: boolean;
     enable_discord?: boolean;
     enable_discord_status_message?: boolean;
@@ -26,6 +28,7 @@ export type UserConfigDbEntries = {
     vrchat_password?: Decrypted;
     vrchat_cookie?: Decrypted;
 };
+export type FineGrainedPrivacy = "NoFineGrained" | "ViaFriend" | "ViaPrivacyBuckets";
 export type JwtString = { inner: string };
 export type Platform = "VRChat" | "Discord" | "DiscordStatusMessage";
 export type UpdaterStatus = "Disabled" | "Running" | { "Error": string } | "Starting";

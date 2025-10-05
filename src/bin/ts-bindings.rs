@@ -34,10 +34,12 @@ fn main() -> Result<()> {
     status_prefix?: string;
     status_no_fronts?: string;
     status_truncate_names_to?: number;
-    show_members_non_archived?: boolean,
-    show_members_archived?: boolean,
-    show_custom_fronts?: boolean,
-    respect_front_notifications_disabled?: boolean,
+    privacy_fine_grained?: FineGrainedPrivacy;
+    privacy_fine_grained_buckets?: string[];
+    show_members_non_archived?: boolean;
+    show_members_archived?: boolean;
+    show_custom_fronts?: boolean;
+    respect_front_notifications_disabled?: boolean;
     enable_website?: boolean;
     enable_discord?: boolean;
     enable_discord_status_message?: boolean;
@@ -48,6 +50,7 @@ fn main() -> Result<()> {
     vrchat_password?: Decrypted;
     vrchat_cookie?: Decrypted;
 }".to_owned(),
+        "export type FineGrainedPrivacy = \"Ignored\" | \"ViaFriend\" | \"ViaPrivacyBuckets\"".to_owned(),
         export::<JwtString>(conf)?,
         "export type Platform = \"VRChat\" | \"Discord\" | \"DiscordStatusMessage\"".to_owned(),
         "export type UpdaterStatus = \"Disabled\" | \"Running\" | { \"Error\": string } | \"Starting\"".to_owned(),
