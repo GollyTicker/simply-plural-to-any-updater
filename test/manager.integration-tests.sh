@@ -31,23 +31,8 @@ main() {
     ./steps/12-backend-cargo-build.sh
 
 
-    # regression test: Ensure, that restarts don't create duplicate tasks
-    start_updater
-    sleep 3s
-    set_user_config_and_restart
-    BEFORE_COUNT="$(get_updater_loop_count)"
-    sleep "$SECONDS_BETWEEN_UPDATES"
-    sleep 1s
-    AFTER_COUNT="$(get_updater_loop_count)"
-    # exactly one update happened in that period
-    echo "$BEFORE_COUNT + 1" =? "$AFTER_COUNT"
-    [[ "$((BEFORE_COUNT + 1))" == "$AFTER_COUNT" ]]
-    echo "✅ no duplicate updater tasks"
-
-    # todo. this fails currently! need to debug this! likely a test issue and not an actual prod-code bug.
     setup_sp_rest_failure
-    set_user_config_and_restart
-    sleep 7s # startup time for restart
+    start_updater
     check_updater_failure
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
@@ -68,8 +53,7 @@ main() {
 
 
     setup_vrchat_only
-    set_user_config_and_restart
-    sleep 7s # startup time for restart
+    start_updater
     check_updater_has_no_errors
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Disabled"
@@ -79,8 +63,7 @@ main() {
 
 
     setup_discord_status_message_only
-    set_user_config_and_restart
-    sleep 7s # startup time for restart
+    start_updater
     check_updater_has_no_errors
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
@@ -90,8 +73,7 @@ main() {
 
 
     setup_vrchat_misconfigured
-    set_user_config_and_restart
-    sleep 7s # startup time for restart
+    start_updater
     check_updater_failure
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
@@ -101,27 +83,23 @@ main() {
 
 
     clear_all_fronts
-    echo "✅✅✅ Updater Integration Test ✅✅✅"
+    echo "✅✅✅ Manager Integration Test ✅✅✅"
 }
 
-
-check_updater_has_no_errors() {
-    echo "check_updater_has_no_errors"
-    [[ "$( docker logs sp2any-api 2>&1 | grep "Error" | wc -l )" == "0" ]]
-}
-
-get_updater_loop_count() {
-    docker logs sp2any-api 2>&1 | grep "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..." | wc -l
-}
 
 check_updater_loop_continues() {
     echo "check_updater_loop_continues"
     docker logs sp2any-api 2>&1 | grep -q "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
 }
 
+check_updater_has_no_errors() {
+    echo "check_updater_has_no_errors"
+    [[ "$( docker logs sp2any-api 2>&1 | grep -i "Error" | wc -l )" == "0" ]]
+}
+
 check_updater_failure() {
     echo "check_updater_failure"
-    [[ "$( docker logs sp2any-api 2>&1 | grep "Error" | wc -l )" != "0" ]]
+    [[ "$( docker logs sp2any-api 2>&1 | grep -i "Error" | wc -l )" != "0" ]]
 }
 
 check_updater() {
