@@ -32,7 +32,8 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
 
     let vrcsn_field_id = get_vrchat_status_name_field_id(config, system_id).await?;
 
-    let frontables = get_members_and_custom_fronters_by_privacy_rules(system_id, vrcsn_field_id, config).await?;
+    let frontables =
+        get_members_and_custom_fronters_by_privacy_rules(system_id, vrcsn_field_id, config).await?;
 
     let fronters = filter_frontables_by_front_entries(front_entries, frontables);
 
@@ -47,7 +48,10 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
     Ok(fronters)
 }
 
-fn show_member_according_to_privacy_rules(config: &users::UserConfigForUpdater, member_with_content: &Member) -> bool {
+const fn show_member_according_to_privacy_rules(
+    config: &users::UserConfigForUpdater,
+    member_with_content: &Member,
+) -> bool {
     let member: &super::MemberContent = &member_with_content.content;
 
     if config.respect_front_notifications_disabled && member.front_notifications_disabled {

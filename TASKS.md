@@ -2,10 +2,10 @@
 # First feedback post-deployment
 **Priority**
 * member privacy
-  * custom fronts configuration
-  * archived members configuration / hiding
+  * DONE custom fronts configuration
+  * DONE archived members configuration / hiding
   * make lists of members / CFs / archived members collapeble and searchable to manage large systems
-  * probably start with defualts for actives / archived / CFs and integration with privacy buckets from SP
+  * probably start with defaults for actives / archived / CFs and integration with privacy buckets from SP
     * [privacy buckets in SimplyPlual](https://docs.apparyllis.com/docs/help/features/buckets/intro). Perhaps
       we can also instead make a singleton "SP2Any" account on SP and people can add that one as a friend.
       This way, they can simply assign SP2Any to existing privacy bucket groups and chose what should be shown.
@@ -17,6 +17,27 @@
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
 * websocket connection restarts
 * better error messages which the users can also understand and which handle most common error paths
+
+Privacy buckets of each member/custom front is simply a list of bucket-ids.
+
+Privacy buckets API:
+GET https://api.apparyllis.com/v1/privacyBuckets/
+returns
+[
+  {
+    id: string, // bucket uid
+    content: {
+      uid: string, // system-uid
+      name: string,
+      icon: string,
+      desc: string,
+      rank: string, // what meaning?
+      color: "#123456",
+      lastOperationTime: number,
+    }
+  },
+  ...
+]
 
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.

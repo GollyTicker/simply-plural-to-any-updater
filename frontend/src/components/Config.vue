@@ -47,30 +47,63 @@
             />
           </div>
           <div class="config-item">
-            <p class="warning">{{ !config.show_members_non_archived && !config.show_members_archived && !config.show_custom_fronts ? "Nothing will be shown, since all 'Show' toggles are OFF." : "" }}</p>
+            <p class="config-description">
+              The following toggles and settings allow you to configure the privacy and visibility
+              of the members and custom fronts. The "Show ..." toggles are used to show/hide
+              categories of fronts. If they're OFF, then nothing of that category is shown.
+              <br />
+              Each fronter must pass all conditions detailed below to be shown. E.g. if a fronter is
+              a non-archived member with the setting "Prevent notifications on front change" enabled
+              in SimplyPlural, then member will be shown exactly when (1) the member is fronting AND
+              (2) "Show Active Members" is ON AND (3) Respect "Prevent notifications on front
+              change" is OFF. If any of the above conditions are not met, then the member is not
+              shown.
+            </p>
+            <p class="warning">
+              {{
+                !config.show_members_non_archived &&
+                !config.show_members_archived &&
+                !config.show_custom_fronts
+                  ? "Nothing will be shown, since all 'Show' toggles are OFF."
+                  : ''
+              }}
+            </p>
             <label for="show_members_non_archived">Show Active Members</label>
             <p class="config-description">
-              Show members which are <span style="font-weight: bold;">not archived</span>.
-              They might still be hidden, if the other conditions make them hidden.
-              Recommended to enable.
+              Show members which are <span style="font-weight: bold">not archived</span>. They might
+              still be hidden, if the other conditions make them hidden. Recommended to enable.
             </p>
-            <input id="show_members_non_archived" type="checkbox" v-model="config.show_members_non_archived" />
+            <input
+              id="show_members_non_archived"
+              type="checkbox"
+              v-model="config.show_members_non_archived"
+            />
           </div>
           <div class="config-item">
             <label for="show_members_archived">Show Archived Members</label>
             <p class="config-description">
-              Show <span style="font-weight: bold;">archived</span> members.
-              They might still be hidden, if the other conditions make them hidden.
+              Show <span style="font-weight: bold">archived</span> members. They might still be
+              hidden, if the other conditions make them hidden.
             </p>
-            <input id="show_members_archived" type="checkbox" v-model="config.show_members_archived" />
+            <input
+              id="show_members_archived"
+              type="checkbox"
+              v-model="config.show_members_archived"
+            />
           </div>
           <div class="config-item">
-            <label for="respect_front_notifications_disabled">Respect "Prevent notifications on front change"</label>
+            <label for="respect_front_notifications_disabled"
+              >Respect "Prevent notifications on front change"</label
+            >
             <p class="config-description">
-              If ON, then the member will be hidden, if their fronting change is configured not notify others.
-              If OFF, then only the other contditions apply.
+              If ON, then the member will be hidden, if their fronting change is configured not
+              notify others. If OFF, then only the other contditions apply.
             </p>
-            <input id="respect_front_notifications_disabled" type="checkbox" v-model="config.respect_front_notifications_disabled" />
+            <input
+              id="respect_front_notifications_disabled"
+              type="checkbox"
+              v-model="config.respect_front_notifications_disabled"
+            />
           </div>
           <div class="config-item">
             <label for="show_custom_fronts">Show Custom Fronts</label>
@@ -553,5 +586,4 @@ button:hover {
   /* Move the toggle to the right */
   left: 1.9rem;
 }
-
 </style>

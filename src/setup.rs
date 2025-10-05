@@ -9,6 +9,13 @@ use sqlx::postgres;
 use std::env;
 use std::time::Duration;
 
+pub fn logging_init() {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug"))
+        .format_source_path(true)
+        .format_timestamp_millis()
+        .init();
+}
+
 pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<ApplicationSetup> {
     log::info!("# | application_setup");
 

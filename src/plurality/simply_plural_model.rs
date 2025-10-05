@@ -91,7 +91,6 @@ pub struct MemberContent {
     pub info: serde_json::Value,
     // if the user uses the custom field "VRChat Status Name" on this member, then this will be
     // { "<vrcsn_field_id>": "<vrcsn>", ...}
-
     #[serde(default)]
     pub archived: bool,
 
@@ -103,7 +102,6 @@ pub struct MemberContent {
     so it doesn't mean what we mean by member privacy.
     hence, we don't include it in our implementation
     */
-
     // this will be populated later after deserialisation
     #[serde(default)]
     pub vrcsn_field_id: Option<String>,

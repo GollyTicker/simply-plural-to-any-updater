@@ -12,6 +12,10 @@ path = "src/main.rs"
 name = "ts-bindings"
 path = "src/bin/ts-bindings.rs"
 
+[[bin]]
+name = "sp2any-global-manager"
+path = "src/bin/sp2any-global-manager.rs"
+
 [dependencies]
 sp2any-base = { path = "base-src" }
 chrono = { version = "*", features = ["serde"] }
@@ -22,7 +26,7 @@ serde = { version = "*", default-features = false, features = ["derive"] }
 serde_json = { version = "*", default-features = false }
 vrchatapi = "*"
 html-escape = "*"
-tokio = { version = "*", default-features = false, features = [] }
+tokio = { version = "*", features = ["full"] }
 log = "*"
 env_logger = "*"
 sqlx = { version = "*", default-features = false, features = [
@@ -60,3 +64,9 @@ base64 = "*"
 prometheus = "*"
 rocket_prometheus = "*"
 once_cell = "*"
+tokio-tungstenite = { version = "*", default-features = false, features = [
+    "rustls-tls-webpki-roots",
+    "connect",
+    "handshake",
+] }
+futures = "*"

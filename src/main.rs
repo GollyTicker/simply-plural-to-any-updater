@@ -12,10 +12,7 @@ use sp2any_base::license;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug"))
-        .format_source_path(true)
-        .format_timestamp_millis()
-        .init();
+    setup::logging_init();
 
     println!("{}", license::info_text());
 

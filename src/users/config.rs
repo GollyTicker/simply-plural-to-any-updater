@@ -67,8 +67,7 @@ impl<S: SecretType> UserConfigDbEntries<S> {
             show_members_non_archived: self.show_members_non_archived,
             show_members_archived: self.show_members_archived,
             show_custom_fronts: self.show_custom_fronts,
-            respect_front_notifications_disabled: self
-                .respect_front_notifications_disabled,
+            respect_front_notifications_disabled: self.respect_front_notifications_disabled,
             enable_website: self.enable_website,
             enable_discord: self.enable_discord,
             enable_discord_status_message: self.enable_discord_status_message,
