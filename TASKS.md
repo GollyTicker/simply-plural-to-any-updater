@@ -15,6 +15,7 @@
   * bidrectional sync of privacy bucket membership and "show in SP2Any" setting
     > If I search for myself, and toggle the "show as fronting" button in SP2A, it autoadds me to the privacy bucket in SP.
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
+  * add SP2Any user to config explanations and to the sp2any-deployments as a global singular
 * websocket connection restarts
 * better error messages which the users can also understand and which handle most common error paths
 
