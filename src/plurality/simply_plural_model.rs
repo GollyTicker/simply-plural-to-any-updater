@@ -59,6 +59,7 @@ impl Fronter {
 #[derive(Deserialize, Debug, Clone)]
 pub struct CustomFront {
     pub content: CustomFrontContent,
+    #[serde(rename = "id")]
     pub custom_front_id: String,
 }
 
@@ -90,6 +91,7 @@ impl From<CustomFront> for Fronter {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Member {
     pub content: MemberContent,
+    #[serde(rename = "id")]
     pub member_id: String,
 }
 

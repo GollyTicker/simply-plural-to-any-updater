@@ -13,7 +13,6 @@ pub fn logging_init() {
     env_logger::Builder::from_env(
         env_logger::Env::default().default_filter_or("info,sp2any=debug,sp2any_base=debug"),
     )
-    .format_source_path(true)
     .format_timestamp_millis()
     .init();
 }
