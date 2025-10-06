@@ -18,9 +18,9 @@ async fn main() -> Result<()> {
 
     log::debug!("# | app_setup");
 
-    let cli_args = setup::ApplicationConfig::from_env()?;
+    let application_config = setup::ApplicationConfig::from_env()?;
 
-    let app_setup = setup::application_setup(&cli_args).await?;
+    let app_setup = setup::application_setup(&application_config).await?;
 
     log::debug!("# | app_setup | configured");
 

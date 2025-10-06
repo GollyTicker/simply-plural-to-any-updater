@@ -30,6 +30,7 @@ fn mock_member_content(name: &str, vrchat_status_name: &str) -> Fronter {
             Some(vrchat_status_name.to_owned())
         },
         start_time: None,
+        privacy_buckets: vec![],
     }
 }
 

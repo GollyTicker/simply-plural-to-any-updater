@@ -118,12 +118,19 @@
             <ol class="config-description">
               <li>Not use privacy buckets at all and only use the above "Show" toggles</li>
               <li>
-                Add the <span style="font-weight: bold">SP2Any user</span> as a friend on Simply Plural
-                and assign that friend to your existing privacy buckets. SP2Any will then show any
-                fronters which are are in privacy buckets the SP2Any friend is assigned to. The
-                above "Show" toggles still apply. (Note, that the privacy settings you can configure for
-                friends like "They can see your shared members" etc are IGNORED. Only the privacy
-                buckets are used.)
+                Add the
+                <span
+                  style="font-weight: bold"
+                  class="copyable"
+                  @click="copyText('SP2Any', $event)"
+                  title="Click to copy"
+                  >SP2Any</span
+                >
+                user as a friend on Simply Plural and assign that friend to your existing privacy
+                buckets. SP2Any will then show any fronters which are are in privacy buckets the
+                SP2Any friend is assigned to. The above "Show" toggles still apply. (Note, that the
+                privacy settings you can configure for friends like "They can see your shared
+                members" etc are IGNORED. Only the privacy buckets are used.)
               </li>
               <li>
                 Directly choose the privacy buckets on this SP2Any Website here and any fronts
@@ -131,9 +138,9 @@
                 toggles still apply.
               </li>
             </ol>
-            <p>  </p>
+            <p></p>
             <select v-model="config.privacy_fine_grained">
-              <option value="NoFineGrained">no fine grained control</option>
+              <option value="NoFineGrained">no fine grained control (default)</option>
               <option value="ViaFriend">via SP2Any-friend on SimplyPlural</option>
               <option value="ViaPrivacyBuckets">via privacy buckets configured below</option>
             </select>
@@ -141,7 +148,8 @@
           <div class="config-item">
             <label for="config.privacy_fine_grained_buckets"></label>
             <p class="config-description">
-              If you choose "via privacy buckets" above, then you can configure which privacy buckets to use here. You can chose multiple privacy buckets.
+              If you choose "via privacy buckets" above, then you can configure which privacy
+              buckets to use here. You can chose multiple privacy buckets.
 
               {{ privacyBucketsStatus }}
             </p>
@@ -403,7 +411,7 @@ import {
   type VRChatCredentials,
   type VRChatCredentialsWithTwoFactorAuth,
   type TwoFactorAuthMethod,
-  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL
+  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
 } from '@/sp2any.bindings'
 import { http, sp2any_api } from '@/sp2any_api'
 import { get_privacy_buckets, type PrivacyBucket } from '@/simply_plural_api'
@@ -443,7 +451,7 @@ async function loginToVRChat() {
   try {
     const creds: VRChatCredentials = {
       username: config.value.vrchat_username!.secret,
-      password: config.value.vrchat_password!.secret
+      password: config.value.vrchat_password!.secret,
     }
     const result = await sp2any_api.vrchat_request_2fa(creds)
     if ('Left' in result) {
@@ -466,11 +474,11 @@ async function submitVRChat2FA() {
     const creds_with_tfa: VRChatCredentialsWithTwoFactorAuth = {
       creds: {
         username: config.value.vrchat_username!.secret,
-        password: config.value.vrchat_password!.secret
+        password: config.value.vrchat_password!.secret,
       },
       code: { inner: vrchatTwoFactor.value },
       tmp_cookie: vrchatTmpCookie.value,
-      method: vrchatTwoFactorMethod.value!
+      method: vrchatTwoFactorMethod.value!,
     }
     const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa)
     config.value.vrchat_cookie = { secret: result.cookie }
@@ -479,6 +487,19 @@ async function submitVRChat2FA() {
     console.warn(e)
     vrchatLoginStatus.value = 'Failed to submit 2FA code.'
   }
+}
+
+function copyText(text: string, event: MouseEvent) {
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      console.log(`Copied to clipboard: ${text}`)
+      const element = event.target as HTMLElement
+      element.title = 'Copied!'
+    })
+    .catch((err) => {
+      console.error('Failed to copy text: ', err)
+    })
 }
 
 async function fetchConfig() {
@@ -519,7 +540,12 @@ async function saveConfigAndRestart() {
   }
 }
 
-async function refreshPrivacyBuckets(token: string) {
+async function refreshPrivacyBuckets() {
+  const token = config.value.simply_plural_token?.secret
+  if (!token) {
+    return
+  }
+
   privacyBucketsStatus.value = 'Retrieving privacy buckets from Simply Plural ...'
   try {
     simply_plural_privacy_buckets.value = await get_privacy_buckets(token)
@@ -531,21 +557,28 @@ async function refreshPrivacyBuckets(token: string) {
     privacyBucketsStatus.value =
       "Couldn't fetch privacy buckets from Simply Plural. Did you correctly set the token?"
   }
-}
-
-watch(
-  () => config.value.simply_plural_token,
-  newToken => {
-    newToken?.secret && refreshPrivacyBuckets(newToken.secret)
+  if (
+    config.value.privacy_fine_grained === 'ViaPrivacyBuckets' &&
+    (!config.value.privacy_fine_grained_buckets ||
+      config.value.privacy_fine_grained_buckets.length === 0)
+  ) {
+    privacyBucketsStatus.value =
+      'Your privacy buckets from Simply Plural are below. Warning: No privacy buckets selected! Nothing will be shown.'
   }
-)
+}
 
 onMounted(async () => {
   await fetchConfig()
   await fetchDefaults()
-  config.value.simply_plural_token?.secret &&
-    (await refreshPrivacyBuckets(config.value.simply_plural_token.secret))
+  config.value.simply_plural_token?.secret && (await refreshPrivacyBuckets())
 })
+
+watch(
+  [() => config.value.simply_plural_token, () => config.value.privacy_fine_grained],
+  async () => {
+    await refreshPrivacyBuckets()
+  },
+)
 </script>
 
 <style scoped>
@@ -599,6 +632,11 @@ onMounted(async () => {
 
 .config-item button:hover {
   background-color: black;
+}
+
+.copyable {
+  cursor: pointer;
+  text-decoration: underline dotted;
 }
 
 .config-description {

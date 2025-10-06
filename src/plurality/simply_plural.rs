@@ -1,9 +1,15 @@
-use anyhow::Result;
+use std::collections::HashSet;
+
+use anyhow::{Result, anyhow};
 
 use crate::{
     int_counter_metric, int_gauge_metric,
-    plurality::{CustomField, CustomFront, FrontEntry, Fronter, Member},
-    users,
+    plurality::{
+        CustomField, CustomFront, Friend, FrontEntry, Fronter,
+        GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID, Member,
+        SIMPLY_PLURAL_VRCHAT_STATUS_NAME_FIELD_NAME,
+    },
+    users::{self, PrivacyFineGrained},
 };
 
 int_counter_metric!(SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER);
@@ -66,16 +72,37 @@ const fn show_member_according_to_privacy_rules(
 
 #[allow(clippy::cast_possible_wrap)]
 async fn get_members_and_custom_fronters_by_privacy_rules(
-    system_id: &String,
+    system_id: &str,
     vrcsn_field_id: Option<String>,
     config: &users::UserConfigForUpdater,
 ) -> Result<Vec<Fronter>> {
-    let all_members: Vec<Fronter> = simply_plural_http_get_members(config, system_id)
+    let all_members: Vec<Member> = simply_plural_http_get_members(config, system_id)
         .await?
         .iter()
         .filter(|m| show_member_according_to_privacy_rules(config, m))
+        .cloned()
+        .collect();
+
+    let all_custom_fronts: Vec<CustomFront> = if config.show_custom_fronts {
+        let custom_fronts = simply_plural_http_get_custom_fronts(config, system_id).await?;
+
+        SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT
+            .with_label_values(&[&config.user_id.to_string()])
+            .set(custom_fronts.len() as i64);
+
+        custom_fronts
+    } else {
+        vec![]
+    };
+
+    SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT
+        .with_label_values(&[&config.user_id.to_string()])
+        .set(all_members.len() as i64);
+
+    let all_frontables: Vec<Fronter> = all_members
+        .into_iter()
         .map(|m| {
-            let mut enriched_member = m.clone();
+            let mut enriched_member = m;
             enriched_member
                 .content
                 .vrcsn_field_id
@@ -83,31 +110,44 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
             enriched_member
         })
         .map(Fronter::from)
+        .chain(all_custom_fronts.into_iter().map(Fronter::from))
         .collect();
 
-    SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT
-        .with_label_values(&[&config.user_id.to_string()])
-        .set(all_members.len() as i64);
+    let fine_grained_filtered_frontables =
+        filter_frontables_by_fine_grained_privacy(system_id, config, all_frontables).await?;
 
-    let all_custom_fronts: Vec<Fronter> = if config.show_custom_fronts {
-        simply_plural_http_get_custom_fronts(config, system_id)
-            .await?
+    Ok(fine_grained_filtered_frontables)
+}
+
+async fn filter_frontables_by_fine_grained_privacy(
+    system_id: &str,
+    config: &users::UserConfigForUpdater,
+    all_frontables: Vec<Fronter>,
+) -> Result<Vec<Fronter>> {
+    let allowed_buckets = match config.privacy_fine_grained {
+        PrivacyFineGrained::NoFineGrained => return Ok(all_frontables),
+        PrivacyFineGrained::ViaFriend => {
+            simply_plural_http_request_get_sp2any_assigned_buckets(config, system_id).await?
+        }
+        PrivacyFineGrained::ViaPrivacyBuckets => config
+            .privacy_fine_grained_buckets
+            .as_ref()
+            .ok_or_else(|| anyhow!("privacy_fine_grained_buckets must be set"))?
             .iter()
             .cloned()
-            .map(Fronter::from)
-            .collect()
-    } else {
-        vec![]
+            .collect(),
     };
 
-    SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT
-        .with_label_values(&[&config.user_id.to_string()])
-        .set(all_custom_fronts.len() as i64);
+    let privacy_bucket_filtered = all_frontables
+        .into_iter()
+        .filter(|f| {
+            f.privacy_buckets
+                .iter()
+                .any(|b| allowed_buckets.contains(b))
+        })
+        .collect();
 
-    let all_frontables: Vec<Fronter> =
-        [all_members.as_slice(), all_custom_fronts.as_slice()].concat();
-
-    Ok(all_frontables)
+    Ok(privacy_bucket_filtered)
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -175,7 +215,7 @@ async fn get_vrchat_status_name_field_id(
 
     let vrchat_status_name_field = custom_fields
         .iter()
-        .find(|field| field.content.name == "VRChat Status Name");
+        .find(|field| field.content.name == SIMPLY_PLURAL_VRCHAT_STATUS_NAME_FIELD_NAME);
 
     let field_id = vrchat_status_name_field.map(|field| &field.id);
 
@@ -190,7 +230,7 @@ async fn get_vrchat_status_name_field_id(
 
 async fn simply_plural_http_get_members(
     config: &users::UserConfigForUpdater,
-    system_id: &String,
+    system_id: &str,
 ) -> Result<Vec<Member>> {
     log::info!("# | simply_plural_http_get_members | {}", config.user_id);
     let fronts_url = format!("{}/members/{}", &config.simply_plural_base_url, system_id);
@@ -209,7 +249,7 @@ async fn simply_plural_http_get_members(
 
 async fn simply_plural_http_get_custom_fronts(
     config: &users::UserConfigForUpdater,
-    system_id: &String,
+    system_id: &str,
 ) -> Result<Vec<CustomFront>> {
     log::info!(
         "# | simply_plural_http_get_custom_fronts | {}",
@@ -230,4 +270,35 @@ async fn simply_plural_http_get_custom_fronts(
         .await?;
 
     Ok(result)
+}
+
+async fn simply_plural_http_request_get_sp2any_assigned_buckets(
+    config: &users::UserConfigForUpdater,
+    system_id: &str,
+) -> Result<HashSet<String>> {
+    log::info!(
+        "# | simply_plural_http_request_get_sp2any_assigned_buckets | {}",
+        config.user_id
+    );
+    let friend_url = format!(
+        "{}/friend/{}/{}",
+        &config.simply_plural_base_url, system_id, GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID
+    );
+    let friend: Friend = config
+        .client
+        .get(&friend_url)
+        .header("Authorization", &config.simply_plural_token.secret)
+        .send()
+        .await?
+        .error_for_status()?
+        .json()
+        .await?;
+
+    let allowed_buckets = friend
+        .content
+        .assigned_privacy_buckets
+        .into_iter()
+        .collect();
+
+    Ok(allowed_buckets)
 }

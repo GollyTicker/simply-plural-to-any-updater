@@ -9,7 +9,21 @@ use crate::{
     users::model::UserId,
 };
 use serde::{Deserialize, Serialize};
+use specta;
 
+#[derive(
+    Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default, sqlx::Type, specta::Type,
+)]
+#[specta(export)]
+#[sqlx(type_name = "privacy_fine_grained_enum")]
+pub enum PrivacyFineGrained {
+    #[default]
+    NoFineGrained,
+    ViaFriend,
+    ViaPrivacyBuckets,
+}
+
+#[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq)]
 pub struct UserConfigDbEntries<Secret, Constraints = database::InvalidConstraints>
@@ -32,6 +46,9 @@ where
     pub show_members_archived: bool,
     pub show_custom_fronts: bool,
     pub respect_front_notifications_disabled: bool,
+
+    pub privacy_fine_grained: PrivacyFineGrained,
+    pub privacy_fine_grained_buckets: Option<Vec<String>>,
 
     pub enable_website: bool,
     pub enable_discord: bool,
@@ -68,6 +85,11 @@ impl<S: SecretType> UserConfigDbEntries<S> {
             show_members_archived: self.show_members_archived,
             show_custom_fronts: self.show_custom_fronts,
             respect_front_notifications_disabled: self.respect_front_notifications_disabled,
+            privacy_fine_grained: self.privacy_fine_grained,
+            privacy_fine_grained_buckets: self
+                .privacy_fine_grained_buckets
+                .clone()
+                .or(defaults.privacy_fine_grained_buckets),
             enable_website: self.enable_website,
             enable_discord: self.enable_discord,
             enable_discord_status_message: self.enable_discord_status_message,
@@ -99,6 +121,8 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
             show_members_archived: false,
             show_custom_fronts: false,
             respect_front_notifications_disabled: true,
+            privacy_fine_grained: PrivacyFineGrained::default(),
+            privacy_fine_grained_buckets: None,
             enable_website: false,
             enable_discord: false,
             enable_discord_status_message: false,
@@ -135,6 +159,9 @@ pub struct UserConfigForUpdater {
     pub show_members_archived: bool,
     pub show_custom_fronts: bool,
     pub respect_front_notifications_disabled: bool,
+
+    pub privacy_fine_grained: PrivacyFineGrained,
+    pub privacy_fine_grained_buckets: Option<Vec<String>>,
 
     pub enable_website: bool,
     pub enable_discord: bool,
@@ -214,6 +241,10 @@ where
         show_custom_fronts: local_config_with_defaults.show_custom_fronts,
         respect_front_notifications_disabled: local_config_with_defaults
             .respect_front_notifications_disabled,
+        privacy_fine_grained: local_config_with_defaults.privacy_fine_grained,
+        privacy_fine_grained_buckets: local_config_with_defaults
+            .privacy_fine_grained_buckets
+            .clone(),
         enable_website,
         enable_discord,
         enable_discord_status_message,
@@ -252,6 +283,15 @@ where
             .inspect(|_| log::info!("create_config_with_strong_constraints | {user_id} | vrchat cookie found and will be used."))
             .unwrap_or_default(),
     };
+
+    if config.privacy_fine_grained == PrivacyFineGrained::ViaPrivacyBuckets
+        && config.privacy_fine_grained_buckets.is_none()
+    {
+        return Err(anyhow!(
+            "privacy_fine_grained_buckets must be set, because privacy_fine_grained is {:?}",
+            PrivacyFineGrained::ViaPrivacyBuckets
+        ));
+    }
 
     log::info!("# | create_config_with_strong_constraints | {user_id} | created");
 
@@ -295,6 +335,8 @@ mod tests {
             show_members_archived: false,
             show_custom_fronts: false,
             respect_front_notifications_disabled: true,
+            privacy_fine_grained: PrivacyFineGrained::ViaPrivacyBuckets,
+            privacy_fine_grained_buckets: Some(vec!["blabla".to_owned()]),
             enable_discord: false,
             enable_discord_status_message: false,
             enable_vrchat: false,
@@ -336,6 +378,8 @@ mod tests {
             show_members_archived: false,
             show_custom_fronts: true,
             respect_front_notifications_disabled: false,
+            privacy_fine_grained: PrivacyFineGrained::ViaFriend,
+            privacy_fine_grained_buckets: Some(vec!["bucket1".to_string(), "bucket2".to_string()]),
             enable_discord: true,
             enable_discord_status_message: true,
             enable_vrchat: false,
@@ -361,6 +405,11 @@ mod tests {
   "show_members_archived": false,
   "show_custom_fronts": true,
   "respect_front_notifications_disabled": false,
+  "privacy_fine_grained": "ViaFriend",
+  "privacy_fine_grained_buckets": [
+    "bucket1",
+    "bucket2"
+  ],
   "enable_website": false,
   "enable_discord": true,
   "enable_discord_status_message": true,

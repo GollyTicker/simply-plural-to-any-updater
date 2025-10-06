@@ -1,3 +1,4 @@
+use crate::platforms::vrchat_api::VRChatAuthResponse;
 use crate::platforms::vrchat_auth_types::{
     Cookies, TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse,
     VRChatCredentials, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
@@ -21,7 +22,6 @@ const VRCHAT_UPDATER_USER_AGENT: &str = concat!(
     "@",
     "gmail.com"
 );
-
 /* Called in updater. Cookie is only validated, no new cookie is created. */
 pub async fn authenticate_vrchat_with_cookie(
     config: &users::UserConfigForUpdater,
@@ -58,7 +58,7 @@ pub async fn authenticate_vrchat_with_cookie(
 
 pub async fn authenticate_vrchat_for_new_cookie(
     creds: &VRChatCredentials,
-) -> Result<Either<VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse>> {
+) -> Result<VRChatAuthResponse> {
     let (vrchat_config, cookies) =
         new_vrchat_config_with_basic_auth_and_optional_cookie(Either::Left(creds))?;
 

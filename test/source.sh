@@ -10,6 +10,8 @@ export SHOW_MEMBERS_NON_ARCHIVED=true
 export SHOW_MEMBERS_ARCHIVED=false
 export SHOW_CUSTOM_FRONTS=true
 export RESPECT_FRONT_NOTIFICATIONS_DISABLED=true
+export PRIVACY_FINE_GRAINED=NoFineGrained
+export PRIVACY_FINE_GRAINED_BUCKETS="[]"
 
 source docker/source.sh # await
 
@@ -56,6 +58,8 @@ get_user_config_json() {
         \"show_members_archived\": ${SHOW_MEMBERS_ARCHIVED},
         \"show_custom_fronts\": ${SHOW_CUSTOM_FRONTS},
         \"respect_front_notifications_disabled\": ${RESPECT_FRONT_NOTIFICATIONS_DISABLED},
+        \"privacy_fine_grained\": \"${PRIVACY_FINE_GRAINED}\",
+        \"privacy_fine_grained_buckets\": ${PRIVACY_FINE_GRAINED_BUCKETS},
         $SIMPLY_PLURAL_TOKEN_LINE
         $DISCORD_STATUS_MESSAGE_TOKEN_LINE
         $VRCHAT_USERNAME_LINE

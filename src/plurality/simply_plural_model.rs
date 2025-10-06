@@ -4,8 +4,10 @@ use anyhow::Result;
 use serde::Deserialize;
 use serde::Deserializer;
 
-const GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID: &str =
+pub const GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID: &str =
     "eb06960e5b7fb576923f0e909947c0ce8ca46dcbe61ee5af2681f8f59404df5d";
+
+pub const SIMPLY_PLURAL_VRCHAT_STATUS_NAME_FIELD_NAME: &str = "VRChat Status Name";
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct FrontEntry {
@@ -44,6 +46,7 @@ pub struct Fronter {
     pub avatar_url: String,
     pub vrchat_status_name: Option<String>,
     pub start_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub privacy_buckets: Vec<String>,
 }
 
 impl Fronter {
@@ -79,6 +82,7 @@ impl From<CustomFront> for Fronter {
             avatar_url: cf.content.avatar_url,
             vrchat_status_name: None,
             start_time: None,
+            privacy_buckets: cf.content.privacy_buckets,
         }
     }
 }
@@ -134,6 +138,7 @@ impl From<Member> for Fronter {
             avatar_url: m.content.avatar_url,
             vrchat_status_name,
             start_time: None,
+            privacy_buckets: m.content.privacy_buckets,
         }
     }
 }

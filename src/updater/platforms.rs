@@ -1,12 +1,14 @@
 use anyhow::Result;
 use serde::Serialize;
 use sp2any_base::updater::UpdaterStatus;
+use specta;
 use strum_macros;
 
 use crate::{database, platforms, plurality, users};
 
 // NOTE: specta::Type is manually exported in bindings
-#[derive(Copy, Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq)]
+#[derive(Copy, Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq, specta::Type)]
+#[specta(export)]
 pub enum Platform {
     VRChat,
     Discord,

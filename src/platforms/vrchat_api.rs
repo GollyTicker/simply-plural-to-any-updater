@@ -7,11 +7,13 @@ use crate::users;
 use either::Either;
 use rocket::serde::json::Json;
 
+pub type VRChatAuthResponse = Either<VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse>;
+
 #[post("/api/user/platform/vrchat/auth_2fa/request", data = "<creds>")]
 pub async fn post_api_user_platform_vrchat_auth_2fa_request(
     creds: Json<vrchat_auth_types::VRChatCredentials>,
     _jwt: users::Jwt, // request should be authenticated, but we don't need user id
-) -> HttpResult<Json<Either<VRChatCredentialsWithCookie, TwoFactorCodeRequiredResponse>>> {
+) -> HttpResult<Json<VRChatAuthResponse>> {
     let creds = creds.into_inner();
     log::info!("# | POST /api/user/platform/vrchat/auth_2fa/request | {creds}");
 

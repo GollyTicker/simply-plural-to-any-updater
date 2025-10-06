@@ -18,6 +18,8 @@
   * add SP2Any user to config explanations and to the sp2any-deployments as a global singular
 * websocket connection restarts
 * better error messages which the users can also understand and which handle most common error paths
+  * also let users know, when the VRChat 429 too many requests happen during login - so that they can try again in a day.
+* vrchat rate limits hinders SP2Any users to login into VRChat. possibily related to the frequent re-deployments from the same IP-addr on the day before. can we maybe avoid logging in the user at system-startup, then the vrchat cookie already exists from a previous login? what other ways can we use to bypass the rate-limits? maybe do the login in browser instead of via the backend?
 
 Privacy buckets of each member/custom front is simply a list of bucket-ids.
 

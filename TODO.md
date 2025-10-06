@@ -12,26 +12,26 @@ Now it's time to implement this all. Outline all the steps you need to do.
 
 # STEPS
 
-1.  **Backend - `src/users/config.rs`:**
+1.  DONE - **Backend - `src/users/config.rs`:**
     *   Define a `PrivacyFineGrained` enum with variants `NoFineGrained`, `ViaFriend`, and `ViaPrivacyBuckets`.
     *   Derive `Debug`, `Clone`, `Serialize`, `Deserialize`, `PartialEq`, `Eq`, `Default`, `sqlx::Type`, and `specta::Type` for the enum.
     *   Annotate the enum with `#[specta(export)]` and `#[sqlx(type_name = "privacy_fine_grained_enum")]`.
     *   Update the `UserConfigDbEntries` struct to use `privacy_fine_grained: Option<PrivacyFineGrained>`.
-    *   Add `privacy_fine_grained_buckets: Option<String>` to the `UserConfigDbEntries` struct.
+    *   Add `privacy_fine_grained_buckets: Option<Vec<String>>` to the `UserConfigDbEntries` struct.
     *   Update the `default()` and `with_defaults()` methods to handle the new fields.
 
 2.  **Database Migration:**
-    *   Create a new migration file `docker/migrations/005_member_privacy_buckets.sql`.
-    *   In this file, first create a new ENUM type: `CREATE TYPE privacy_fine_grained_enum AS ENUM ('NoFineGrained', 'ViaFriend', 'ViaPrivacyBuckets');`
-    *   Then, add the following columns to the `users` table:
-        *   `privacy_fine_grained` (`privacy_fine_grained_enum`) - This will store the enum value.
-        *   `privacy_fine_grained_buckets` (TEXT)
+    *   DONE - Create a new migration file `docker/migrations/005_member_privacy_buckets.sql`.
+    *   DONE - In this file, first create a new ENUM type: `CREATE TYPE privacy_fine_grained_enum AS ENUM ('NoFineGrained', 'ViaFriend', 'ViaPrivacyBuckets');`
+    *   DONE - Then, add the following columns to the `users` table. We'll use a native PostgreSQL array type for the bucket IDs.
+        *   DONE - `privacy_fine_grained` (`privacy_fine_grained_enum`) - This will store the enum value.
+        *   DONE - `privacy_fine_grained_buckets` (TEXT[])
 
-3.  **Backend - `src/database/queries.rs`:**
-    *   Update the `update_user_config` query to include the new `privacy_fine_grained` and `privacy_fine_grained_buckets` columns.
+3.  DONE - **Backend - `src/database/queries.rs`:**
+    *   Update the `update_user_config` query to include the new `privacy_fine_grained` and `privacy_fine_grained_buckets` columns. `sqlx` will automatically handle mapping `Vec<String>` to the `TEXT[]` column type.
     *   Update the `get_user_config` query to retrieve the new columns.
 
-4.  **Backend - `src/plurality/simply_plural.rs`:**
+4.  DONE **Backend - `src/plurality/simply_plural.rs`:**
     *   Locate the fronter filtering logic (where `config.show_members_non_archived` is used).
     *   Implement the new filtering logic based on `config.privacy_fine_grained`:
         *   **`PrivacyFineGrained::ViaFriend`:**
@@ -45,14 +45,10 @@ Now it's time to implement this all. Outline all the steps you need to do.
         *   **`PrivacyFineGrained::NoFineGrained` or `None`:**
             *   The existing logic should apply.
 
-5.  **Backend - `src/bin/ts-bindings.rs`:**
+5.  DONE **Backend - `src/bin/ts-bindings.rs`:**
     *   Ensure that the new enum and fields in `UserConfig` are correctly exported to TypeScript. This should be automatic if `specta` is used correctly.
 
-6.  **Frontend - `frontend/src/components/Config.vue`:**
+6.  DONE **Frontend - `frontend/src/components/Config.vue`:**
     *   The component seems mostly ready.
-    *   Verify that the `privacy_fine_grained_buckets` array is correctly converted to a comma-separated string before being sent to the backend.
-
-7.  **Documentation:**
-    *   Update `README.md` and any other relevant documentation to explain the new privacy feature.
 
 # DOCUMENTATION

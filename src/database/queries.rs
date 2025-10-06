@@ -60,6 +60,8 @@ pub async fn get_user(
             enable_discord_status_message,
             enable_vrchat,
             enable_website,
+            privacy_fine_grained,
+            privacy_fine_grained_buckets,
             '' AS simply_plural_token,
             '' AS discord_status_message_token,
             '' AS vrchat_username,
@@ -105,7 +107,9 @@ pub async fn set_user_config_secrets(
             show_members_non_archived = $18,
             show_members_archived = $19,
             show_custom_fronts = $20,
-            respect_front_notifications_disabled = $21
+            respect_front_notifications_disabled = $21,
+            privacy_fine_grained = $22,
+            privacy_fine_grained_buckets = $23
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -129,6 +133,8 @@ pub async fn set_user_config_secrets(
     .bind(config.show_members_archived)
     .bind(config.show_custom_fronts)
     .bind(config.respect_front_notifications_disabled)
+    .bind(config.privacy_fine_grained)
+    .bind(config.privacy_fine_grained_buckets)
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -161,6 +167,8 @@ pub async fn get_user_secrets(
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
+            privacy_fine_grained,
+            privacy_fine_grained_buckets,
             pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,
             pgp_sym_decrypt(enc__discord_status_message_token, $2) AS discord_status_message_token,
             pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,

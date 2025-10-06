@@ -2,16 +2,18 @@ use anyhow::Result;
 use sp2any::{
     database::Decrypted,
     platforms::{
-        TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth
+        TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
+        VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
     },
+    updater::Platform,
+    users::PrivacyFineGrained,
 };
 use sp2any_base::{
-    license, meta::{SP2AnyVariantInfo, CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL}, users::{Email, JwtString, UserLoginCredentials, UserProvidedPassword}
+    license,
+    meta::{CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL, SP2AnyVariantInfo},
+    users::{Email, JwtString, UserLoginCredentials, UserProvidedPassword},
 };
-use specta::{
-    self,
-    ts::{ExportConfiguration, export},
-};
+use specta::ts::{ExportConfiguration, export};
 use std::fs;
 
 const DESTINATION: &str = "./frontend/src/sp2any.bindings.ts";
@@ -34,7 +36,7 @@ fn main() -> Result<()> {
     status_prefix?: string;
     status_no_fronts?: string;
     status_truncate_names_to?: number;
-    privacy_fine_grained?: FineGrainedPrivacy;
+    privacy_fine_grained?: PrivacyFineGrained;
     privacy_fine_grained_buckets?: string[];
     show_members_non_archived?: boolean;
     show_members_archived?: boolean;
@@ -50,9 +52,9 @@ fn main() -> Result<()> {
     vrchat_password?: Decrypted;
     vrchat_cookie?: Decrypted;
 }".to_owned(),
-        "export type FineGrainedPrivacy = \"Ignored\" | \"ViaFriend\" | \"ViaPrivacyBuckets\"".to_owned(),
+        export::<PrivacyFineGrained>(conf)?,
         export::<JwtString>(conf)?,
-        "export type Platform = \"VRChat\" | \"Discord\" | \"DiscordStatusMessage\"".to_owned(),
+        export::<Platform>(conf)?,
         "export type UpdaterStatus = \"Disabled\" | \"Running\" | { \"Error\": string } | \"Starting\"".to_owned(),
         "export type UserUpdatersStatuses = { [p in Platform]?: UpdaterStatus }".to_owned(),
         format!(
