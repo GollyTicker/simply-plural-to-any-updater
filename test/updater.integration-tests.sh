@@ -70,7 +70,9 @@ check_system_fronts_set() {
 check_vrc_status_string_equals() {
     EXPECTED="$1"
 
-    VRCHAT_COOKIE_STR="$(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq -r .[0].raw_cookie)"
+    COOKIE1="$(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq -r ".[0].raw_cookie")"
+    COOKIE2="$(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq -r ".[1].raw_cookie")"
+    VRCHAT_COOKIE_STR="$COOKIE1; $COOKIE2"
 
     RESPONSE="$(curl -s "https://api.vrchat.cloud/api/1/auth/user" \
         --cookie "$VRCHAT_COOKIE_STR" \
