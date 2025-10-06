@@ -28,7 +28,7 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
         return Ok(vec![]);
     }
 
-    let system_id = &front_entries[0].content.uid.clone();
+    let system_id = &front_entries[0].content.system_id.clone();
 
     let vrcsn_field_id = get_vrchat_status_name_field_id(config, system_id).await?;
 
@@ -120,7 +120,7 @@ fn filter_frontables_by_front_entries(
         .filter_map(|f| {
             front_entries
                 .iter()
-                .find(|fe| fe.content.member == f.id)
+                .find(|fe| fe.content.fronter_id == f.fronter_id)
                 .map(|fe| {
                     let mut fronter_with_start_time = f.clone();
                     fronter_with_start_time.start_time = Some(fe.content.start_time);

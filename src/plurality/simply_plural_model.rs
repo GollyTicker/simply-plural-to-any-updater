@@ -4,6 +4,9 @@ use anyhow::Result;
 use serde::Deserialize;
 use serde::Deserializer;
 
+const GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID: &str =
+    "eb06960e5b7fb576923f0e909947c0ce8ca46dcbe61ee5af2681f8f59404df5d";
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct FrontEntry {
     pub content: FrontEntryContent,
@@ -11,8 +14,12 @@ pub struct FrontEntry {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct FrontEntryContent {
-    pub member: String, // member ID or custom front ID
-    pub uid: String,    // System ID
+    /** Can be a member ID OR a custom front ID */
+    #[serde(rename = "member")]
+    pub fronter_id: String,
+
+    #[serde(rename = "uid")]
+    pub system_id: String,
 
     #[serde(rename = "startTime")]
     #[serde(deserialize_with = "parse_epoch_millis_to_datetime_utc")]
@@ -32,7 +39,7 @@ where
 
 #[derive(Debug, Clone)]
 pub struct Fronter {
-    pub id: String,
+    pub fronter_id: String,
     pub name: String,
     pub avatar_url: String,
     pub vrchat_status_name: Option<String>,
@@ -49,7 +56,7 @@ impl Fronter {
 #[derive(Deserialize, Debug, Clone)]
 pub struct CustomFront {
     pub content: CustomFrontContent,
-    pub id: String, // custom front id
+    pub custom_front_id: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -59,12 +66,15 @@ pub struct CustomFrontContent {
     #[serde(rename = "avatarUrl")]
     #[serde(default)]
     pub avatar_url: String,
+
+    #[serde(rename = "buckets")]
+    pub privacy_buckets: Vec<String>,
 }
 
 impl From<CustomFront> for Fronter {
     fn from(cf: CustomFront) -> Self {
         Self {
-            id: cf.id,
+            fronter_id: cf.custom_front_id,
             name: cf.content.name,
             avatar_url: cf.content.avatar_url,
             vrchat_status_name: None,
@@ -76,7 +86,7 @@ impl From<CustomFront> for Fronter {
 #[derive(Deserialize, Debug, Clone)]
 pub struct Member {
     pub content: MemberContent,
-    pub id: String, // member id
+    pub member_id: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -91,17 +101,18 @@ pub struct MemberContent {
     pub info: serde_json::Value,
     // if the user uses the custom field "VRChat Status Name" on this member, then this will be
     // { "<vrcsn_field_id>": "<vrcsn>", ...}
-    #[serde(default)]
     pub archived: bool,
 
     #[serde(rename = "preventsFrontNotifs")]
-    #[serde(default)]
     pub front_notifications_disabled: bool,
 
     /* the fields `private` and `preventTrusted` are always true for all members (according to our testing)!
     so it doesn't mean what we mean by member privacy.
     hence, we don't include it in our implementation
     */
+    #[serde(rename = "buckets")]
+    pub privacy_buckets: Vec<String>,
+
     // this will be populated later after deserialisation
     #[serde(default)]
     pub vrcsn_field_id: Option<String>,
@@ -118,7 +129,7 @@ impl From<Member> for Fronter {
                 .map(ToString::to_string)
         });
         Self {
-            id: m.id,
+            fronter_id: m.member_id,
             name: m.content.name,
             avatar_url: m.content.avatar_url,
             vrchat_status_name,
@@ -136,4 +147,18 @@ pub struct CustomField {
 #[derive(Deserialize, Debug, Clone)]
 pub struct CustomFieldContent {
     pub name: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Friend {
+    pub content: FriendContent,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct FriendContent {
+    #[serde(rename = "frienduid")]
+    pub friend_user_id: String,
+
+    #[serde(rename = "buckets")]
+    pub assigned_privacy_buckets: Vec<String>,
 }

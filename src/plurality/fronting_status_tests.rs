@@ -21,7 +21,7 @@ fn mock_formatter_for_tests(
 // Helper function to create mock MemberContent
 fn mock_member_content(name: &str, vrchat_status_name: &str) -> Fronter {
     Fronter {
-        id: String::new(),
+        fronter_id: String::new(),
         name: name.to_string(),
         avatar_url: String::new(),
         vrchat_status_name: if vrchat_status_name.is_empty() {

@@ -21,25 +21,6 @@
 
 Privacy buckets of each member/custom front is simply a list of bucket-ids.
 
-Privacy buckets API:
-GET https://api.apparyllis.com/v1/privacyBuckets/
-returns
-[
-  {
-    id: string, // bucket uid
-    content: {
-      uid: string, // system-uid
-      name: string,
-      icon: string,
-      desc: string,
-      rank: string, // what meaning?
-      color: "#123456",
-      lastOperationTime: number,
-    }
-  },
-  ...
-]
-
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
 * configureable order in which fronts are shown
