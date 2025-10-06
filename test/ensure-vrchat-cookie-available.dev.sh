@@ -133,27 +133,25 @@ trap stop_updater EXIT
 
 # manual approach
 works() {
+    COOKIE_JAR_FILE="$(mktemp)"
+
     echo "======================= 1 ========================"
-    curl -i 'https://vrchat.com/api/1/auth/user' \
-        -H 'User-Agent: Mozilla/5.0 Firefox/142.0' \
+    curl -L -i -c "$COOKIE_JAR_FILE" 'https://api.vrchat.cloud/api/1/auth/user' \
+        -H 'User-Agent: SP2Any/0.1.0 does-not-exist-792374@gmail.com' \
         -H 'Accept: */*' \
         -u "$VRCHAT_USERNAME:$VRCHAT_PASSWORD"
 
-    echo "Enter the 'auth=auth_cookie...' part:"
-    read -r COOKIE
-    export COOKIE
     read_2fa_code_from_terminal
 
     echo "======================= 2 ========================"
-    curl -v 'https://vrchat.com/api/1/auth/twofactorauth/emailotp/verify' \
+    curl -L -i -b "$COOKIE_JAR_FILE" 'https://api.vrchat.cloud/api/1/auth/twofactorauth/emailotp/verify' \
     -X POST \
-    -H 'User-Agent: Mozilla/5.0 Firefox/142.0' \
+    -H 'User-Agent: SP2Any/0.1.0 does-not-exist-792374@gmail.com' \
     -H 'content-type: application/json' \
-    -H "Cookie: $COOKIE" \
     --data-raw "{\"code\":\"$TFA_CODE\"}"
 }
 
 
-# works
+works
 
-main
+# main
