@@ -464,7 +464,7 @@ async function loginToVRChat() {
     }
   } catch (e) {
     console.warn(e)
-    vrchatLoginStatus.value = 'Failed to login to VRChat.'
+    vrchatLoginStatus.value = 'Failed to login to VRChat. Error: ' + e
   }
 }
 
@@ -485,7 +485,7 @@ async function submitVRChat2FA() {
     vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL
   } catch (e) {
     console.warn(e)
-    vrchatLoginStatus.value = 'Failed to submit 2FA code.'
+    vrchatLoginStatus.value = 'Failed to submit 2FA code. Error: ' + e
   }
 }
 
@@ -536,7 +536,7 @@ async function saveConfigAndRestart() {
     status.value = 'Config saved successfully and restarted updaters!'
   } catch (e) {
     console.warn(e)
-    status.value = 'Failed to save config and restart updaters.'
+    status.value = 'Failed to save config and restart updaters. Error: ' + e
   }
 }
 
@@ -555,7 +555,7 @@ async function refreshPrivacyBuckets() {
     console.warn(e)
     simply_plural_privacy_buckets.value = []
     privacyBucketsStatus.value =
-      "Couldn't fetch privacy buckets from Simply Plural. Did you correctly set the token?"
+      "Couldn't fetch privacy buckets from Simply Plural. Did you correctly set the token? Error: " + e
   }
   if (
     config.value.privacy_fine_grained === 'ViaPrivacyBuckets' &&

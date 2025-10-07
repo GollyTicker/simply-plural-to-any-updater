@@ -40,8 +40,8 @@ const login = async () => {
     console.log('Login successful!')
     status.value = ''
     router.push('/status')
-  } catch (err) {
-    status.value = 'Invalid credentials'
+  } catch (err: any) {
+    status.value = 'Login failed:' + err
     console.error('Login failed:', err)
   }
 }
@@ -57,7 +57,7 @@ const register = async () => {
     await sp2any_api.register(creds)
     status.value = 'Registration successful! You can now log in.'
   } catch (err: any) {
-    status.value = 'Registration failed: ' + err.toString()
+    status.value = 'Registration failed: ' + err
     console.error('Registration failed:', err)
   }
 }
