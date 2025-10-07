@@ -1,5 +1,6 @@
 use crate::database;
 use crate::meta_api::HttpResult;
+use crate::meta_api::expose_internal_error;
 use crate::updater;
 use crate::users::config;
 use crate::users::jwt;
@@ -19,10 +20,12 @@ pub async fn get_api_user_config(
     app_user_secrets: &State<database::ApplicationUserSecrets>,
 ) -> HttpResult<Json<config::UserConfigDbEntries<database::Decrypted, database::ValidConstraints>>>
 {
-    let user_id = jwt.user_id()?;
+    let user_id = jwt.user_id().map_err(expose_internal_error)?;
     log::info!("# | GET /api/user/config | {user_id}");
 
-    let user_config = database::get_user_secrets(db_pool, &user_id, app_user_secrets).await?;
+    let user_config = database::get_user_secrets(db_pool, &user_id, app_user_secrets)
+        .await
+        .map_err(expose_internal_error)?;
 
     log::info!("# | GET /api/user/config | {user_id} | got_config");
 
@@ -38,12 +41,13 @@ pub async fn post_api_user_config(
     client: &State<reqwest::Client>,
     shared_updaters: &State<updater::UpdaterManager>,
 ) -> HttpResult<()> {
-    let user_id = jwt.user_id()?;
+    let user_id = jwt.user_id().map_err(expose_internal_error)?;
     log::info!("# | POST /api/user/config_and_restart | {user_id}");
 
     // check that config satisfies contraints
     let (_, valid_db_config) =
-        config::create_config_with_strong_constraints(&user_id, client, &config)?;
+        config::create_config_with_strong_constraints(&user_id, client, &config)
+            .map_err(expose_internal_error)?;
 
     log::info!("# | POST /api/user/config_and_restart | {user_id} | config_valid");
 
@@ -54,7 +58,8 @@ pub async fn post_api_user_config(
         valid_db_config,
         application_user_secrets,
     )
-    .await?;
+    .await
+    .map_err(expose_internal_error)?;
 
     log::info!("# | POST /api/user/config_and_restart | {user_id} | config_valid | config_saved");
 
@@ -65,7 +70,8 @@ pub async fn post_api_user_config(
         client,
         shared_updaters,
     )
-    .await?;
+    .await
+    .map_err(expose_internal_error)?;
 
     log::info!(
         "# | POST /api/user/config_and_restart | {user_id} | config_valid | config_saved | updaters_restarted"

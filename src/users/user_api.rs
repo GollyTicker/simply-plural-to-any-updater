@@ -1,10 +1,10 @@
 use crate::database;
 use crate::meta_api::HttpResult;
+use crate::meta_api::expose_internal_error;
 use crate::users::auth;
 use crate::users::jwt;
 use crate::users::model::UserId;
 use rocket::http;
-use rocket::response;
 use rocket::{State, serde::json::Json};
 use serde::Deserialize;
 use serde::Serialize;
@@ -19,11 +19,11 @@ pub async fn post_api_user_register(
     credentials: Json<UserLoginCredentials>,
 ) -> HttpResult<()> {
     log::info!("# | POST /api/user/register | {}", credentials.email);
-    let pwh = auth::create_password_hash(&credentials.password)?;
+    let pwh = auth::create_password_hash(&credentials.password).map_err(expose_internal_error)?;
 
     let () = database::create_user(db_pool, credentials.email.clone(), pwh)
         .await
-        .map_err(response::Debug)?;
+        .map_err(expose_internal_error)?;
 
     log::info!(
         "# | POST /api/user/register | {} | user created.",
@@ -77,11 +77,11 @@ pub async fn get_api_user_info(
     db_pool: &State<PgPool>,
     jwt: jwt::Jwt,
 ) -> HttpResult<Json<UserInfoUI>> {
-    let user_id = jwt.user_id()?;
+    let user_id = jwt.user_id().map_err(expose_internal_error)?;
     log::info!("# | GET /api/user/info | {user_id}");
     let user_info = database::get_user_info(db_pool, user_id.clone())
         .await
-        .map_err(response::Debug)?;
+        .map_err(expose_internal_error)?;
     log::info!("# | GET /api/user/info | {user_id} | user_info");
     Ok(Json(user_info.into()))
 }

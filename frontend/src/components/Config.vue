@@ -413,7 +413,7 @@ import {
   type TwoFactorAuthMethod,
   SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
 } from '@/sp2any.bindings'
-import { http, sp2any_api } from '@/sp2any_api'
+import { detailed_error_string, http, sp2any_api } from '@/sp2any_api'
 import { get_privacy_buckets, type PrivacyBucket } from '@/simply_plural_api'
 
 const baseUrl = http.defaults.baseURL!
@@ -462,9 +462,9 @@ async function loginToVRChat() {
       vrchatTwoFactorMethod.value = result.Right.method
       vrchatLoginStatus.value = `Please enter 2FA code from ${result.Right.method}.`
     }
-  } catch (e) {
-    console.warn(e)
-    vrchatLoginStatus.value = 'Failed to login to VRChat. Error: ' + e
+  } catch (err) {
+    console.warn(err)
+    vrchatLoginStatus.value = 'Failed to login to VRChat. Error: ' + +detailed_error_string(err)
   }
 }
 
@@ -483,9 +483,9 @@ async function submitVRChat2FA() {
     const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa)
     config.value.vrchat_cookie = { secret: result.cookie }
     vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL
-  } catch (e) {
-    console.warn(e)
-    vrchatLoginStatus.value = 'Failed to submit 2FA code. Error: ' + e
+  } catch (err) {
+    console.warn(err)
+    vrchatLoginStatus.value = 'Failed to submit 2FA code. Error: ' + detailed_error_string(err)
   }
 }
 
@@ -534,9 +534,10 @@ async function saveConfigAndRestart() {
 
     await sp2any_api.set_config_and_restart(config.value)
     status.value = 'Config saved successfully and restarted updaters!'
-  } catch (e) {
-    console.warn(e)
-    status.value = 'Failed to save config and restart updaters. Error: ' + e
+  } catch (err) {
+    console.warn(err)
+    status.value =
+      'Failed to save config and restart updaters. Error: ' + detailed_error_string(err)
   }
 }
 
@@ -551,11 +552,12 @@ async function refreshPrivacyBuckets() {
     simply_plural_privacy_buckets.value = await get_privacy_buckets(token)
     console.log('Privacy buckets:', simply_plural_privacy_buckets.value)
     privacyBucketsStatus.value = 'Your privacy buckets from Simply Plural:'
-  } catch (e) {
-    console.warn(e)
+  } catch (err) {
+    console.warn(err)
     simply_plural_privacy_buckets.value = []
     privacyBucketsStatus.value =
-      "Couldn't fetch privacy buckets from Simply Plural. Did you correctly set the token? Error: " + e
+      "Couldn't fetch privacy buckets from Simply Plural. Did you correctly set the token? Error: " +
+      detailed_error_string(err)
   }
   if (
     config.value.privacy_fine_grained === 'ViaPrivacyBuckets' &&

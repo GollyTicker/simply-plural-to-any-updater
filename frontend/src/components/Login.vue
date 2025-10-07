@@ -23,7 +23,8 @@ defineProps({})
 import { ref, type Ref } from 'vue'
 import router from '@/router'
 import type { UserLoginCredentials } from '@/sp2any.bindings'
-import { sp2any_api } from '@/sp2any_api'
+import { detailed_error_string, sp2any_api } from '@/sp2any_api'
+import type { AxiosError } from 'axios'
 
 const email: Ref<string> = ref('')
 const password: Ref<string> = ref('')
@@ -41,7 +42,7 @@ const login = async () => {
     status.value = ''
     router.push('/status')
   } catch (err: any) {
-    status.value = 'Login failed:' + err
+    status.value = 'Login failed:' + detailed_error_string(err)
     console.error('Login failed:', err)
   }
 }
@@ -57,7 +58,7 @@ const register = async () => {
     await sp2any_api.register(creds)
     status.value = 'Registration successful! You can now log in.'
   } catch (err: any) {
-    status.value = 'Registration failed: ' + err
+    status.value = 'Registration failed: ' + detailed_error_string(err)
     console.error('Registration failed:', err)
   }
 }

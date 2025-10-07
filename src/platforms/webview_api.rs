@@ -1,11 +1,9 @@
 use crate::database;
 use crate::meta_api::HttpResult;
+use crate::meta_api::expose_internal_error;
 use crate::plurality;
 use crate::users;
-use rocket::{
-    State,
-    response::{self, content::RawHtml},
-};
+use rocket::{State, response::content::RawHtml};
 use sqlx::PgPool;
 
 #[get("/fronting/<website_url_name>")]
@@ -17,22 +15,26 @@ pub async fn get_api_fronting_by_user_id(
 ) -> HttpResult<RawHtml<String>> {
     log::info!("# | GET /fronting/{website_url_name}");
 
-    let user_info = database::find_user_by_website_url_name(db_pool, website_url_name).await?;
+    let user_info = database::find_user_by_website_url_name(db_pool, website_url_name)
+        .await
+        .map_err(expose_internal_error)?;
     let user_id = user_info.id;
 
     log::info!("# | GET /fronting/{website_url_name} | {user_id}");
 
-    let user_config =
-        database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
+    let user_config = database::get_user_secrets(db_pool, &user_id, application_user_secrets)
+        .await
+        .map_err(expose_internal_error)?;
 
     let (updater_config, _) =
-        users::create_config_with_strong_constraints(&user_id, client, &user_config)?;
+        users::create_config_with_strong_constraints(&user_id, client, &user_config)
+            .map_err(expose_internal_error)?;
 
     log::info!("# | GET /fronting/{website_url_name} | {user_id} | got_config");
 
     let fronts = plurality::fetch_fronts(&updater_config)
         .await
-        .map_err(response::Debug)?;
+        .map_err(expose_internal_error)?;
 
     log::info!("# | GET /fronting/{website_url_name} | {user_id} | got_config | fetched_fronts");
 

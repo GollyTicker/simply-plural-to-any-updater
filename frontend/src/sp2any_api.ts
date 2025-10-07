@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import type {
   SP2AnyVariantInfo,
   JwtString,
@@ -11,15 +11,21 @@ import type {
   VRChatAuthResponse,
 } from './sp2any.bindings'
 import { getJwt, logoutAndBackToStart, setJwt } from './jwt'
+import router from './router'
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_SP2ANY_BASE_URL || '' /* use relate url by default */,
 })
 
+export function detailed_error_string(error: any): string {
+  const axiosErrorString = (<AxiosError>error)?.response?.data ?? ''
+  return error.toString() + '. ' + axiosErrorString
+}
+
 http.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginAttempt = error.request.responseURL === http.defaults.baseURL! + '/api/user/login'
+    const isLoginAttempt = router.currentRoute.value.path === '/login'
     if (error.response && [401, 403].includes(error.response.status) && !isLoginAttempt) {
       console.warn('Auth failed with 401/403 on request. Now redirecting to login. Error:', error)
       logoutAndBackToStart()

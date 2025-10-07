@@ -21,11 +21,12 @@ impl From<String> for PasswordHashString {
 }
 
 pub fn create_password_hash(password: &UserProvidedPassword) -> Result<PasswordHashString> {
+    // don't allow external user to infer what exactly failed
     let salt = SaltString::generate(&mut OsRng);
 
     let pwh = Argon2::default()
         .hash_password(password.inner.as_bytes(), &salt)
-        .map_err(|e| anyhow!(e))?;
+        .map_err(|_| anyhow!("Registration failed"))?;
 
     Ok(PasswordHashString {
         inner: pwh.to_string(),

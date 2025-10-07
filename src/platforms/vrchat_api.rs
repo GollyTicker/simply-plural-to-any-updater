@@ -1,4 +1,4 @@
-use crate::meta_api::HttpResult;
+use crate::meta_api::{HttpResult, expose_internal_error};
 use crate::platforms::vrchat_auth_types::{
     TwoFactorCodeRequiredResponse, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
 };
@@ -17,7 +17,9 @@ pub async fn post_api_user_platform_vrchat_auth_2fa_request(
     let creds = creds.into_inner();
     log::info!("# | POST /api/user/platform/vrchat/auth_2fa/request | {creds}");
 
-    let creds_or_tfa_method = vrchat_auth::authenticate_vrchat_for_new_cookie(&creds).await?;
+    let creds_or_tfa_method = vrchat_auth::authenticate_vrchat_for_new_cookie(&creds)
+        .await
+        .map_err(expose_internal_error)?;
 
     log::info!(
         "# | POST /api/user/platform/vrchat/auth_2fa/request | {creds} | {creds_or_tfa_method}"
@@ -37,8 +39,9 @@ pub async fn post_api_user_platform_vrchat_auth_2fa_resolve(
     let creds_with_tfa = creds_with_tfa.into_inner();
     log::info!("# | POST /api/user/platform/vrchat/auth_2fa/request | {creds_with_tfa}");
 
-    let valid_creds =
-        vrchat_auth::authenticate_vrchat_for_new_cookie_with_2fa(&creds_with_tfa).await?;
+    let valid_creds = vrchat_auth::authenticate_vrchat_for_new_cookie_with_2fa(&creds_with_tfa)
+        .await
+        .map_err(expose_internal_error)?;
 
     log::info!(
         "# | POST /api/user/platform/vrchat/auth_2fa/request | {creds_with_tfa} | ok {valid_creds}"

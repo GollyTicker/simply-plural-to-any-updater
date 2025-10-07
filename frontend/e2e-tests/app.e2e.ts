@@ -55,7 +55,7 @@ async function registrationSucceeded() {
 }
 
 async function registrationFailed() {
-    await expect($('.status-message')).toHaveText('Registration failed: AxiosError: Request failed with status code 500');
+    await expect($('.status-message')).toHaveText('Registration failed: AxiosError: Request failed with status code 500. error returned from database: duplicate key value violates unique constraint "users_email_key"');
 }
 
 

@@ -1,8 +1,14 @@
-use rocket::State;
 use rocket::serde::json::Json;
+use rocket::{State, http};
 use sp2any_base::meta::SP2AnyVariantInfo;
 
-pub type HttpResult<T> = Result<T, rocket::response::Debug<anyhow::Error>>;
+pub type HttpResult<T> = Result<T, (http::Status, String)>;
+
+#[must_use]
+#[allow(clippy::needless_pass_by_value)]
+pub fn expose_internal_error(err: anyhow::Error) -> (http::Status, String) {
+    (http::Status::InternalServerError, err.to_string())
+}
 
 #[get("/api/meta/sp2any-variant-info")]
 pub fn get_api_meta_sp2any_variant(
