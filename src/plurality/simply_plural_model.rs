@@ -72,6 +72,7 @@ pub struct CustomFrontContent {
     pub avatar_url: String,
 
     #[serde(rename = "buckets")]
+    #[serde(default)]
     pub privacy_buckets: Vec<String>,
 }
 
@@ -107,9 +108,11 @@ pub struct MemberContent {
     pub info: serde_json::Value,
     // if the user uses the custom field "VRChat Status Name" on this member, then this will be
     // { "<vrcsn_field_id>": "<vrcsn>", ...}
+    #[serde(default)]
     pub archived: bool,
 
     #[serde(rename = "preventsFrontNotifs")]
+    #[serde(default)]
     pub front_notifications_disabled: bool,
 
     /* the fields `private` and `preventTrusted` are always true for all members (according to our testing)!
@@ -117,6 +120,7 @@ pub struct MemberContent {
     hence, we don't include it in our implementation
     */
     #[serde(rename = "buckets")]
+    #[serde(default)]
     pub privacy_buckets: Vec<String>,
 
     // this will be populated later after deserialisation
@@ -167,5 +171,6 @@ pub struct FriendContent {
     pub friend_user_id: String,
 
     #[serde(rename = "buckets")]
+    #[serde(default)]
     pub assigned_privacy_buckets: Vec<String>,
 }

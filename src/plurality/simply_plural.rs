@@ -21,6 +21,8 @@ int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT);
 pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fronter>> {
     let user_id = &config.user_id;
 
+    log::info!("# | fetch_fronts | {user_id}");
+
     SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER
         .with_label_values(&[&user_id.to_string()])
         .inc();
@@ -44,7 +46,7 @@ pub async fn fetch_fronts(config: &users::UserConfigForUpdater) -> Result<Vec<Fr
     let fronters = filter_frontables_by_front_entries(front_entries, frontables);
 
     for f in &fronters {
-        log::info!("# | fetch_fronts | fronter[*] {f:?}");
+        log::info!("# | fetch_fronts | {user_id} | fronter[*] {f:?}");
     }
 
     SIMPLY_PLURAL_FETCH_FRONTS_FRONTERS_COUNT
