@@ -10,8 +10,8 @@ export SHOW_MEMBERS_NON_ARCHIVED=true
 export SHOW_MEMBERS_ARCHIVED=false
 export SHOW_CUSTOM_FRONTS=true
 export RESPECT_FRONT_NOTIFICATIONS_DISABLED=true
-export PRIVACY_FINE_GRAINED=NoFineGrained
-export PRIVACY_FINE_GRAINED_BUCKETS="[]"
+export PRIVACY_FINE_GRAINED=ViaPrivacyBuckets
+export PRIVACY_FINE_GRAINED_BUCKETS="[\"68e23553d3877cbeb6000000\"]"
 
 source docker/source.sh # await
 

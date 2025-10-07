@@ -6,16 +6,19 @@ set -euo pipefail
 
 [[ "$SPS_API_WRITE_TOKEN" != "" ]]
 
-[[ "$DISCORD_STATUS_MESSAGE_TOKEN" != "" ]]
+[[ "$VRCHAT_USERNAME" != "" ]]
 
-export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=true
-ENABLE_DISCORD_STATUS_MESSAGE=true
-ENABLE_VRCHAT=false
+[[ "$VRCHAT_PASSWORD" != "" ]]
+
+export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=false
+ENABLE_DISCORD_STATUS_MESSAGE=false
+ENABLE_VRCHAT=true
 ENABLE_DISCORD=false
 ENABLE_WEBSITE=false
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
+set -a; source ./test/ensure-vrchat-cookie-available.dev.sh --automated ; set +a
 
 main() {
     stop_updater
@@ -24,23 +27,13 @@ main() {
 
     set_system_fronts_set "A"
     start_updater
-    
+
 
     check_system_fronts_set "A"
     set_system_fronts_set "B"
     sleep "$SECONDS_BETWEEN_UPDATES"s
     check_system_fronts_set "B"
     
-
-    set_system_fronts_set "C"
-    sleep "$SECONDS_BETWEEN_UPDATES"s
-    check_system_fronts_set "C-limited-visibility"
-
-
-    set_system_fronts_set "D"
-    sleep "$SECONDS_BETWEEN_UPDATES"s
-    check_system_fronts_set "D-limited-visibility"
-
 
     clear_all_fronts
     echo "✅✅✅ Updater Integration Test ✅✅✅"
@@ -52,30 +45,32 @@ check_system_fronts_set() {
     echo "check_system_fronts_set '$SET'"
 
     if [[ "$SET" == "A" ]]; then
-        check_discord_status_string_equals "F: Annalea 💖 A., Borgn B., Daenssa 📶 D., Cstm First"
+        check_vrc_status_string_equals "F˸Ann‚Bor‚Dae‚Cst"
     elif [[ "$SET" == "B" ]]; then
+        check_vrc_status_string_equals "F˸ tš漢ク汉漢"
         check_discord_status_string_equals "F: tš▶️漢ク汉漢"
-    elif [[ "$SET" == "C-limited-visibility" ]]; then
-        check_discord_status_string_equals "F: NK notif-ok"
-    elif [[ "$SET" == "D-limited-visibility" ]]; then
-        check_discord_status_string_equals "F: pbucket-member-yes"
     else
         return 1
     fi
 }
 
 
-check_discord_status_string_equals() {
+check_vrc_status_string_equals() {
     EXPECTED="$1"
 
-    RESPONSE="$(curl -s \
-        "https://discord.com/api/v10/users/@me/settings" \
-        -H "Authorization: $DISCORD_STATUS_MESSAGE_TOKEN"
+    COOKIE1="$(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq -r ".[0].raw_cookie")"
+    COOKIE2="$(echo -n "$VRCHAT_COOKIE" | base64 --decode | jq -r ".[1].raw_cookie")"
+    VRCHAT_COOKIE_STR="$COOKIE1; $COOKIE2"
+
+    RESPONSE="$(curl -s "https://api.vrchat.cloud/api/1/auth/user" \
+        --cookie "$VRCHAT_COOKIE_STR" \
+        -u "$VRCHAT_USERNAME:$VRCHAT_PASSWORD" \
+        -H "User-Agent: SP2Any/0.1.0 does-not-exist-792374@gmail.com"
     )"
 
-    STATUS="$( echo "$RESPONSE" | jq -r .custom_status.text )"
+    STATUS="$( echo "$RESPONSE" | jq -r .statusDescription)"
 
-    echo "Discord Status Check: '$STATUS' =? '$EXPECTED'"
+    echo "VRC Status Check: '$STATUS' =? '$EXPECTED'"
 
     [[ "$STATUS" == "$EXPECTED" ]]
 }

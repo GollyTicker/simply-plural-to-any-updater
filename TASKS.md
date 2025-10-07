@@ -6,16 +6,16 @@
   * DONE archived members configuration / hiding
   * make lists of members / CFs / archived members collapeble and searchable to manage large systems
   * probably start with defaults for actives / archived / CFs and integration with privacy buckets from SP
-    * [privacy buckets in SimplyPlual](https://docs.apparyllis.com/docs/help/features/buckets/intro). Perhaps
+    * DONE: [privacy buckets in SimplyPlual](https://docs.apparyllis.com/docs/help/features/buckets/intro). Perhaps
       we can also instead make a singleton "SP2Any" account on SP and people can add that one as a friend.
       This way, they can simply assign SP2Any to existing privacy bucket groups and chose what should be shown.
       This is an alternative to asking the users to make a new privacy bucket with the name "SP2Any" which is then read by the API.
-    * privacy bucket API doesn't seem to be documented. I'll have to reverse-engineer that.
-      * https://api.apparyllis.com/v1/privacyBuckets/
+    * DONE: privacy bucket API doesn't seem to be documented. I'll have to reverse-engineer that.
   * bidrectional sync of privacy bucket membership and "show in SP2Any" setting
     > If I search for myself, and toggle the "show as fronting" button in SP2A, it autoadds me to the privacy bucket in SP.
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
-  * add SP2Any user to config explanations and to the sp2any-deployments as a global singular
+  * DONE: add SP2Any user to config explanations and to the sp2any-deployments as a global singular
+  * DONE: testing of privacy features
 * websocket connection restarts
 * better error messages which the users can also understand and which handle most common error paths
   * also let users know, when the VRChat 429 too many requests happen during login - so that they can try again in a day.
