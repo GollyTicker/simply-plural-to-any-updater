@@ -302,3 +302,97 @@ async fn simply_plural_http_request_get_sp2any_assigned_buckets(
 
     Ok(allowed_buckets)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::plurality::{Member, MemberContent};
+    use crate::users::UserConfigForUpdater;
+    use sqlx::types::uuid;
+
+    fn create_test_config(
+        respect_front_notifications_disabled: bool,
+        show_members_archived: bool,
+        show_members_non_archived: bool,
+    ) -> UserConfigForUpdater {
+        UserConfigForUpdater {
+            show_members_non_archived,
+            show_members_archived,
+            respect_front_notifications_disabled,
+            privacy_fine_grained: crate::users::PrivacyFineGrained::NoFineGrained,
+            privacy_fine_grained_buckets: None,
+            client: reqwest::Client::new(),
+            user_id: crate::users::UserId {
+                inner: uuid::Uuid::new_v4(),
+            },
+            simply_plural_base_url: "".to_string(),
+            discord_base_url: "".to_string(),
+            wait_seconds: Default::default(),
+            status_prefix: "".to_string(),
+            status_no_fronts: "".to_string(),
+            status_truncate_names_to: 0,
+            show_custom_fronts: false,
+            enable_website: false,
+            enable_discord: false,
+            enable_discord_status_message: false,
+            enable_vrchat: false,
+            website_url_name: "".to_string(),
+            website_system_name: "".to_string(),
+            simply_plural_token: Default::default(),
+            discord_status_message_token: Default::default(),
+            vrchat_username: Default::default(),
+            vrchat_password: Default::default(),
+            vrchat_cookie: Default::default(),
+        }
+    }
+
+    fn create_test_member(archived: bool, front_notifications_disabled: bool) -> Member {
+        Member {
+            member_id: "test_member".to_string(),
+            content: MemberContent {
+                name: "Test Member".to_string(),
+                avatar_url: "".to_string(),
+                info: serde_json::Value::Null,
+                archived,
+                front_notifications_disabled,
+                privacy_buckets: vec![],
+                vrcsn_field_id: None,
+            },
+        }
+    }
+
+    #[test]
+    fn test_show_member_privacy_respect_front_notifications_disabled() {
+        let config = create_test_config(true, true, true);
+        let member = create_test_member(false, true);
+        assert!(!show_member_according_to_privacy_rules(&config, &member));
+    }
+
+    #[test]
+    fn test_show_member_privacy_archived_shown() {
+        let config = create_test_config(false, true, true);
+        let member = create_test_member(true, false);
+        assert!(show_member_according_to_privacy_rules(&config, &member));
+    }
+
+    #[test]
+    fn test_show_member_privacy_archived_hidden() {
+        let config = create_test_config(false, false, true);
+        let member = create_test_member(true, false);
+        assert!(!show_member_according_to_privacy_rules(&config, &member));
+    }
+
+    #[test]
+    fn test_show_member_privacy_non_archived_shown() {
+        let config = create_test_config(false, true, true);
+        let member = create_test_member(false, false);
+        assert!(show_member_according_to_privacy_rules(&config, &member));
+    }
+
+    #[test]
+    fn test_show_member_privacy_non_archived_hidden() {
+        let config = create_test_config(false, true, false);
+        let member = create_test_member(false, false);
+        assert!(!show_member_according_to_privacy_rules(&config, &member));
+    }
+}
