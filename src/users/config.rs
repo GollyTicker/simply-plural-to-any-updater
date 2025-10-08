@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::{
     config_value, config_value_if,
-    database::{self, SecretType},
+    database::{self, Encrypted, SecretType},
     int_counter_metric,
     users::model::UserId,
 };
@@ -137,6 +137,58 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
             vrchat_cookie: None,
         }
     }
+}
+
+#[must_use]
+pub fn metrics_config_values(user_config: &UserConfigDbEntries<Encrypted>) -> Vec<(String, bool)> {
+    vec![
+        ("enable_discord".to_owned(), user_config.enable_discord),
+        ("enable_vrchat".to_owned(), user_config.enable_vrchat),
+        ("enable_website".to_owned(), user_config.enable_website),
+        (
+            "enable_discord_status_message".to_owned(),
+            user_config.enable_discord_status_message,
+        ),
+        (
+            "show_members_non_archived".to_owned(),
+            user_config.show_members_non_archived,
+        ),
+        (
+            "show_members_archived".to_owned(),
+            user_config.show_members_archived,
+        ),
+        (
+            "show_custom_fronts".to_owned(),
+            user_config.show_custom_fronts,
+        ),
+        (
+            "respect_front_notifications_disabled".to_owned(),
+            user_config.respect_front_notifications_disabled,
+        ),
+        (
+            format!(
+                "privacy_fine_grained_{:?}",
+                user_config.privacy_fine_grained
+            ),
+            true,
+        ),
+        (
+            "privacy_fine_grained_buckets_set".to_owned(),
+            user_config.privacy_fine_grained_buckets.is_some(),
+        ),
+        (
+            "status_prefix_set".to_owned(),
+            user_config.status_prefix.is_some(),
+        ),
+        (
+            "status_no_fronts_set".to_owned(),
+            user_config.status_no_fronts.is_some(),
+        ),
+        (
+            "status_truncate_names_to_set".to_owned(),
+            user_config.status_truncate_names_to.is_some(),
+        ),
+    ]
 }
 
 /// user specific config values in the form needed for the updaters

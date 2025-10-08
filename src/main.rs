@@ -28,12 +28,20 @@ async fn main() -> Result<()> {
 
     log::debug!("# | app_setup | configured | updaters_restarted");
 
-    log::debug!("# | app_setup | configured | updaters_restarted | webserver_starting");
+    metrics::start_user_config_metrics_cron_job(&app_setup.db_pool).await?;
+
+    log::debug!(
+        "# | app_setup | configured | updaters_restarted | metrics_cron_started | webserver_starting"
+    );
+
+    log::debug!(
+        "# | app_setup | configured | updaters_restarted | metrics_cron_started | webserver_starting"
+    );
 
     let () = run_webserver(app_setup).await?;
 
     log::debug!(
-        "# | app_setup | configured | updaters_restarted | webserver_starting | webserver_ended"
+        "# | app_setup | configured | updaters_restarted | metrics_cron_started | webserver_starting | webserver_ended"
     );
 
     Ok(())
@@ -47,7 +55,7 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
         .manage(setup.client)
         .manage(setup.shared_updaters)
         .manage(setup.sp2any_variant_info)
-        .attach(metrics::PROM_METRICS.clone()) // todo. fix /metrics not available
+        .attach(metrics::PROM_METRICS.clone())
         .attach(setup.cors_policy)
         .mount(
             "/",

@@ -70,3 +70,4 @@ tokio-tungstenite = { version = "*", default-features = false, features = [
     "handshake",
 ] }
 futures = "*"
+tokio-cron-scheduler = "*"
