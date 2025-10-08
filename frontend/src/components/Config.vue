@@ -292,6 +292,9 @@
               The benefit of this method, is that it is Discord ToS compliant. The drawback of this
               is that these updates only work as long as your SP2Any bridge and Discord are running
               locally.
+              <br />
+              Note, that the SP2Any bridge doesn't automatically update at the moment. If it doesn't work
+              then download and install the latest version and try again!
             </p>
           </div>
         </div>

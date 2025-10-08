@@ -70,7 +70,6 @@ pub async fn post_api_user_login(
 
     Ok(Json(jwt_string))
 }
-// todo. how can we enable users to reset their password? Do I really have to do this all manually here???
 
 #[get("/api/user/info")]
 pub async fn get_api_user_info(

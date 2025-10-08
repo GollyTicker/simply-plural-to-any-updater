@@ -16,10 +16,6 @@ use tauri::Manager;
 use tauri::async_runtime::{JoinHandle, Mutex};
 use tokio_tungstenite::{connect_async, tungstenite::client::IntoClientRequest};
 
-// todo. add auto-update capabilities.
-// todo. add auto-start capabilities: https://crates.io/crates/auto-launch
-// todo. note, that only a single user account is supported for now.
-
 const MEGABYTES: u128 = 10 ^ 6;
 
 #[tauri::command]
@@ -83,7 +79,6 @@ async fn subscribe_to_bridge_channel_anyhow(app: tauri::AppHandle, jwt: JwtStrin
     log::info!("Connecting to WebSocket at {ws_url}");
     notify_user_on_status(&app, "Connecting to SP2Any to receive updates ...");
 
-    // todo. add retries of connections when they are closed etc.
     // This websocket stream receives text messages of the type DiscordRichPresence and
     // sends messages of the type UpdaterStatus.
     let (ws_stream, _) = connect_async(request).await?;
@@ -105,6 +100,14 @@ async fn register_background_task(app: tauri::AppHandle, handle: JoinHandle<()>)
 
 pub fn notify_user_on_status<S: Into<String>>(app: &tauri::AppHandle, value: S) {
     let _ = app.emit("notify_user_on_status", value.into());
+    // we don't care about the success.
+}
+
+pub fn restart_websocket_connection_after_retry_interval(app: &tauri::AppHandle) {
+    let _ = app.emit(
+        "restart_websocket_connection_after_retry_interval",
+        (),
+    );
     // we don't care about the success.
 }
 

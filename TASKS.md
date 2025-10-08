@@ -16,7 +16,7 @@
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
   * DONE: add SP2Any user to config explanations and to the sp2any-deployments as a global singular
   * DONE: testing of privacy features
-* websocket connection restarts
+* DONE: websocket connection restarts
 * DONE: better error messages which the users can also understand and which handle most common error paths
   * also let users know, when the VRChat 429 too many requests happen during login - so that they can try again in a day.
 * vrchat rate limits hinders SP2Any users to login into VRChat. possibily related to the frequent re-deployments from the same IP-addr on the day before. can we maybe avoid logging in the user at system-startup, then the vrchat cookie already exists from a previous login? what other ways can we use to bypass the rate-limits? maybe do the login in browser instead of via the backend?
@@ -29,7 +29,12 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 * make it more clear, what the people need to do make the discord bridge thing work. maybe a list of steps and if they're working.
 * support large systems. i.e. members search and bulk edit.
 
-* configs changing didnt quite work 
+* sp2any-bridge
+  * auto-update
+  * auto-start on system start
+* password reset for users
+* BUG: when discord rich presence is disabled and the bridge is started, it connects and shows up as "running" though it doesn't show any
+  rich presence in discord. this might be confusing. and also, there happens some related errors in the bridge logs which should be investigated
 * add status not only for updaters but also for SP itself.
 * remove `0.1.0` from sp2any bridge executable
 * Add automatic sync to PluralKit

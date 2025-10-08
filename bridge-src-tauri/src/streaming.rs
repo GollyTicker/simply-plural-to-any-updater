@@ -10,7 +10,7 @@ use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, tungstenite};
 
-use crate::notify_user_on_status;
+use crate::{notify_user_on_status, restart_websocket_connection_after_retry_interval};
 
 pub type WsSender = SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
 pub type WsReceiver = SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
@@ -113,10 +113,10 @@ pub fn stream_ws_messages_to_rich_presence_task(
                 }
             }
         }
-        // connection closed. todo. we should try to reconnect in a while.
         notify_user_on_status(
             &app,
-            "⚠️ Connection to SP2Any ended. (Please restart the bridge to try again. We haven't implemented automatic restarts yet.)",
+            format!("⚠️ Connection to SP2Any ended. Will try again in a moment...",),
         );
+        restart_websocket_connection_after_retry_interval(&app);
     })
 }
