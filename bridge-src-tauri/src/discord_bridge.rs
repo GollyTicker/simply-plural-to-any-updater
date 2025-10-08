@@ -74,7 +74,7 @@ async fn activity_loop(
             updater_status_channel.send(UpdaterStatus::Running);
             notify_user_on_status(
                 app,
-                "Connected to SP2Any and syncing to local Discord client ✅",
+                "Connected to SP2Any and syncing to local Discord client ✅\nIf you can't see it, then check your Discord profile and the SP2Any settings.",
             );
         } else {
             clear_activity(client)?;
