@@ -132,4 +132,29 @@ footer {
   color: darkslategray;
   background-color: azure;
 }
+
+/* for the slim mobile screens */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    height: auto;
+    align-items: flex-start;
+  }
+
+  #app-container {
+    /* 60px for header + ~60px for nav links */
+    padding-top: 120px;
+  }
+
+  #app-header {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .nav-links-container {
+    width: 100%;
+    flex-wrap: wrap;
+    padding-bottom: 0.5rem;
+  }
+}
 </style>

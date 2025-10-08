@@ -29,6 +29,7 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 * make it more clear, what the people need to do make the discord bridge thing work. maybe a list of steps and if they're working.
 * support large systems. i.e. members search and bulk edit.
 
+* make sure, that stuff stays useable in mobile view
 * sp2any-bridge
   * auto-update
   * auto-start on system start
