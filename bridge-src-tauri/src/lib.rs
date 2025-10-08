@@ -104,10 +104,7 @@ pub fn notify_user_on_status<S: Into<String>>(app: &tauri::AppHandle, value: S) 
 }
 
 pub fn restart_websocket_connection_after_retry_interval(app: &tauri::AppHandle) {
-    let _ = app.emit(
-        "restart_websocket_connection_after_retry_interval",
-        (),
-    );
+    let _ = app.emit("restart_websocket_connection_after_retry_interval", ());
     // we don't care about the success.
 }
 

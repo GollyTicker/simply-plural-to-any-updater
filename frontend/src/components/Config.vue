@@ -275,8 +275,8 @@
               the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
               <br />
               Then start it on the computer where Discord Desktop is running. You might get a
-              warning, that the executable is not signed or executable. Simply accept warning that and run it. (For small
-              projects, it's infeasible to get this signed.)
+              warning, that the executable is not signed or executable. Simply accept warning that
+              and run it. (For small projects, it's infeasible to get this signed.)
               <br />
               Once started, you can login to SP2Any. When you have discord running on the same
               computer, SP2Any will show itself as a rich presence activity and display the fronting
@@ -293,8 +293,8 @@
               is that these updates only work as long as your SP2Any bridge and Discord are running
               locally.
               <br />
-              Note, that the SP2Any bridge doesn't automatically update at the moment. If it doesn't work
-              then download and install the latest version and try again!
+              Note, that the SP2Any bridge doesn't automatically update at the moment. If it doesn't
+              work then download and install the latest version and try again!
             </p>
           </div>
         </div>
@@ -421,7 +421,7 @@ import {
   type VRChatCredentials,
   type VRChatCredentialsWithTwoFactorAuth,
   type TwoFactorAuthMethod,
-  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL
+  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
 } from '@/sp2any.bindings'
 import { detailed_error_string, http, sp2any_api } from '@/sp2any_api'
 import { get_privacy_buckets, type PrivacyBucket } from '@/simply_plural_api'
@@ -461,7 +461,7 @@ async function loginToVRChat() {
   try {
     const creds: VRChatCredentials = {
       username: config.value.vrchat_username!.secret,
-      password: config.value.vrchat_password!.secret
+      password: config.value.vrchat_password!.secret,
     }
     const result = await sp2any_api.vrchat_request_2fa(creds)
     if ('Left' in result) {
@@ -484,11 +484,11 @@ async function submitVRChat2FA() {
     const creds_with_tfa: VRChatCredentialsWithTwoFactorAuth = {
       creds: {
         username: config.value.vrchat_username!.secret,
-        password: config.value.vrchat_password!.secret
+        password: config.value.vrchat_password!.secret,
       },
       code: { inner: vrchatTwoFactor.value },
       tmp_cookie: vrchatTmpCookie.value,
-      method: vrchatTwoFactorMethod.value!
+      method: vrchatTwoFactorMethod.value!,
     }
     const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa)
     config.value.vrchat_cookie = { secret: result.cookie }
@@ -507,7 +507,7 @@ function copyText(text: string, event: MouseEvent) {
       const element = event.target as HTMLElement
       element.title = 'Copied!'
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('Failed to copy text: ', err)
     })
 }
@@ -589,7 +589,7 @@ watch(
   [() => config.value.simply_plural_token, () => config.value.privacy_fine_grained],
   async () => {
     await refreshPrivacyBuckets()
-  }
+  },
 )
 </script>
 

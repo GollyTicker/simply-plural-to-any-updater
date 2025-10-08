@@ -115,7 +115,7 @@ pub fn stream_ws_messages_to_rich_presence_task(
         }
         notify_user_on_status(
             &app,
-            format!("⚠️ Connection to SP2Any ended. Will try again in a moment...",),
+            "⚠️ Connection to SP2Any ended. Will try again in a moment...".to_string(),
         );
         restart_websocket_connection_after_retry_interval(&app);
     })
