@@ -21,6 +21,8 @@ fi
 
 ./steps/30-build-release.sh
 
+git push
+git push --tags
 gh release create "$TAG" target/release_builds/* --title "$TAG" --notes ""
 
 echo "Release $TAG created successfully."
