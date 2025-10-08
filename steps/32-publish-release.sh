@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Publishes the tag at the current revision (assuming the current git revision is tagged like v2.13 or so).
+
+set -euo pipefail
+
+TAG=$(git describe --tags --exact-match)
+
+if [ -z "$TAG" ]; then
+    echo "Error: No tag found for the current revision."
+    exit 1
+fi
+
+echo "Found tag: $TAG"
+
+if ! gh auth status; then
+    echo "You are not logged into GitHub."
+    echo "Please login to publish the release."
+    gh auth login --web
+fi
+
+./steps/30-build-release.sh
+
+gh release create "$TAG" target/release_builds/* --title "$TAG" --notes ""
+
+echo "Release $TAG created successfully."
