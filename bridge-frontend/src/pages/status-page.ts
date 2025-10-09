@@ -6,8 +6,10 @@ import * as tauriAutoStartPlugin from '@tauri-apps/plugin-autostart'
 
 const WEBSOCKET_RETRY_INTERVAL_MILLIS = 10 * 1000
 
-const AUTOSTART_IS_ENABLED_TEXT = "SP2Any-Bridge will automatically start when you start the computer."
-const AUTOSTART_IS_DISABLED_TEXT = "It is recommended to set SP2Any-Bridge to automatically start when you start the computer."
+const AUTOSTART_IS_ENABLED_TEXT =
+  'SP2Any-Bridge will automatically start when you start the computer.'
+const AUTOSTART_IS_DISABLED_TEXT =
+  'It is recommended to set SP2Any-Bridge to automatically start when you start the computer.'
 
 let retryTimer: NodeJS.Timeout | undefined
 
@@ -60,18 +62,18 @@ async function subscribe_to_bridge_channel() {
 }
 
 async function refreshAutostartSection() {
-  let isEnabled = await tauriAutoStartPlugin.isEnabled();
-  autoStartLabel().innerText = isEnabled ? AUTOSTART_IS_ENABLED_TEXT : AUTOSTART_IS_DISABLED_TEXT;
-  autoStartCheckbox().checked = isEnabled;
+  let isEnabled = await tauriAutoStartPlugin.isEnabled()
+  autoStartLabel().innerText = isEnabled ? AUTOSTART_IS_ENABLED_TEXT : AUTOSTART_IS_DISABLED_TEXT
+  autoStartCheckbox().checked = isEnabled
 
   autoStartCheckbox().addEventListener('change', async () => {
     if (await tauriAutoStartPlugin.isEnabled()) {
-      await tauriAutoStartPlugin.disable();
+      await tauriAutoStartPlugin.disable()
     } else {
-      await tauriAutoStartPlugin.enable();
+      await tauriAutoStartPlugin.enable()
     }
-    refreshAutostartSection();
-  });
+    refreshAutostartSection()
+  })
 }
 
 function restart_websocket_connection_after_retry_interval() {
@@ -88,7 +90,6 @@ function autoStartLabel(): HTMLLabelElement {
 
 function autoStartCheckbox(): HTMLInputElement {
   return document.querySelector<HTMLInputElement>('#autostart')!
-
 }
 
 listen<string>('notify_user_on_status', (event) => {

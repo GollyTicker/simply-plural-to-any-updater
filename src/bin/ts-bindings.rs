@@ -11,7 +11,7 @@ use sp2any::{
 use sp2any_base::{
     license,
     meta::{
-        CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL, SP2ANY_VERSION,
+        CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASE_ASSETS_URL, SP2ANY_VERSION,
         SP2AnyVariantInfo,
     },
     users::{Email, JwtString, UserLoginCredentials, UserProvidedPassword},
@@ -31,7 +31,7 @@ fn main() -> Result<()> {
         export::<Decrypted>(conf)?,
         export::<SP2AnyVariantInfo>(conf)?,
         format!("export const CANONICAL_SP2ANY_BASE_URL: string = \"{CANONICAL_SP2ANY_BASE_URL}\""),
-        format!("export const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: string = \"{SP2ANY_GITHUB_REPOSITORY_RELEASES_URL}\""),
+        format!("export const SP2ANY_GITHUB_REPOSITORY_RELEASE_ASSETS_URL: string = \"{SP2ANY_GITHUB_REPOSITORY_RELEASE_ASSETS_URL}\""),
 "export type UserConfigDbEntries = {
     wait_seconds?: number;
     website_system_name?: string;

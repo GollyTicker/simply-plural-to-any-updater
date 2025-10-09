@@ -186,8 +186,8 @@ footer {
 }
 
 #autostart:checked {
-  background-color: #2196F3;
-  border-color: #2196F3;
+  background-color: #2196f3;
+  border-color: #2196f3;
 }
 
 #autostart:checked::before {
