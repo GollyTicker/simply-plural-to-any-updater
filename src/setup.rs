@@ -5,6 +5,7 @@ use anyhow::Result;
 
 use rocket::http::Method;
 use sp2any_base::meta;
+use sp2any_base::meta::SP2ANY_VERSION;
 use sqlx::postgres;
 use std::env;
 use std::time::Duration;
@@ -36,6 +37,7 @@ pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<Applicati
     };
 
     let sp2any_variant_info = meta::SP2AnyVariantInfo {
+        version: SP2ANY_VERSION.to_owned(),
         variant: cli_args.sp2any_variant.clone(),
         description: cli_args.sp2any_variant_description.clone(),
         show_in_ui: !cli_args.sp2any_variant_hide_in_ui,

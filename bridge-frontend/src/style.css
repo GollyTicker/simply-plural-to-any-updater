@@ -131,6 +131,13 @@ button:focus-visible {
   }
 }
 
+#update-bridge-note {
+  font-size: x-small;
+  font-weight: bold;
+  color: darkred;
+  margin-left: 0.3rem;
+}
+
 footer {
   text-align: center;
   font-size: 0.8rem;

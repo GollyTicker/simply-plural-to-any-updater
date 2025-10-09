@@ -10,7 +10,10 @@ use sp2any::{
 };
 use sp2any_base::{
     license,
-    meta::{CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL, SP2AnyVariantInfo},
+    meta::{
+        CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL, SP2ANY_VERSION,
+        SP2AnyVariantInfo,
+    },
     users::{Email, JwtString, UserLoginCredentials, UserProvidedPassword},
 };
 use specta::ts::{ExportConfiguration, export};
@@ -67,6 +70,7 @@ fn main() -> Result<()> {
         export::<TwoFactorCodeRequiredResponse>(conf)?,
         export::<TwoFactorAuthCode>(conf)?,
         export::<VRChatCredentialsWithTwoFactorAuth>(conf)?,
+        format!("export const SP2ANY_VERSION = \"{SP2ANY_VERSION}\""),
         "export type VRChatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse }".to_owned(),
     ];
     fs::write(DESTINATION, defs.map(|s| s + ";").join("\n"))?;

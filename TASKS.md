@@ -30,7 +30,7 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 * support large systems. i.e. members search and bulk edit.
 
 
-* uswe websocket subscription to simply plural and only get the fronters + system, when it actually changes
+* use websocket subscription to simply plural and only get the fronters + system, when it actually changes
 * make sure, that stuff stays useable in mobile view
 * sp2any-bridge
   * auto-update
