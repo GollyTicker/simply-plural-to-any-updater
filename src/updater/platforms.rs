@@ -6,14 +6,12 @@ use strum_macros;
 
 use crate::{database, platforms, plurality, users};
 
-// NOTE: specta::Type is manually exported in bindings
 #[derive(Copy, Clone, Serialize, strum_macros::Display, Eq, Hash, PartialEq, specta::Type)]
 #[specta(export)]
 pub enum Platform {
     VRChat,
     Discord,
     DiscordStatusMessage,
-    // when adding a new platform, don't forget to add it to the available_updaters.
 }
 
 pub enum Updater {
