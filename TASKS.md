@@ -39,7 +39,7 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 * BUG: when discord rich presence is disabled and the bridge is started, it connects and shows up as "running" though it doesn't show any
   rich presence in discord. this might be confusing. and also, there happens some related errors in the bridge logs which should be investigated
 * add status not only for updaters but also for SP itself.
-* remove `0.1.0` from sp2any bridge executable
+* DONE: remove `0.1.0` from sp2any bridge executable
 * Add automatic sync to PluralKit
 * Rename 'VRChat Status Name' field to 'SP2Any Simple Name' field
   * ask users on how to best configure this

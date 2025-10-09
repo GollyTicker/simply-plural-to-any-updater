@@ -31,9 +31,10 @@ build_binaries() {
         ./steps/22-bridge-frontend-tauri-release.sh --target "$target"
         BUILD_OUT_PATH="bridge-src-tauri/target/$target/release/bundle"
         if [[ "$target" == *"windows"* ]]; then
-            cp -v "$BUILD_OUT_PATH"/*/*.exe "$OUT_DIR/"
+            cp -v "$BUILD_OUT_PATH"/*/*.exe "$OUT_DIR/SP2Any-Bridge-Windows-Setup.exe"
         else
-            cp -v "$BUILD_OUT_PATH"/*/*.{rpm,deb} "$OUT_DIR/"
+            cp -v "$BUILD_OUT_PATH"/*/*.rpm "$OUT_DIR/SP2Any-Bridge.rpm"
+            cp -v "$BUILD_OUT_PATH"/*/*.deb "$OUT_DIR/SP2Any-Bridge.deb"
         fi
         echo "✅ sp2any-bridge $target"
 
