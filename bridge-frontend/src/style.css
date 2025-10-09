@@ -145,3 +145,51 @@ footer {
   background-color: lightcyan;
   padding: 0.8rem;
 }
+
+.autostart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2rem;
+}
+
+.autostart-container label {
+  font-size: small;
+}
+
+#autostart {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  min-width: 60px;
+  height: 34px;
+  border: 1px solid #ccc;
+  border-radius: 17px;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s;
+}
+
+#autostart::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s;
+}
+
+#autostart:checked {
+  background-color: #2196F3;
+  border-color: #2196F3;
+}
+
+#autostart:checked::before {
+  transform: translateX(26px);
+}

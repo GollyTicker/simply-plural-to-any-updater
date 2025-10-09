@@ -27,6 +27,7 @@
     "webdriverio": "^9.20.0"
   },
   "dependencies": {
+    "@tauri-apps/plugin-autostart": "^2.5.0",
     "@tauri-apps/plugin-log": "^2.7.0",
     "navigo": "^8.11.1"
   }

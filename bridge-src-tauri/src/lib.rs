@@ -179,6 +179,10 @@ pub fn run() -> Result<()> {
 
     let logs_dir = local_storage::get_logs_dir()?;
 
+    let autostart_plugin = tauri_plugin_autostart::Builder::new()
+        .app_name("SP2Any-Bridge")
+        .build();
+
     let rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage> =
         fire_and_forget_channel();
     let updater_status_channel: FireAndForgetChannel<UpdaterStatus> = fire_and_forget_channel();
@@ -198,6 +202,7 @@ pub fn run() -> Result<()> {
         .build();
 
     tauri::Builder::default()
+        .plugin(autostart_plugin)
         .invoke_handler(tauri::generate_handler![
             login,
             store_credentials,

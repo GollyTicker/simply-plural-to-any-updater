@@ -34,3 +34,6 @@ tokio-tungstenite = { version = "*", default-features = false, features = [
     "connect",
     "handshake",
 ] }
+
+[target.'cfg(any(target_os = "windows", target_os = "linux"))'.dependencies]
+tauri-plugin-autostart = "*"

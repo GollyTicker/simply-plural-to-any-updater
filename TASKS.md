@@ -34,7 +34,7 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 * make sure, that stuff stays useable in mobile view
 * sp2any-bridge
   * auto-update
-  * auto-start on system start
+  * DONE: auto-start on system start
 * password reset for users
 * BUG: when discord rich presence is disabled and the bridge is started, it connects and shows up as "running" though it doesn't show any
   rich presence in discord. this might be confusing. and also, there happens some related errors in the bridge logs which should be investigated
