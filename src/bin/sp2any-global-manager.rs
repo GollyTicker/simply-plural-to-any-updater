@@ -1,19 +1,9 @@
 use anyhow::{Result, anyhow};
-use futures::{self, SinkExt, StreamExt};
 use serde::Deserialize;
 use serde_json::{self};
-use sp2any::setup;
+use sp2any::{plurality, setup};
 use std::env;
-use std::time::Duration;
-use tokio::{net::TcpStream, select};
-use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, tungstenite::protocol::Message};
-
-const WEBSOCKET_URL: &str = "wss://api.apparyllis.com/v1/socket";
-const RETRY_WAIT_SECONDS: u64 = 10;
-const KEEP_ALIVE_INTERVAL: u64 = 30;
-
-type WriteStream = futures::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
-type ReadStream = futures::stream::SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
+use tokio_tungstenite::tungstenite::Utf8Bytes;
 
 /** The Message as sent by Simply Plural on the Websocket.
  *
@@ -41,21 +31,14 @@ async fn main() -> Result<()> {
     log::info!("Accept all friend requests before starting loop.");
     accept_all_friend_requests(&token).await?;
 
-    loop {
-        // DO NOT USE the ? operator in this loop, as otherwise the loop will break!
-        log::info!("WS client starting ...");
-        if let Err(e) = run_websocket_client(&token).await {
-            log::error!("WS client error: {e}.",);
-        } else {
-            log::warn!("WS client exited cleanly, which should not happen.",);
-        }
-
-        log::info!("Retrying in {RETRY_WAIT_SECONDS} seconds...");
-        tokio::time::sleep(Duration::from_secs(RETRY_WAIT_SECONDS)).await;
-    }
+    plurality::auto_reconnecting_websocket_client_to_simply_plural("global-mgr", &token, |ev| {
+        process_event(&token, ev)
+    })
+    .await
 }
 
-async fn handle_websocket_event(token: &str, event: Event<'_>) -> Result<()> {
+async fn process_event(token: &str, json_string: Utf8Bytes) -> Result<()> {
+    let event = serde_json::from_str::<Event>(&json_string)?;
     match event.msg {
         None => log::info!("Ok empty event."),
         Some("Successfully authenticated") => log::info!("Ok authenticated."),
@@ -112,51 +95,4 @@ async fn accept_all_friend_requests(token: &str) -> Result<()> {
     log::info!("All {} friend requests accepted.", friend_requests.len());
 
     Ok(())
-}
-
-async fn run_websocket_client(token: &str) -> Result<()> {
-    let (mut write, mut read) = create_connection(WEBSOCKET_URL).await?;
-
-    authenticate(&mut write, token).await?;
-
-    let mut keep_alive_interval = tokio::time::interval(Duration::from_secs(KEEP_ALIVE_INTERVAL));
-
-    loop {
-        select! {
-            Some(msg) = read.next() => {
-                match msg? {
-                    Message::Text(pong) if pong == "pong" => log::info!("Ok Pong."),
-                    Message::Text(json_string) => {
-                        log::info!("Received payload: '{json_string}'");
-                        let event = serde_json::from_str::<Event>(&json_string)?;
-                        handle_websocket_event(token, event).await?;
-                    },
-                    Message::Close(_) => return Ok(()),
-                    unknown => log::warn!("Unknown message '{unknown}'. Ignoring and continueing."),
-                }
-            }
-            _ = keep_alive_interval.tick() => {
-                write.send(Message::Text("ping".into())).await?;
-                log::info!("Ping sent.");
-            }
-        }
-    }
-}
-
-async fn authenticate(write: &mut WriteStream, token: &str) -> Result<()> {
-    log::info!("WS client authenticating...");
-    let auth_payload = serde_json::json!({
-        "op": "authenticate",
-        "token": token,
-    });
-    write.send(Message::Text(auth_payload.to_string().into())).await?;
-    log::info!("WS client authentication sent.");
-    Ok(())
-}
-
-async fn create_connection(url: &str) -> Result<(WriteStream, ReadStream)> {
-    log::info!("WS client connecting to WebSocket: {url}");
-    let (ws_stream, _) = tokio_tungstenite::connect_async(url).await?;
-    let (write, read) = ws_stream.split();
-    Ok((write, read))
 }
