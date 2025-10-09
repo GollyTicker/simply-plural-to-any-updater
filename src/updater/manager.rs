@@ -262,6 +262,10 @@ fn create_simply_plural_websocket_listener_task(
     let sp_token = config.simply_plural_token.clone();
 
     tokio::spawn(async move {
+        if sp_token.secret.is_empty() {
+            log::info!("SP WS '{user_id}': Not creating websocket, because token is not set.");
+            return;
+        }
         plurality::auto_reconnecting_websocket_client_to_simply_plural(
             &user_id.to_string(),
             &sp_token.secret,

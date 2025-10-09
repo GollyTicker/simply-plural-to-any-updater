@@ -9,7 +9,7 @@ use tokio_tungstenite::{
 };
 
 const WEBSOCKET_URL: &str = "wss://api.apparyllis.com/v1/socket";
-const RETRY_WAIT_SECONDS: u64 = 10;
+const RETRY_WAIT_SECONDS: u64 = 60;
 const KEEP_ALIVE_INTERVAL: u64 = 30;
 
 type WriteStream = futures::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
