@@ -279,7 +279,8 @@
               warning, that the executable is not signed or executable. Simply accept warning that
               and run it. (For small projects, it's infeasible to get this signed.)
               <br />
-              Once started, you can login to SP2Any. When you have discord running on the same
+              Once started, you can login to SP2Any. (You can safely ignore the "Variant" field.)
+              When you have discord running on the same
               computer, SP2Any will show itself as a rich presence activity and display the fronting
               status from there.
               <br />
