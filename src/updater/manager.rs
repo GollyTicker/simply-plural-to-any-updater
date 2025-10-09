@@ -14,6 +14,7 @@ use tokio::task::JoinHandle;
 type SharedMutable<T> = Arc<Mutex<T>>;
 type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
 
+type CancleableTasks = Vec<tokio::task::JoinHandle<()>>;
 type FronterChannel = communication::FireAndForgetChannel<Vec<plurality::Fronter>>;
 type ForeignStatusChannel =
     communication::FireAndForgetChannel<Option<(updater::Platform, UpdaterStatus)>>;
@@ -29,7 +30,7 @@ metric!(
 
 #[derive(Clone)]
 pub struct UpdaterManager {
-    pub tasks: ThreadSafePerUser<work_loop::CancleableUpdater>,
+    pub tasks: ThreadSafePerUser<CancleableTasks>,
     pub statuses: ThreadSafePerUser<work_loop::UserUpdatersStatuses>,
     pub fronter_channel: ThreadSafePerUser<FronterChannel>,
     pub foreign_managed_status_channel: ThreadSafePerUser<ForeignStatusChannel>,
@@ -162,6 +163,8 @@ impl UpdaterManager {
         let () = self.recreate_fronter_channel(user_id)?;
         let foreign_status_updater_task = self.recreate_foreign_status_channel(user_id)?;
         let () = self.recreate_updater_statuses(user_id, &config)?;
+        let simply_plural_websocket_listener_task =
+            create_simply_plural_websocket_listener_task(&config);
 
         let owned_self = self.to_owned();
         let application_user_secrets = application_user_secrets.clone();
@@ -171,7 +174,11 @@ impl UpdaterManager {
 
         locked_task.insert(
             user_id.clone(),
-            vec![work_loop_task, foreign_status_updater_task],
+            vec![
+                work_loop_task,
+                foreign_status_updater_task,
+                simply_plural_websocket_listener_task,
+            ],
         );
         log::info!("# | restart_updater | {user_id} | aborting updaters | restarted");
         UPDATER_MANAGER_RESTART_SUCCESS_COUNT
@@ -246,6 +253,27 @@ impl UpdaterManager {
 
         Ok(())
     }
+}
+
+fn create_simply_plural_websocket_listener_task(
+    config: &users::UserConfigForUpdater,
+) -> JoinHandle<()> {
+    let user_id = config.user_id.clone();
+    let sp_token = config.simply_plural_token.clone();
+
+    tokio::spawn(async move {
+        plurality::auto_reconnecting_websocket_client_to_simply_plural(
+            &user_id.to_string(),
+            &sp_token.secret,
+            async |message| {
+                // currently we only want to listen to the websocket events so that we know what kind of messages we're even receiving.
+                // they'll be extracted from the logs lateron.
+                log::info!("SP WS payload '{user_id}': {message}");
+                Ok(())
+            },
+        )
+        .await;
+    })
 }
 
 fn record_status_in_metrics(user_id: &UserId, p: updater::Platform, new_status: &UpdaterStatus) {

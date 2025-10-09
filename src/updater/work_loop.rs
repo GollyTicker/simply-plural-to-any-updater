@@ -8,7 +8,6 @@ use crate::{database, int_counter_metric, plurality, users};
 use anyhow::Result;
 use chrono::Utc;
 
-pub type CancleableUpdater = Vec<tokio::task::JoinHandle<()>>;
 // NOTE: specta::Type is manually exported in bindings
 pub type UserUpdatersStatuses = HashMap<Platform, UpdaterStatus>;
 type UserUpdaters = HashMap<Platform, Updater>;
