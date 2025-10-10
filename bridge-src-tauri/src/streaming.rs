@@ -66,7 +66,10 @@ pub fn stream_ws_messages_to_rich_presence_task(
     mut ws_read: WsReceiver,
 ) -> JoinHandle<()> {
     tauri::async_runtime::spawn(async move {
-        let rich_presence_channel = app.state::<FireAndForgetChannel<ServerToBridgeSseMessage>>();
+        let mut rich_presence_channel = app
+            .state::<FireAndForgetChannel<ServerToBridgeSseMessage>>()
+            .inner()
+            .clone();
 
         log::info!("WS: Starting listener");
         while let Some(msg) = ws_read.next().await {

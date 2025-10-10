@@ -22,7 +22,7 @@ const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 pub async fn discord_ipc_loop(
     app: &tauri::AppHandle,
     rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage>,
-    updater_status_channel: FireAndForgetChannel<UpdaterStatus>,
+    updater_status_channel: &mut FireAndForgetChannel<UpdaterStatus>,
 ) -> never::Never {
     loop {
         let err = match connect_to_discord_ipc() {
@@ -32,7 +32,7 @@ pub async fn discord_ipc_loop(
                         app,
                         &mut client,
                         rich_presence_channel.clone(),
-                        updater_status_channel.clone(),
+                        &mut updater_status_channel.clone(),
                     )
                     .await,
                 );
@@ -61,7 +61,7 @@ async fn activity_loop(
     app: &tauri::AppHandle,
     client: &mut DiscordIpcClient,
     rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage>,
-    updater_status_channel: FireAndForgetChannel<UpdaterStatus>,
+    updater_status_channel: &mut FireAndForgetChannel<UpdaterStatus>,
 ) -> Result<never::Never> {
     let mut receiver = rich_presence_channel.subscribe();
     loop {

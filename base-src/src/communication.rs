@@ -29,20 +29,23 @@ where
 #[derive(Debug, Clone)]
 pub struct FireAndForgetChannel<T> {
     inner: broadcast::Sender<T>,
+    pub most_recent_value: Option<T>,
 }
 
 #[must_use]
 pub fn fire_and_forget_channel<T: Clone>() -> FireAndForgetChannel<T> {
     FireAndForgetChannel {
         inner: broadcast::channel(1).0,
+        most_recent_value: None,
     }
 }
 
-impl<T> FireAndForgetChannel<T> {
+impl<T: Clone> FireAndForgetChannel<T> {
     /// Sends the value through the channel.
     /// There is no guarantee that any receivers are subscribed and whether they receive the message.
     /// Returns the number of receivers at the moment of the sending. May be 0.
-    pub fn send(&self, value: T) -> usize {
+    pub fn send(&mut self, value: T) -> usize {
+        self.most_recent_value = Some(value.clone());
         self.inner.send(value).unwrap_or_default()
     }
 

@@ -17,11 +17,11 @@ main() {
     start_webserver
 
     set_system_fronts_set "A"
-
+    sleep "$SECONDS_BETWEEN_UPDATES"s
     check_system_fronts_set "A"
 
     set_system_fronts_set "B"
-
+    sleep "$SECONDS_BETWEEN_UPDATES"s
     check_system_fronts_set "B"
 
     clear_all_fronts

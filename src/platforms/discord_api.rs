@@ -31,9 +31,9 @@ pub async fn get_api_user_platform_discord_bridge_events(
 
     let mut fronting_channel = shared_updaters.subscribe_fronter_channel(&user_id)?;
 
-    let foreign_status_channel = shared_updaters.get_foreign_status_channel(&user_id)?;
+    let mut foreign_status_channel = shared_updaters.get_foreign_status_channel(&user_id)?;
 
-    let notify = move |s: UpdaterStatus| foreign_status_channel.send(Some((Platform::Discord, s)));
+    let mut notify = move |s: UpdaterStatus| foreign_status_channel.send(Some((Platform::Discord, s)));
 
     let ws = ws.config(ws::Config {
         write_buffer_size: 0,

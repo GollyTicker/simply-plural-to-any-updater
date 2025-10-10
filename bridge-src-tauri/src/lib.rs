@@ -48,12 +48,13 @@ async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
         .state::<FireAndForgetChannel<ServerToBridgeSseMessage>>()
         .inner()
         .clone();
-    let updater_status_channel = app
+    let mut updater_status_channel = app
         .state::<FireAndForgetChannel<UpdaterStatus>>()
         .inner()
         .clone();
     tauri::async_runtime::spawn(async move {
-        discord_bridge::discord_ipc_loop(&app, rich_presence_channel, updater_status_channel).await;
+        discord_bridge::discord_ipc_loop(&app, rich_presence_channel, &mut updater_status_channel)
+            .await;
     });
 }
 

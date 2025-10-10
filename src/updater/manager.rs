@@ -66,6 +66,24 @@ impl UpdaterManager {
         Ok(receiver)
     }
 
+    pub fn fronter_channel_get_most_recent_value(
+        &self,
+        user_id: &UserId,
+    ) -> Result<Option<Vec<plurality::Fronter>>> {
+        let receiver = self
+            .fronter_channel
+            .lock()
+            .map_err(|e| anyhow!(e.to_string()))?
+            .get(user_id)
+            .ok_or_else(|| {
+                anyhow!("subscribe_fronter_channel: No fronter channel found for {user_id}")
+            })?
+            .most_recent_value
+            .clone();
+
+        Ok(receiver)
+    }
+
     pub fn send_fronter_channel_update(
         &self,
         user_id: &UserId,
@@ -75,7 +93,7 @@ impl UpdaterManager {
             .fronter_channel
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
-            .get(user_id)
+            .get_mut(user_id)
             .ok_or_else(|| {
                 anyhow!("send_fronter_channel_update: No fronter channel found for  {user_id}")
             })?
@@ -196,6 +214,7 @@ impl UpdaterManager {
         Ok(())
     }
 
+    // when the updaters are started, then the initial value will be fetched from simply plural into here
     fn recreate_foreign_status_channel(&self, user_id: &UserId) -> Result<JoinHandle<()>> {
         let new_channel = communication::fire_and_forget_channel();
 
