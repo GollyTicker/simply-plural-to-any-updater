@@ -7,8 +7,8 @@ pub const SP2ANY_GITHUB_REPOSITORY_URL: &str =
 
 pub const SP2ANY_VERSION: &str = env!("SP2ANY_VERSION");
 
-pub const SP2ANY_GITHUB_REPOSITORY_RELEASE_ASSETS_URL: &str =
-    env!("SP2ANY_GITHUB_REPOSITORY_RELEASE_ASSETS_URL");
+pub const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: &str =
+    "https://github.com/GollyTicker/simply-plural-to-any-updater/releases";
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct SP2AnyVariantInfo {

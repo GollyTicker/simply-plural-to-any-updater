@@ -271,9 +271,8 @@
               <br />
               This option only works via the SP2Any-Bridge, which you need to run on the same
               computer as your discord. For that, open
-              <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASE_ASSETS_URL">this</a>, then
-              open the first "Assets" section to see and download the "SP2Any.Bridge" for your
-              platform.
+              <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">this</a>, then open
+              the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
               <br />
               Then start it on the computer where Discord Desktop is running. You might get a
               warning, that the executable is not signed or executable. Simply accept warning that
@@ -422,7 +421,7 @@ import {
   type VRChatCredentials,
   type VRChatCredentialsWithTwoFactorAuth,
   type TwoFactorAuthMethod,
-  SP2ANY_GITHUB_REPOSITORY_RELEASE_ASSETS_URL,
+  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
 } from '@/sp2any.bindings'
 import { detailed_error_string, http, sp2any_api } from '@/sp2any_api'
 import { get_privacy_buckets, type PrivacyBucket } from '@/simply_plural_api'
