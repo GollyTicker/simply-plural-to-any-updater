@@ -29,7 +29,10 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 * make it more clear, what the people need to do make the discord bridge thing work. maybe a list of steps and if they're working.
 * support large systems. i.e. members search and bulk edit.
 
-
+* APP version so that data and tokens are securely saved in the users local smartphone
+  * precondition: make queries.rs into trait and create local implementations for SQLite and Postgres
+  * precondition: make HTTP requests layer between frontend and rocket server such that (1) the backend exposes itself as both http endpoints and Tauri commands (via cfg macro) and (2) the front-end uses an interface to decide whether to use Tauri invoke or HTTP requests to access the local/server back-end.
+  * This might get complex... Most things should work, but probably not the wwbsocket thing for discord...
 * use websocket subscription to simply plural and only get the fronters + system, when it actually changes
   * and also make the discord websocket thing, that an update is sent immediately once the websocket is created
 * make sure, that stuff stays useable in mobile view
