@@ -280,9 +280,8 @@
               and run it. (For small projects, it's infeasible to get this signed.)
               <br />
               Once started, you can login to SP2Any. (You can safely ignore the "Variant" field.)
-              When you have discord running on the same
-              computer, SP2Any will show itself as a rich presence activity and display the fronting
-              status from there.
+              When you have discord running on the same computer, SP2Any will show itself as a rich
+              presence activity and display the fronting status from there.
               <br />
               You may need to enable Rich Presence in Discord under the "Activity Privacy" settings.
               <br />

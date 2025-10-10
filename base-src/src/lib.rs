@@ -11,7 +11,7 @@ pub mod for_discord_bridge {
         blocking_abort_and_clear_tasks, fire_and_forget_channel,
     };
     pub use crate::license;
-    pub use crate::meta::{CANONICAL_SP2ANY_BASE_URL, SP2AnyVariantInfo};
+    pub use crate::meta::{CANONICAL_SP2ANY_BASE_URL, SP2ANY_VERSION, SP2AnyVariantInfo};
     pub use crate::platforms::DiscordRichPresence;
     pub use crate::updater::UpdaterStatus;
     pub use crate::users::{JwtString, UserLoginCredentials, UserProvidedPassword};

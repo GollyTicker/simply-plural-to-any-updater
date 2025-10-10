@@ -1,11 +1,14 @@
 import { invoke } from '@tauri-apps/api/core'
-import { SP2ANY_VERSION, type SP2AnyVariantInfo } from './sp2any.bindings'
+import { type SP2AnyVariantInfo } from './sp2any.bindings'
 
 export async function fetchAndRenderVariantInfo(): Promise<[string, SP2AnyVariantInfo]> {
   console.log('fetch_base_url_and_variant_info ...')
   let result = await invoke<[string, SP2AnyVariantInfo]>('fetch_base_url_and_variant_info')
   console.log('fetch_base_url_and_variant_info.0:', result[0])
   console.log('fetch_base_url_and_variant_info.1:', result[1])
+
+  let bridgeVersion = await getBridgeVersion()
+  console.log('bridgeVersion', bridgeVersion)
 
   let element = document.querySelector<HTMLParagraphElement>('#variant-info')!
 
@@ -17,10 +20,14 @@ export async function fetchAndRenderVariantInfo(): Promise<[string, SP2AnyVarian
     element.title = description
   }
 
-  if (SP2ANY_VERSION !== result[1].version) {
+  if (bridgeVersion !== result[1].version) {
     document.querySelector<HTMLDivElement>('#update-bridge-note')!.innerText =
       '⚠️ SP2Any-Bridge is outdated. Install the newest version from SP2Any Website! ⚠️'
   }
 
   return result
+}
+
+async function getBridgeVersion(): Promise<string> {
+  return await invoke<string>('get_bridge_version')
 }

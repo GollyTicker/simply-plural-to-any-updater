@@ -9,6 +9,7 @@ use sp2any_base::for_discord_bridge::{
     FireAndForgetChannel, JwtString, SP2AnyVariantInfo, ServerToBridgeSseMessage, UpdaterStatus,
     UserLoginCredentials, blocking_abort_and_clear_tasks, fire_and_forget_channel, license,
 };
+use sp2any_base::meta;
 use std::env;
 use std::sync::Arc;
 use tauri::Emitter;
@@ -151,6 +152,11 @@ async fn login_anyhow(creds: UserLoginCredentials) -> Result<JwtString> {
 }
 
 #[tauri::command]
+fn get_bridge_version() -> String {
+    meta::SP2ANY_VERSION.to_string()
+}
+
+#[tauri::command]
 async fn store_credentials(creds: UserLoginCredentials, base_url: String) -> Result<(), String> {
     log::debug!("store_credentials");
     local_storage::set_base_url(base_url).map_err(|e| e.to_string())?;
@@ -210,7 +216,8 @@ pub fn run() -> Result<()> {
             stop_and_clear_credentials,
             subscribe_to_bridge_channel,
             initiate_discord_rpc_loop,
-            fetch_base_url_and_variant_info
+            fetch_base_url_and_variant_info,
+            get_bridge_version
         ])
         .manage(new_background_tasks_container())
         .manage(rich_presence_channel)

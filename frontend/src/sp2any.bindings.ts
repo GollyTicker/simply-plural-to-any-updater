@@ -40,5 +40,4 @@ export type TwoFactorAuthMethod = "TwoFactorAuthMethodEmail" | "TwoFactorAuthMet
 export type TwoFactorCodeRequiredResponse = { method: TwoFactorAuthMethod; tmp_cookie: string };
 export type TwoFactorAuthCode = { inner: string };
 export type VRChatCredentialsWithTwoFactorAuth = { creds: VRChatCredentials; method: TwoFactorAuthMethod; code: TwoFactorAuthCode; tmp_cookie: string };
-export const SP2ANY_VERSION = "dev";
 export type VRChatAuthResponse = { Left: VRChatCredentialsWithCookie } | { Right: TwoFactorCodeRequiredResponse };
