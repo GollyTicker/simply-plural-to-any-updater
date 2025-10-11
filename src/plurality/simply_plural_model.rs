@@ -3,6 +3,7 @@ use std::string::ToString;
 use anyhow::Result;
 use serde::Deserialize;
 use serde::Deserializer;
+use tokio_tungstenite::tungstenite;
 
 pub const GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID: &str =
     "eb06960e5b7fb576923f0e909947c0ce8ca46dcbe61ee5af2681f8f59404df5d";
@@ -173,4 +174,60 @@ pub struct FriendContent {
     #[serde(rename = "buckets")]
     #[serde(default)]
     pub assigned_privacy_buckets: Vec<String>,
+}
+
+pub fn cache_to_be_evicted_based_on_simply_plural_websocket_event(
+    message: &tungstenite::Utf8Bytes,
+) -> Result<bool> {
+    let event = serde_json::from_str(message)?;
+
+    /*
+    all possible collections are here:
+    https://docs.apparyllis.com/docs/getting-started/collections
+
+    collections we MUST NOT ignore:
+      friends, pendingFriendRequests: when our SP2Any gets friends or changes there
+      frontStatuses: even if we don't display it currently, but maybe in future we will
+      frontHistory: obviously
+      members: obviously
+      private: just to be sure...
+      tokens: just to be sure...
+      users: just to be sure...
+
+    usually we get a json with {msg: "update", target: <collection>, ...}
+    However, we can also get a notification: {msg: "notification", title: <title>, message: <message>}
+    How should we proceed in such a situation? For now, we'll simply take each notification as if it's a system change
+
+    furthermore, we still want to force-reset the cache e.g. once per hour, so any things we've missed would be caught
+    */
+
+    let to_be_evicted = matches!(
+        event,
+        Event {
+            msg: Some("update"),
+            // collections we can safely ignore
+            target: Some(
+                "automatedReminders"
+                    | "channel"
+                    | "channelCategories"
+                    | "chatMessages"
+                    | "groups"
+                    | "notes"
+                    | "polls"
+                    | "repeatedReminders"
+            )
+        }
+    );
+
+    Ok(to_be_evicted)
+}
+
+/** The Message as sent by Simply Plural on the Websocket.
+ *
+ * We use &str to make the code for parsing look better and simpler by being able to match against &str literals.
+*/
+#[derive(Debug, Clone, Deserialize)]
+struct Event<'a> {
+    msg: Option<&'a str>,
+    target: Option<&'a str>,
 }
