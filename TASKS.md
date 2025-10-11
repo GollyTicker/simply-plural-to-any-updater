@@ -1,6 +1,5 @@
+## Feedback after first deployment of public-test
 
-# First feedback post-deployment
-**Priority**
 * member privacy
   * DONE custom fronts configuration
   * DONE archived members configuration / hiding
@@ -20,16 +19,21 @@
 * DONE: better error messages which the users can also understand and which handle most common error paths
   * also let users know, when the VRChat 429 too many requests happen during login - so that they can try again in a day.
 * vrchat rate limits hinders SP2Any users to login into VRChat. possibily related to the frequent re-deployments from the same IP-addr on the day before. can we maybe avoid logging in the user at system-startup, then the vrchat cookie already exists from a previous login? what other ways can we use to bypass the rate-limits? maybe do the login in browser instead of via the backend?
+* Add automatic sync to PluralKit
 
-Privacy buckets of each member/custom front is simply a list of bucket-ids.
+---
+
+## Backlog
+
+For the next steps, it probably makes sense to announce it in more discord servers and get a larger set of users.
+This way we can get even more early testers so that we can then move to the app earlier or later based on the feedback.
 
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
 * configureable order in which fronts are shown
 * make it more clear, what the people need to do make the discord bridge thing work. maybe a list of steps and if they're working.
 * support large systems. i.e. members search and bulk edit.
-
-* APP version so that data and tokens are securely saved in the users local smartphone
+* **BIG**: APP version so that data and tokens are securely saved in the users local smartphone
   * precondition: make queries.rs into trait and create local implementations for SQLite and Postgres
   * precondition: make HTTP requests layer between frontend and rocket server such that (1) the backend exposes itself as both http endpoints and Tauri commands (via cfg macro) and (2) the front-end uses an interface to decide whether to use Tauri invoke or HTTP requests to access the local/server back-end.
   * This might get complex... Most things should work, but probably not the wwbsocket thing for discord...
@@ -44,7 +48,6 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
   rich presence in discord. this might be confusing. and also, there happens some related errors in the bridge logs which should be investigated
 * add status not only for updaters but also for SP itself.
 * DONE: remove `0.1.0` from sp2any bridge executable
-* Add automatic sync to PluralKit
 * Rename 'VRChat Status Name' field to 'SP2Any Simple Name' field
   * ask users on how to best configure this
 * Ask on Reddit and various discord servers for what features the users want
@@ -71,8 +74,9 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 
 * add initial suggestions by ChatAI (e.g. privacy, configurability, etc.)
 
+---
 
-# User Feedback
+## Initial User Feedback before first Prototype
 * sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
 * DONE add a warning, that using the discord self-botting comes with a risk for both the user and the dev
   * [artcle by discord](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots)
@@ -84,7 +88,7 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
 
 ---
 
-# First deployment
+## First deployment
 * DONE: test that workflows work with deployed dev-online. WORKED WELL ON WINDOWS ON FIRST TRY!!
 * DONE: add note that running the exec on windows will show a signature warning. ask users to accept it.
 * DONE: deploy for discord test server users
