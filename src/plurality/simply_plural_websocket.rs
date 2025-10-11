@@ -5,8 +5,17 @@ use std::time::Duration;
 use tokio::{net::TcpStream, select};
 use tokio_tungstenite::{
     MaybeTlsStream, WebSocketStream,
-    tungstenite::{Utf8Bytes, protocol::Message},
+    tungstenite::{self, protocol::Message},
 };
+
+use crate::int_counter_metric;
+use std::future::Future;
+
+int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ATTEMPTS_TOTAL);
+int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_ERROR_TOTAL);
+int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_MESSAGES_RECEIVED_TOTAL);
+int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_SEMANTIC_MESSAGES_RECEIVED_TOTAL);
+int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_UNKNOWN_MESSAGES_TOTAL);
 
 const WEBSOCKET_URL: &str = "wss://api.apparyllis.com/v1/socket";
 const RETRY_WAIT_SECONDS: u64 = 60;
@@ -26,15 +35,21 @@ type ReadStream = futures::stream::SplitStream<WebSocketStream<MaybeTlsStream<Tc
 pub async fn auto_reconnecting_websocket_client_to_simply_plural<F>(
     log_prefix: &str,
     token: &str,
-    process_event: impl Fn(Utf8Bytes) -> F,
+    process_event: impl Fn(tungstenite::Utf8Bytes) -> F,
 ) -> !
 where
     F: Future<Output = Result<()>>,
 {
     loop {
         log::info!("WS {log_prefix} client starting ...");
+        SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ATTEMPTS_TOTAL
+            .with_label_values(&[log_prefix])
+            .inc();
         if let Err(e) = run_single_websocket_connection(log_prefix, token, &process_event).await {
             log::error!("WS {log_prefix} client error: {e}.",);
+            SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_ERROR_TOTAL
+                .with_label_values(&[log_prefix])
+                .inc();
         } else {
             log::warn!("WS {log_prefix} client exited cleanly, which should not happen.",);
         }
@@ -47,7 +62,7 @@ where
 async fn run_single_websocket_connection<F>(
     log_prefix: &str,
     token: &str,
-    process_event: impl Fn(Utf8Bytes) -> F,
+    process_event: impl Fn(tungstenite::Utf8Bytes) -> F,
 ) -> Result<()>
 where
     F: Future<Output = Result<()>>,
@@ -61,14 +76,23 @@ where
     loop {
         select! {
             Some(msg) = read.next() => {
+                SIMPLY_PLURAL_WEBSOCKET_MESSAGES_RECEIVED_TOTAL.with_label_values(&[log_prefix]).inc();
                 match msg? {
-                    Message::Text(pong) if pong == "pong" => log::info!("SP WS Ok Pong."),
+                    Message::Text(pong) if pong == "pong" => {
+                        log::info!("SP WS Ok Pong.");
+                    }
                     Message::Text(json_string) => {
                         log::info!("WS {log_prefix} Received payload: '{json_string}'");
+                        SIMPLY_PLURAL_WEBSOCKET_SEMANTIC_MESSAGES_RECEIVED_TOTAL.with_label_values(&[log_prefix]).inc();
                         process_event(json_string).await?;
                     },
-                    Message::Close(_) => return Ok(()),
-                    unknown => log::warn!("WS {log_prefix} Unknown message '{unknown}'. Ignoring and continueing."),
+                    Message::Close(_) => {
+                        return Ok(());
+                    }
+                    unknown => {
+                        log::warn!("WS {log_prefix} Unknown message '{unknown}'. Ignoring and continueing.");
+                        SIMPLY_PLURAL_WEBSOCKET_UNKNOWN_MESSAGES_TOTAL.with_label_values(&[log_prefix]).inc();
+                    }
                 }
             }
             _ = keep_alive_interval.tick() => {
