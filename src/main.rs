@@ -28,20 +28,38 @@ async fn main() -> Result<()> {
 
     log::debug!("# | app_setup | configured | updaters_restarted");
 
-    metrics::start_user_config_metrics_cron_job(&app_setup.db_pool).await?;
+    let () = setup::start_cron_job(
+        &app_setup.db_pool,
+        &app_setup.shared_updaters,
+        &app_setup.application_user_secrets,
+        "user-metrics",
+        setup::EVERY_MINUTE,
+        metrics::collect_user_metrics,
+    )
+    .await?;
+
+    let () = setup::start_cron_job(
+        &app_setup.db_pool,
+        &app_setup.shared_updaters,
+        &app_setup.application_user_secrets,
+        "user-metrics",
+        setup::EVERY_MINUTE,
+        updater::restart_first_long_living_updater,
+    )
+    .await?;
 
     log::debug!(
-        "# | app_setup | configured | updaters_restarted | metrics_cron_started | webserver_starting"
+        "# | app_setup | configured | updaters_restarted | cron_jobs_started | webserver_starting"
     );
 
     log::debug!(
-        "# | app_setup | configured | updaters_restarted | metrics_cron_started | webserver_starting"
+        "# | app_setup | configured | updaters_restarted | metrics_ccron_jobs_startedron_started | webserver_starting"
     );
 
     let () = run_webserver(app_setup).await?;
 
     log::debug!(
-        "# | app_setup | configured | updaters_restarted | metrics_cron_started | webserver_starting | webserver_ended"
+        "# | app_setup | configured | updaters_restarted | cron_jobs_started | webserver_starting | webserver_ended"
     );
 
     Ok(())

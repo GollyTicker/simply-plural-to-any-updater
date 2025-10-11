@@ -10,6 +10,10 @@ use sqlx::postgres;
 use std::env;
 use std::time::Duration;
 
+pub const EVERY_MINUTE: &str = "0 * * * * *";
+
+const REQUEST_TIMEOUT: u64 = 10;
+
 pub fn logging_init() {
     env_logger::Builder::from_env(
         env_logger::Env::default().default_filter_or("info,sp2any=debug,sp2any_base=debug"),
@@ -21,10 +25,7 @@ pub fn logging_init() {
 pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<ApplicationSetup> {
     log::info!("# | application_setup");
 
-    let client: reqwest::Client = reqwest::Client::builder()
-        .cookie_store(true)
-        .timeout(Duration::from_secs(cli_args.request_timeout))
-        .build()?;
+    let client = make_client()?;
 
     log::info!("# | application_setup | client_created");
 
@@ -98,6 +99,15 @@ pub async fn application_setup(cli_args: &ApplicationConfig) -> Result<Applicati
     })
 }
 
+pub fn make_client() -> Result<reqwest::Client> {
+    let client = reqwest::Client::builder()
+        .cookie_store(true)
+        .timeout(Duration::from_secs(REQUEST_TIMEOUT))
+        .build()?;
+
+    Ok(client)
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct ApplicationConfig {
     pub database_url: String,
@@ -142,4 +152,44 @@ pub struct ApplicationSetup {
     pub application_user_secrets: database::ApplicationUserSecrets,
     pub shared_updaters: updater::UpdaterManager,
     pub cors_policy: rocket_cors::Cors,
+}
+
+/* Yes, this signature is daunting, but essentially it's just taking a task: Fn(PgPool) -> Future<Result<()>>.
+The many extra traits are simply what rustc recommended to make this work, and it works!
+*/
+pub async fn start_cron_job<F>(
+    db_pool: &sqlx::PgPool,
+    shared_updaters: &updater::UpdaterManager,
+    application_user_secrets: &database::ApplicationUserSecrets,
+    name: &str,
+    schedule: &str,
+    task: impl (Fn(sqlx::PgPool, updater::UpdaterManager, database::ApplicationUserSecrets) -> F)
+    + Send
+    + Sync
+    + 'static
+    + Clone,
+) -> Result<()>
+where
+    F: Future<Output = Result<()>> + Send,
+{
+    let scheduler = tokio_cron_scheduler::JobScheduler::new().await?;
+    let db_pool = db_pool.clone();
+    let shared_updaters = shared_updaters.clone();
+    let application_user_secrets = application_user_secrets.clone();
+    let name = name.to_string();
+    let job = tokio_cron_scheduler::Job::new(schedule, move |_, _| {
+        let db_pool = db_pool.clone();
+        let shared_updaters = shared_updaters.clone();
+        let application_user_secrets = application_user_secrets.clone();
+        let task = task.clone();
+        let name = name.clone();
+        tokio::spawn(async move {
+            if let Err(e) = task(db_pool, shared_updaters, application_user_secrets).await {
+                log::error!("Failed to run '{}' job: {e}", &name);
+            }
+        });
+    })?;
+    scheduler.add(job).await?;
+    scheduler.start().await?;
+    Ok(())
 }

@@ -373,7 +373,7 @@ mod tests {
         let user_id = UserId {
             inner: uuid::Uuid::new_v4(),
         };
-        let client = reqwest::Client::new();
+        let unused_client = reqwest::Client::new();
 
         let mut db_config = UserConfigDbEntries::<Decrypted> {
             wait_seconds: None,
@@ -403,7 +403,7 @@ mod tests {
         };
 
         let (config_for_updater, _) =
-            create_config_with_strong_constraints(&user_id, &client, &db_config).unwrap();
+            create_config_with_strong_constraints(&user_id, &unused_client, &db_config).unwrap();
         assert!(!config_for_updater.enable_website);
         assert_eq!(config_for_updater.website_system_name, "");
         assert_eq!(config_for_updater.website_url_name, "");
@@ -412,7 +412,7 @@ mod tests {
         db_config.enable_website = true;
         db_config.website_system_name = None;
 
-        let result = create_config_with_strong_constraints(&user_id, &client, &db_config);
+        let result = create_config_with_strong_constraints(&user_id, &unused_client, &db_config);
         assert!(result.is_err());
     }
 

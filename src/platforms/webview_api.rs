@@ -41,18 +41,22 @@ pub async fn get_api_fronting_by_user_id(
         .ok_or_else(|| anyhow!("No data from Simply Plural found?"))
         .map_err(expose_internal_error)?;
 
-    log::info!("# | GET /fronting/{website_url_name} | {user_id} | got_config | {} fronts", fronts.len());
+    log::info!(
+        "# | GET /fronting/{website_url_name} | {user_id} | got_config | {} fronts",
+        fronts.len()
+    );
 
     let html = generate_html(&updater_config.website_system_name, &fronts);
 
     log::info!(
-        "# | GET /fronting/{website_url_name} | {user_id} | got_config | {} fronts | HTML generated", fronts.len()
+        "# | GET /fronting/{website_url_name} | {user_id} | got_config | {} fronts | HTML generated",
+        fronts.len()
     );
 
     Ok(RawHtml(html))
 }
 
-fn generate_html(website_system_name: &str, fronts: &Vec<plurality::Fronter>) -> String {
+fn generate_html(website_system_name: &str, fronts: &[plurality::Fronter]) -> String {
     let fronts_formatted_and_escaped = fronts
         .iter()
         .map(|m| -> String {

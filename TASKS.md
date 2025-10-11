@@ -62,6 +62,7 @@ Privacy buckets of each member/custom front is simply a list of bucket-ids.
   * add link to KoFi and ask for kind donations
   * add link to source code
 * make sure, that during production, only my own domains are allowed and not localhost or so.
+* DONE: restart updaters once in a while, just to get temporary issues out of the way (e.g. vrchat someimes just doesn't work after a re-deployment)
 * DONE: make website view such that it doesn't eagery fetch data from simply plural every time but instead uses the latest values from a channel
 * merge cargo crates into a single workspace to improve build times
 * DONE: better split sp2any crate into what is exported to bridge-src-tauri and what is not. makes for much faster compiles

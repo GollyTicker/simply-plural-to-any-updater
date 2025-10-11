@@ -1,11 +1,12 @@
 use crate::plurality::{self};
 use crate::updater::{self, work_loop};
-use crate::users::UserId;
+use crate::users::{UserId, create_config_with_strong_constraints};
 use crate::{database, users};
 use crate::{int_counter_metric, metric, setup};
 use anyhow::{Result, anyhow};
 use sp2any_base::communication;
 use sp2any_base::updater::UpdaterStatus;
+use sqlx::PgPool;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use strum::VariantNames;
@@ -35,6 +36,7 @@ pub struct UpdaterManager {
     pub fronter_channel: ThreadSafePerUser<FronterChannel>,
     pub foreign_managed_status_channel: ThreadSafePerUser<ForeignStatusChannel>,
     pub discord_status_message_available: bool,
+    pub updater_start_time: ThreadSafePerUser<chrono::DateTime<chrono::Utc>>,
 }
 
 impl UpdaterManager {
@@ -46,6 +48,7 @@ impl UpdaterManager {
             fronter_channel: Arc::new(Mutex::new(HashMap::new())),
             discord_status_message_available: cli_args.discord_status_message_updater_available,
             foreign_managed_status_channel: Arc::new(Mutex::new(HashMap::new())),
+            updater_start_time: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -187,7 +190,7 @@ impl UpdaterManager {
         let owned_self = self.to_owned();
         let application_user_secrets = application_user_secrets.clone();
         let work_loop_task = tokio::spawn(async move {
-            work_loop::run_loop(config, owned_self, db_pool, &application_user_secrets).await;
+            work_loop::run_loop(config, owned_self, &db_pool, &application_user_secrets).await;
         });
 
         locked_task.insert(
@@ -198,6 +201,12 @@ impl UpdaterManager {
                 simply_plural_websocket_listener_task,
             ],
         );
+
+        self.updater_start_time
+            .lock()
+            .map_err(|e| anyhow!(e.to_string()))?
+            .insert(user_id.clone(), chrono::Utc::now());
+
         log::info!("# | restart_updater | {user_id} | aborting updaters | restarted");
         UPDATER_MANAGER_RESTART_SUCCESS_COUNT
             .with_label_values(&[&user_id.to_string()])
@@ -272,6 +281,20 @@ impl UpdaterManager {
 
         Ok(())
     }
+
+    #[allow(clippy::significant_drop_tightening)]
+    fn updater_active_since(&self, user_id: &UserId) -> Result<chrono::DateTime<chrono::Utc>> {
+        let locked = self
+            .updater_start_time
+            .lock()
+            .map_err(|e| anyhow!(e.to_string()))?;
+
+        let start_time = locked
+            .get(user_id)
+            .ok_or_else(|| anyhow!("updater_active_since: No start time found for {user_id}"))?;
+
+        Ok(*start_time)
+    }
 }
 
 fn create_simply_plural_websocket_listener_task(
@@ -291,9 +314,8 @@ fn create_simply_plural_websocket_listener_task(
             async |message| {
                 // currently we only want to listen to the websocket events so that we know what kind of messages we're even receiving.
                 // they'll be extracted from the logs lateron.
-                let changed = plurality::relevantly_changed_based_on_simply_plural_websocket_event(
-                    &message,
-                )?;
+                let changed =
+                    plurality::relevantly_changed_based_on_simply_plural_websocket_event(&message)?;
                 log::info!("SP WS payload '{user_id}': +{changed} {message}");
                 Ok(())
             },
@@ -314,3 +336,61 @@ fn record_status_in_metrics(user_id: &UserId, p: updater::Platform, new_status: 
         .with_label_values(&[&user_id.to_string(), &p.to_string(), new_status.into()])
         .set(1);
 }
+
+/**
+ * Once in a while, we restart the updaters which have been long-living.
+ * Sometimes where seems to be some isolated issues where just restarting fixes it all automatically.
+ *
+ * We only restart the first long living updater, because we want to avoid too many updaters scheduled at the same time
+ */
+pub async fn restart_first_long_living_updater(
+    db_pool: PgPool,
+    shared_updaters: UpdaterManager,
+    application_user_secrets: database::ApplicationUserSecrets,
+) -> Result<()> {
+    log::info!("restart_first_long_living_updater");
+
+    let users = database::get_all_users(&db_pool).await?;
+
+    for user_id in users {
+        match shared_updaters.updater_active_since(&user_id) {
+            Err(e) => log::warn!(
+                "restart_first_long_living_updater: Could not get active_since for {user_id}: {e}"
+            ),
+            Ok(active_since) if is_long_lived(active_since) => {
+                log::info!(
+                    "restart_first_long_living_updater | restarting {user_id} ({active_since})"
+                );
+                let config =
+                    database::get_user_secrets(&db_pool, &user_id, &application_user_secrets)
+                        .await?;
+                let (config, _) = create_config_with_strong_constraints(
+                    &user_id,
+                    &setup::make_client()?,
+                    &config,
+                )?;
+                let _ = shared_updaters.restart_updater(
+                    &user_id,
+                    config,
+                    db_pool,
+                    &application_user_secrets,
+                );
+                return Ok(());
+            }
+            Ok(_) => (),
+        }
+    }
+
+    Ok(())
+}
+
+fn is_long_lived(active_since: chrono::DateTime<chrono::Utc>) -> bool {
+    let long_lived_duration = std::time::Duration::from_secs(ONE_DAY_AS_SECONDS);
+
+    chrono::Utc::now()
+        .signed_duration_since(active_since)
+        .to_std()
+        .is_ok_and(|duration| duration > long_lived_duration)
+}
+
+const ONE_DAY_AS_SECONDS: u64 = 60 * 60 * 24;

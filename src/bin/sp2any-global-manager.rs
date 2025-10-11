@@ -65,7 +65,7 @@ const ACCEPT_FRIEND_REQUEST_SETTINGS: &str =
 
 async fn accept_all_friend_requests(token: &str) -> Result<()> {
     log::info!("Fetching all friend requests and accepting them...");
-    let client = reqwest::Client::new();
+    let client = setup::make_client()?;
 
     let incoming_requests_url = "https://api.apparyllis.com/v1/friends/requests/incoming";
     let friend_requests: Vec<FriendRequest> = client

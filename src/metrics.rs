@@ -80,22 +80,6 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
         promtheus_metrics
     });
 
-pub async fn start_user_config_metrics_cron_job(db_pool: &PgPool) -> Result<()> {
-    let scheduler = tokio_cron_scheduler::JobScheduler::new().await?;
-    let db_pool = db_pool.clone();
-    let job = tokio_cron_scheduler::Job::new("0 * * * * *", move |_, _| {
-        let db_pool = db_pool.clone();
-        tokio::spawn(async move {
-            if let Err(e) = run_user_metrics_job(&db_pool).await {
-                log::error!("Failed to run user metrics job: {e}");
-            }
-        });
-    })?;
-    scheduler.add(job).await?;
-    scheduler.start().await?;
-    Ok(())
-}
-
 fn count_config_metrics(
     user_config: &users::UserConfigDbEntries<database::Encrypted>,
     feature_counts: &mut HashMap<(String, String), i64>,
@@ -110,15 +94,19 @@ fn count_config_metrics(
     }
 }
 
-async fn run_user_metrics_job(db_pool: &PgPool) -> Result<()> {
+pub async fn collect_user_metrics(
+    db_pool: PgPool,
+    _: updater::UpdaterManager,
+    _: database::ApplicationUserSecrets,
+) -> Result<()> {
     log::info!("# | run_user_metrics_job");
 
-    let user_ids = database::get_all_users(db_pool).await?;
+    let user_ids = database::get_all_users(&db_pool).await?;
 
     let mut feature_counts = HashMap::new();
 
     for user_id in user_ids {
-        let user_config = database::get_user(db_pool, &user_id).await?;
+        let user_config = database::get_user(&db_pool, &user_id).await?;
         count_config_metrics(&user_config, &mut feature_counts);
     }
 

@@ -18,7 +18,7 @@ int_counter_metric!(UPDATER_WORK_LOOP_START_SUCCESS_COUNT);
 pub async fn run_loop(
     config: users::UserConfigForUpdater,
     shared_updaters: manager::UpdaterManager,
-    db_pool: sqlx::PgPool,
+    db_pool: &sqlx::PgPool,
     application_user_secrets: &database::ApplicationUserSecrets,
 ) -> ! {
     let user_id = &config.user_id;
@@ -34,7 +34,7 @@ pub async fn run_loop(
         if u.enabled(&config) {
             log_error_and_continue(
                 &u.platform().to_string(),
-                u.setup(&config, &db_pool, application_user_secrets).await,
+                u.setup(&config, db_pool, application_user_secrets).await,
                 &config,
             );
         }

@@ -5,6 +5,7 @@ use sqlx::{FromRow, PgPool};
 
 use crate::{
     database::{Decrypted, ValidConstraints, constraints, secrets},
+    setup,
     users::{self, UserConfigDbEntries, UserId},
 };
 
@@ -197,7 +198,7 @@ pub async fn modify_user_secrets(
 
     modify(&mut user_with_secrets);
 
-    let unused_client = reqwest::Client::new();
+    let unused_client = setup::make_client()?;
 
     let (_, new_config) =
         users::create_config_with_strong_constraints(user_id, &unused_client, &user_with_secrets)?;
