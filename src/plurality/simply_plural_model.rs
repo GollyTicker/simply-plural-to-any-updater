@@ -176,7 +176,7 @@ pub struct FriendContent {
     pub assigned_privacy_buckets: Vec<String>,
 }
 
-pub fn cache_to_be_evicted_based_on_simply_plural_websocket_event(
+pub fn relevantly_changed_based_on_simply_plural_websocket_event(
     message: &tungstenite::Utf8Bytes,
 ) -> Result<bool> {
     let event = serde_json::from_str(message)?;
@@ -201,7 +201,7 @@ pub fn cache_to_be_evicted_based_on_simply_plural_websocket_event(
     furthermore, we still want to force-reset the cache e.g. once per hour, so any things we've missed would be caught
     */
 
-    let to_be_evicted = matches!(
+    let irrelevant_change = matches!(
         event,
         Event {
             msg: Some("update"),
@@ -219,7 +219,7 @@ pub fn cache_to_be_evicted_based_on_simply_plural_websocket_event(
         }
     );
 
-    Ok(to_be_evicted)
+    Ok(!irrelevant_change)
 }
 
 /** The Message as sent by Simply Plural on the Websocket.

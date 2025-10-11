@@ -291,10 +291,10 @@ fn create_simply_plural_websocket_listener_task(
             async |message| {
                 // currently we only want to listen to the websocket events so that we know what kind of messages we're even receiving.
                 // they'll be extracted from the logs lateron.
-                let evict = plurality::cache_to_be_evicted_based_on_simply_plural_websocket_event(
+                let changed = plurality::relevantly_changed_based_on_simply_plural_websocket_event(
                     &message,
                 )?;
-                log::info!("SP WS payload '{user_id}': +{evict} {message}");
+                log::info!("SP WS payload '{user_id}': +{changed} {message}");
                 Ok(())
             },
         )
