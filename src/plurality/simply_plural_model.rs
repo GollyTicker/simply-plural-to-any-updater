@@ -46,6 +46,7 @@ pub struct Fronter {
     pub name: String,
     pub avatar_url: String,
     pub vrchat_status_name: Option<String>,
+    pub pluralkit_id: Option<String>,
     pub start_time: Option<chrono::DateTime<chrono::Utc>>,
     pub privacy_buckets: Vec<String>,
 }
@@ -84,6 +85,7 @@ impl From<CustomFront> for Fronter {
             name: cf.content.name,
             avatar_url: cf.content.avatar_url,
             vrchat_status_name: None,
+            pluralkit_id: None,
             start_time: None,
             privacy_buckets: cf.content.privacy_buckets,
         }
@@ -124,6 +126,9 @@ pub struct MemberContent {
     #[serde(default)]
     pub privacy_buckets: Vec<String>,
 
+    #[serde(rename = "pkId")]
+    pub pluralkit_id: Option<String>,
+
     // this will be populated later after deserialisation
     #[serde(default)]
     pub vrcsn_field_id: Option<String>,
@@ -144,6 +149,7 @@ impl From<Member> for Fronter {
             name: m.content.name,
             avatar_url: m.content.avatar_url,
             vrchat_status_name,
+            pluralkit_id: m.content.pluralkit_id,
             start_time: None,
             privacy_buckets: m.content.privacy_buckets,
         }

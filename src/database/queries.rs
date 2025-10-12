@@ -61,6 +61,7 @@ pub async fn get_user(
             enable_discord_status_message,
             enable_vrchat,
             enable_website,
+            enable_to_pluralkit,
             privacy_fine_grained,
             privacy_fine_grained_buckets,
             '' AS simply_plural_token,
@@ -68,6 +69,7 @@ pub async fn get_user(
             '' AS vrchat_username,
             '' AS vrchat_password,
             '' AS vrchat_cookie,
+            '' AS pluralkit_token,
             false AS valid_constraints
             FROM users WHERE id = $1",
     )
@@ -110,7 +112,9 @@ pub async fn set_user_config_secrets(
             show_custom_fronts = $20,
             respect_front_notifications_disabled = $21,
             privacy_fine_grained = $22,
-            privacy_fine_grained_buckets = $23
+            privacy_fine_grained_buckets = $23,
+            enable_to_pluralkit = $24,
+            enc__pluralkit_token = pgp_sym_encrypt($25, $9)
         WHERE id = $1",
     )
     .bind(user_id.inner)
@@ -136,6 +140,8 @@ pub async fn set_user_config_secrets(
     .bind(config.respect_front_notifications_disabled)
     .bind(config.privacy_fine_grained)
     .bind(config.privacy_fine_grained_buckets)
+    .bind(config.enable_to_pluralkit)
+    .bind(config.pluralkit_token.map(|s| s.secret))
     .fetch_optional(db_pool)
     .await
     .map_err(|e| anyhow!(e))?;
@@ -168,6 +174,7 @@ pub async fn get_user_secrets(
             enable_discord,
             enable_discord_status_message,
             enable_vrchat,
+            enable_to_pluralkit,
             privacy_fine_grained,
             privacy_fine_grained_buckets,
             pgp_sym_decrypt(enc__simply_plural_token, $2) AS simply_plural_token,
@@ -175,6 +182,7 @@ pub async fn get_user_secrets(
             pgp_sym_decrypt(enc__vrchat_username, $2) AS vrchat_username,
             pgp_sym_decrypt(enc__vrchat_password, $2) AS vrchat_password,
             pgp_sym_decrypt(enc__vrchat_cookie, $2) AS vrchat_cookie,
+            pgp_sym_decrypt(enc__pluralkit_token, $2) AS pluralkit_token,
             true AS valid_constraints
             FROM users WHERE id = $1",
     )

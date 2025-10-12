@@ -16,7 +16,7 @@ use vrchatapi::{
 };
 
 const VRCHAT_UPDATER_USER_AGENT: &str = concat!(
-    "SimplyPlural2Any/",
+    "SP2Any/",
     env!("CARGO_PKG_VERSION"),
     " golly.ticker",
     "@",

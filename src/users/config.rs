@@ -54,6 +54,7 @@ where
     pub enable_discord: bool,
     pub enable_discord_status_message: bool,
     pub enable_vrchat: bool,
+    pub enable_to_pluralkit: bool,
 
     pub website_system_name: Option<String>,
     pub website_url_name: Option<String>,
@@ -63,6 +64,7 @@ where
     pub vrchat_username: Option<Secret>,
     pub vrchat_password: Option<Secret>,
     pub vrchat_cookie: Option<Secret>,
+    pub pluralkit_token: Option<Secret>,
 }
 
 impl<S: SecretType> UserConfigDbEntries<S> {
@@ -94,6 +96,7 @@ impl<S: SecretType> UserConfigDbEntries<S> {
             enable_discord: self.enable_discord,
             enable_discord_status_message: self.enable_discord_status_message,
             enable_vrchat: self.enable_vrchat,
+            enable_to_pluralkit: self.enable_to_pluralkit,
             simply_plural_token: self
                 .simply_plural_token
                 .clone()
@@ -105,6 +108,7 @@ impl<S: SecretType> UserConfigDbEntries<S> {
             vrchat_username: self.vrchat_username.clone().or(defaults.vrchat_username),
             vrchat_password: self.vrchat_password.clone().or(defaults.vrchat_password),
             vrchat_cookie: self.vrchat_cookie.clone().or(defaults.vrchat_cookie),
+            pluralkit_token: self.pluralkit_token.clone().or(defaults.pluralkit_token),
             valid_constraints: self.valid_constraints.clone(), // Constraints are not defaulted
         }
     }
@@ -127,6 +131,7 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
             enable_discord: false,
             enable_discord_status_message: false,
             enable_vrchat: false,
+            enable_to_pluralkit: false,
             valid_constraints: None,
             website_system_name: None,
             website_url_name: None,
@@ -135,6 +140,7 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
             vrchat_username: None,
             vrchat_password: None,
             vrchat_cookie: None,
+            pluralkit_token: None,
         }
     }
 }
@@ -219,6 +225,7 @@ pub struct UserConfigForUpdater {
     pub enable_discord: bool,
     pub enable_discord_status_message: bool,
     pub enable_vrchat: bool,
+    pub enable_to_pluralkit: bool,
 
     pub website_url_name: String,
     pub website_system_name: String,
@@ -228,6 +235,7 @@ pub struct UserConfigForUpdater {
     pub vrchat_username: database::Decrypted,
     pub vrchat_password: database::Decrypted,
     pub vrchat_cookie: database::Decrypted,
+    pub pluralkit_token: database::Decrypted,
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug, Default)]
@@ -274,6 +282,7 @@ where
     let enable_discord_status_message = local_config_with_defaults.enable_discord_status_message;
     let enable_vrchat = local_config_with_defaults.enable_vrchat;
     let enable_website = local_config_with_defaults.enable_website;
+    let enable_to_pluralkit = local_config_with_defaults.enable_to_pluralkit;
 
     let config = UserConfigForUpdater {
         user_id: user_id.clone(),
@@ -301,6 +310,7 @@ where
         enable_discord,
         enable_discord_status_message,
         enable_vrchat,
+        enable_to_pluralkit,
         website_url_name: config_value_if!(
             enable_website,
             local_config_with_defaults,
@@ -334,6 +344,11 @@ where
         vrchat_cookie: config_value!(local_config_with_defaults, vrchat_cookie)
             .inspect(|_| log::info!("create_config_with_strong_constraints | {user_id} | vrchat cookie found and will be used."))
             .unwrap_or_default(),
+        pluralkit_token: config_value_if!(
+            enable_to_pluralkit,
+            local_config_with_defaults,
+            pluralkit_token
+        )?,
     };
 
     if config.privacy_fine_grained == PrivacyFineGrained::ViaPrivacyBuckets
@@ -392,6 +407,7 @@ mod tests {
             enable_discord: false,
             enable_discord_status_message: false,
             enable_vrchat: false,
+            enable_to_pluralkit: false,
             simply_plural_token: Some(Decrypted {
                 secret: "sp_token_123".to_string(),
             }),
@@ -400,6 +416,7 @@ mod tests {
             vrchat_password: None,
             vrchat_cookie: None,
             valid_constraints: None,
+            pluralkit_token: None,
         };
 
         let (config_for_updater, _) =
@@ -435,6 +452,7 @@ mod tests {
             enable_discord: true,
             enable_discord_status_message: true,
             enable_vrchat: false,
+            enable_to_pluralkit: true,
             simply_plural_token: Some(Decrypted {
                 secret: "sp_token_123".to_string(),
             }),
@@ -444,6 +462,9 @@ mod tests {
             vrchat_username: None,
             vrchat_password: None,
             vrchat_cookie: None,
+            pluralkit_token: Some(Decrypted {
+                secret: "pk_token_123".to_string(),
+            }),
             valid_constraints: None,
         };
 
@@ -466,6 +487,7 @@ mod tests {
   "enable_discord": true,
   "enable_discord_status_message": true,
   "enable_vrchat": false,
+  "enable_to_pluralkit": true,
   "website_system_name": "Our System",
   "website_url_name": "our-system",
   "simply_plural_token": {
@@ -476,7 +498,10 @@ mod tests {
   },
   "vrchat_username": null,
   "vrchat_password": null,
-  "vrchat_cookie": null
+  "vrchat_cookie": null,
+  "pluralkit_token": {
+    "secret": "pk_token_123"
+  }
 }"#;
 
         assert_eq!(json_string, expected_json);

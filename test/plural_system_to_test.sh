@@ -1,15 +1,25 @@
 #!/bin/bash
 
 export ANNALEA_ID="683f23e79aa188caf3000000"
+export ANNALEA_ID_PK="wgpkrn"
 export BORGNEN_ID="683f23f49aa189caf3000000"
+export BORGNEN_ID_PK="bxsrbg"
 export CLENNTRO_ID="683f24009aa18acaf3000000"
+export CLENNTRO_ID_PK="xtythx"
 export DAENSSA_ID="683f24179aa18bcaf3000000"
+export DAENSSA_ID_PK="crocku"
 export TEST_MEMBER_ID="683f243e9aa18ccaf3000000"
+export TEST_MEMBER_ID_PK="zphjou"
 export NOTIF_OK="68e1950560bb6cfa4a000000"
+export NOTIF_OK_PK="rovknb"
 export NOTIF_NOT_OK="68e1952060bb6dfa4a000000"
+export NOTIF_NOT_OK_PK="uncjco"
 export ARCHIVED_NOTIF_OK="68e195b960bb70fa4a000000"
+export ARCHIVED_NOTIF_OK_PK="tabobe"
 export PBUCKET_MEMBER_NO="68e23ebed3877fbeb6000000"
+export PBUCKET_MEMBER_NO_PK="nguonb"
 export PBUCKET_MEMBER_YES="68e23eb0d3877ebeb6000000"
+export PBUCKET_MEMBER_YES_PK="kapnfj"
 export CUSTOM_FRONT_1_ID="688d41c8aa2e477e53000000"
 
 
@@ -93,5 +103,5 @@ clear_all_fronts() {
 }
 
 rate_limiting_delay() {
-    sleep 0.5s
+    sleep 0.3s
 }

@@ -19,7 +19,11 @@
 * DONE: better error messages which the users can also understand and which handle most common error paths
   * also let users know, when the VRChat 429 too many requests happen during login - so that they can try again in a day.
 * vrchat rate limits hinders SP2Any users to login into VRChat. possibily related to the frequent re-deployments from the same IP-addr on the day before. can we maybe avoid logging in the user at system-startup, then the vrchat cookie already exists from a previous login? what other ways can we use to bypass the rate-limits? maybe do the login in browser instead of via the backend?
-* Add automatic sync to PluralKit
+* PARTIAL DONE: Add automatic sync to PluralKit
+  * DONE: SimplyPlural -> PluralKit sync
+  * automatic system sync?
+  * set fronter start time based correctly
+    * this can be better done, once the plural fetching happens on demand to avoid exessive switches
 
 ---
 
@@ -78,7 +82,7 @@ This way we can get even more early testers so that we can then move to the app 
 ---
 
 ## Initial User Feedback before first Prototype
-* sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
+* PARTIAL DONE: sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
 * DONE add a warning, that using the discord self-botting comes with a risk for both the user and the dev
   * [artcle by discord](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots)
   * [self-botting](https://gist.github.com/nomsi/2684f5692cad5b0ceb52e308631859fd)

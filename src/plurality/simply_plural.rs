@@ -338,6 +338,7 @@ mod tests {
             enable_discord: false,
             enable_discord_status_message: false,
             enable_vrchat: false,
+            enable_to_pluralkit: false,
             website_url_name: "".to_string(),
             website_system_name: "".to_string(),
             simply_plural_token: Default::default(),
@@ -345,6 +346,7 @@ mod tests {
             vrchat_username: Default::default(),
             vrchat_password: Default::default(),
             vrchat_cookie: Default::default(),
+            pluralkit_token: Default::default(),
         }
     }
 
@@ -359,6 +361,7 @@ mod tests {
                 front_notifications_disabled,
                 privacy_buckets: vec![],
                 vrcsn_field_id: None,
+                pluralkit_id: None,
             },
         }
     }

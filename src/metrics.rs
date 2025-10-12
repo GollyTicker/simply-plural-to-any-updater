@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync};
 use anyhow::Result;
 use sqlx::PgPool;
 
-use crate::{database, plurality, updater, users};
+use crate::{database, platforms, plurality, updater, users};
 
 macro_rules! register_metrics {
     ($pm:ident, $($metric:expr),*) => {
@@ -74,6 +74,8 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
             updater::UPDATER_MANAGER_RESTART_TOTAL_COUNT,
             updater::UPDATER_MANAGER_RESTART_SUCCESS_COUNT,
             updater::UPDATER_PLATFORM_STATUS,
+            platforms::PLURAKIT_API_REQUESTS_TOTAL,
+            platforms::PLURAKIT_API_RATELIMIT_REMAINING,
             SP2ANY_USER_CONFIG_FEATURE
         );
 

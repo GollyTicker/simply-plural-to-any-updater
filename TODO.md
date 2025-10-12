@@ -13,15 +13,15 @@ For that we need at least:
 # STEPS
 
 ### Database Migration
-1. Create a new SQL migration file: `docker/migrations/009_add_pluralkit_sync.sql`.
-2. In this file, add a `pluralkit_token` secret encrypted field and a `to_pluralkit_enabled` boolean flag to the `users` table.
-3. Run the migration to update the database schema.
+1. DONE: Create a new SQL migration file: `docker/migrations/009_add_pluralkit_sync.sql`.
+2. DONE: In this file, add a `pluralkit_token` secret encrypted field and a `enable_to_pluralkit` boolean flag to the `users` table.
+3. DONE: Add the two new fields in the various config structs in `src/users` folder.
 
 ### Backend Implementation
-1. In `src/database/queries.rs`, update the `User` struct and any relevant query functions to include the new `pluralkit_token` and `to_pluralkit_enabled` fields. This will likely involve modifying `get_user` and `update_user` functions.
-2. In `src/plurality/simply_plural_model.rs`, add an optional `pluralkit_id: Option<String>` field to the `Member` struct to hold the PluralKit member ID from Simply Plural. Rename it via serde, as the JSON field is called `pk_id` which is a bit less clear.
-3. Create a new module `src/updater/pluralkit.rs`.
-4. Inside `pluralkit.rs`, implement the core synchronization logic (analogous to how it's done for `vrchat.rs`):
+1. DONE: In `src/database/queries.rs`, update the `User` struct and any relevant query functions to include the new `pluralkit_token` and `enable_to_pluralkit` fields. This will likely involve modifying `get_user` and `update_user` functions.
+2. DONE: In `src/plurality/simply_plural_model.rs`, add an optional `pluralkit_id: Option<String>` field to the `Member` struct to hold the PluralKit member ID from Simply Plural. Rename it via serde, as the JSON field is called `pk_id` which is a bit less clear.
+3. DONE: ImCreate a new module `src/platforms/pluralkit.rs`.
+4. DONE: Inside `pluralkit.rs`, implement the core synchronization logic (analogous to how it's done for `vrchat.rs`):
     - Create a `PluralKitUpdater` struct. It should manage its own state, including `last_operation_error: Option<String>`.
     - Implement the `update_fronting_status` method. This method will receive the current fronters.
     - It will then find the fronter that has a `pluralkit_id`.
@@ -33,25 +33,25 @@ For that we need at least:
             - `User-Agent`: A string identifying the application (e.g., "SimplyPlural-to-Any-Updater").
         - **Body:** A JSON object with a `members` key, containing a list of the `pluralkit_id`s of the current fronters. If no one is fronting, this should be an empty list.
     - The struct and its methods will be integrated into the `Updater` enum in `src/updater/platforms.rs`, similar to how `VRChatUpdater` is integrated.
-5. In `src/updater/manager.rs` or `src/updater/mod.rs`, integrate the new `pluralkit` into the main updater loop or manager so it runs periodically.
+5. DONE: In `src/updater/manager.rs` or `src/updater/mod.rs`, integrate the new `pluralkit` into the main updater loop or manager so it runs periodically.
 
 #### Metrics
-1.  **Define new metrics:** In `src/updater/pluralkit.rs` (or a new `src/platforms/pluralkit_metrics.rs`), define the following metrics using the existing macros:
+1.  **DONE: Define new metrics:** In `src/platforms/pluralkit.rs` (or a new `src/platforms/pluralkit_metrics.rs`), define the following metrics using the existing macros:
     *   `PLURAKIT_API_REQUESTS_TOTAL`: An `IntCounterVec` with labels for `user_id` and `status` (e.g., "success", "failure").
     *   `PLURAKIT_API_RATELIMIT_REMAINING`: An `IntGaugeVec` with labels for `user_id` and `scope`.
 
-2.  **Implement metric recording:** In the `update_fronting_status` method in `pluralkit.rs`, after making the API call to PluralKit:
+2.  **DONE: Implement metric recording:** In the `update_fronting_status` method in `pluralkit.rs`, after making the API call to PluralKit:
     *   Increment the `PLURAKIT_API_REQUESTS_TOTAL` counter with the appropriate status.
     *   Parse the `X-RateLimit-Remaining` and `X-RateLimit-Scope` headers from the HTTP response.
     *   Set the `PLURAKIT_API_RATELIMIT_REMAINING` gauge with the value of `X-RateLimit-Remaining` and the `scope` label.
 
-3.  **Register new metrics:** In `src/metrics.rs`, register the new metrics in the `PROM_METRICS` static variable.
+3.  **DONE: Register new metrics:** In `src/metrics.rs`, register the new metrics in the `PROM_METRICS` static variable.
 
 ### Frontend Implementation
 1. In `frontend/src/components/Config.vue`, add a new section for "PluralKit Synchronization".
 2. Add a password input field for the "PluralKit Token" and bind it to the user's config object.
 3. Add a checkbox to "Enable PluralKit Sync" and bind it to the user's config object.
-4. Update the data-saving logic to include the new `pluralkit_token` and `to_pluralkit_enabled` fields when sending updates to the backend.
+4. Update the data-saving logic to include the new `pluralkit_token` and `enable_to_pluralkit` fields when sending updates to the backend.
 5. The component `frontend/src/components/Status.vue` is responsible for displaying the status of all available updaters. It periodically calls the `sp2any_api.get_updater_status()` API endpoint, which returns a map of updater names to their statuses (`UserUpdatersStatuses`). The component then iterates over this map and displays each updater and its status. To have the "PluralKit Sync" updater appear, the backend needs to add it to the `UserUpdatersStatuses` map returned by the `get_updater_status` endpoint. No frontend changes are needed in `Status.vue` as it will dynamically render any updater provided by the backend.
 
 # DOCUMENTATION

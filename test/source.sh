@@ -47,11 +47,18 @@ get_user_config_json() {
         VRCHAT_COOKIE_LINE=""
     fi
 
+    if [ -v PLURALKIT_TOKEN ] ; then
+        PLURALKIT_TOKEN_LINE="\"pluralkit_token\": { \"secret\": \"${PLURALKIT_TOKEN}\" },"
+    else
+        PLURALKIT_TOKEN_LINE=""
+    fi
+
     echo "{
         \"enable_discord_status_message\": ${ENABLE_DISCORD_STATUS_MESSAGE},
         \"enable_vrchat\": ${ENABLE_VRCHAT},
         \"enable_discord\": ${ENABLE_DISCORD},
         \"enable_website\": ${ENABLE_WEBSITE},
+        \"enable_to_pluralkit\": ${ENABLE_TO_PLURALKIT},
         \"website_url_name\": \"${WEBSITE_URL_NAME}\",
         \"discord_user_id\": { \"secret\": \"invalid\" },
         \"show_members_non_archived\": ${SHOW_MEMBERS_NON_ARCHIVED},
@@ -65,6 +72,7 @@ get_user_config_json() {
         $VRCHAT_USERNAME_LINE
         $VRCHAT_PASSWORD_LINE
         $VRCHAT_COOKIE_LINE
+        $PLURALKIT_TOKEN_LINE
         \"website_system_name\": \"${WEBSITE_SYSTEM_NAME-null}\",
         \"wait_seconds\": ${SECONDS_BETWEEN_UPDATES-null}
     }"

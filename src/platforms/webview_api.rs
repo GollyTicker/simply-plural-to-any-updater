@@ -143,6 +143,7 @@ mod tests {
             vrchat_status_name: None,
             start_time: None,
             privacy_buckets: vec![],
+            pluralkit_id: None,
         }];
         let system_name = "My <System>";
         let html = generate_html(system_name, &fronters);
@@ -177,6 +178,7 @@ mod tests {
                 vrchat_status_name: None,
                 start_time: None,
                 privacy_buckets: vec![],
+                pluralkit_id: None,
             },
             Fronter {
                 fronter_id: "id2".to_string(),
@@ -185,6 +187,7 @@ mod tests {
                 vrchat_status_name: None,
                 start_time: None,
                 privacy_buckets: vec![],
+                pluralkit_id: None,
             },
         ];
         let system_name = "My System";
@@ -205,6 +208,7 @@ mod tests {
             vrchat_status_name: None,
             start_time: None,
             privacy_buckets: vec![],
+            pluralkit_id: None,
         }];
         let system_name = "My System";
         let html = generate_html(system_name, &fronters);
@@ -221,6 +225,7 @@ mod tests {
             vrchat_status_name: None,
             start_time: None,
             privacy_buckets: vec![],
+            pluralkit_id: None,
         }];
         let system_name = "My System";
         let html = generate_html(system_name, &fronters);

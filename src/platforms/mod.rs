@@ -1,6 +1,7 @@
 mod discord;
 pub mod discord_api;
 mod discord_status_message;
+mod pluralkit;
 mod updater_macro;
 mod vrchat;
 pub mod vrchat_api;
@@ -10,5 +11,6 @@ pub mod webview_api;
 
 pub use discord::*;
 pub use discord_status_message::*;
+pub use pluralkit::*;
 pub use vrchat::*;
 pub use vrchat_auth_types::*;

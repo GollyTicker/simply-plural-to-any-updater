@@ -31,6 +31,7 @@ fn mock_member_content(name: &str, vrchat_status_name: &str) -> Fronter {
         },
         start_time: None,
         privacy_buckets: vec![],
+        pluralkit_id: None,
     }
 }
 

@@ -13,6 +13,7 @@ ENABLE_DISCORD_STATUS_MESSAGE=true
 ENABLE_VRCHAT=false
 ENABLE_DISCORD=false
 ENABLE_WEBSITE=false
+ENABLE_TO_PLURALKIT=true
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
@@ -53,12 +54,16 @@ check_system_fronts_set() {
 
     if [[ "$SET" == "A" ]]; then
         check_discord_status_string_equals "F: Annalea 💖 A., Borgn B., Daenssa 📶 D., Cstm First"
+        check_pluralkit_fronters_equals "$BORGNEN_ID_PK,$DAENSSA_ID_PK,$ANNALEA_ID_PK"
     elif [[ "$SET" == "B" ]]; then
         check_discord_status_string_equals "F: tš▶️漢ク汉漢"
+        check_pluralkit_fronters_equals "$TEST_MEMBER_ID_PK"
     elif [[ "$SET" == "C-limited-visibility" ]]; then
         check_discord_status_string_equals "F: NK notif-ok"
+        check_pluralkit_fronters_equals "$NOTIF_OK_PK"
     elif [[ "$SET" == "D-limited-visibility" ]]; then
         check_discord_status_string_equals "F: pbucket-member-yes"
+        check_pluralkit_fronters_equals "$PBUCKET_MEMBER_YES_PK"
     else
         return 1
     fi
@@ -78,6 +83,22 @@ check_discord_status_string_equals() {
     echo "Discord Status Check: '$STATUS' =? '$EXPECTED'"
 
     [[ "$STATUS" == "$EXPECTED" ]]
+}
+
+check_pluralkit_fronters_equals() {
+    EXPECTED="$1"
+    
+    RESPONSE="$(
+        curl -s \
+            -H "Content-Type: application/json" -H "Authorization: $PLURALKIT_TOKEN" \
+            "https://api.pluralkit.me/v2/systems/@me/switches?limit=1"
+    )"
+    
+    MEMBERS="$( echo "$RESPONSE" | jq -r '.[0].members | sort | join(",")' )"
+
+    echo "PluralKit Fronters Check: '$MEMBERS' =? '$EXPECTED'"
+
+    [[ "$MEMBERS" == "$EXPECTED" ]]
 }
 
 

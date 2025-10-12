@@ -22,11 +22,13 @@ export type UserConfigDbEntries = {
     enable_discord?: boolean;
     enable_discord_status_message?: boolean;
     enable_vrchat?: boolean;
+    enable_to_pluralkit?: boolean;
     simply_plural_token?: Decrypted;
     discord_status_message_token?: Decrypted;
     vrchat_username?: Decrypted;
     vrchat_password?: Decrypted;
     vrchat_cookie?: Decrypted;
+    pluralkit_token?: Decrypted;
 };
 export type PrivacyFineGrained = "NoFineGrained" | "ViaFriend" | "ViaPrivacyBuckets";
 export type JwtString = { inner: string };

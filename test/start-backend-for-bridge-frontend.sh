@@ -15,6 +15,7 @@ ENABLE_DISCORD_STATUS_MESSAGE=false
 ENABLE_VRCHAT=true
 ENABLE_DISCORD=true
 ENABLE_WEBSITE=true
+ENABLE_TO_PLURALKIT=true
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh

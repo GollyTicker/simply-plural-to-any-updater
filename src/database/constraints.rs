@@ -84,11 +84,13 @@ pub fn downgrade<Secret: secrets::SecretType, C: ConstraintsType>(
         enable_discord: value.enable_discord,
         enable_discord_status_message: value.enable_discord_status_message,
         enable_vrchat: value.enable_vrchat,
+        enable_to_pluralkit: value.enable_to_pluralkit,
         simply_plural_token: value.simply_plural_token.clone(),
         discord_status_message_token: value.discord_status_message_token.clone(),
         vrchat_username: value.vrchat_username.clone(),
         vrchat_password: value.vrchat_password.clone(),
         vrchat_cookie: value.vrchat_cookie.clone(),
+        pluralkit_token: value.pluralkit_token.clone(),
     }
 }
 
@@ -115,10 +117,12 @@ pub fn only_use_this_function_to_mark_validation_after_you_have_actually_validat
         enable_discord: value.enable_discord,
         enable_discord_status_message: value.enable_discord_status_message,
         enable_vrchat: value.enable_vrchat,
+        enable_to_pluralkit: value.enable_to_pluralkit,
         simply_plural_token: value.simply_plural_token.clone(),
         discord_status_message_token: value.discord_status_message_token.clone(),
         vrchat_username: value.vrchat_username.clone(),
         vrchat_password: value.vrchat_password.clone(),
         vrchat_cookie: value.vrchat_cookie.clone(),
+        pluralkit_token: value.pluralkit_token.clone(),
     }
 }

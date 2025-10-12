@@ -9,6 +9,7 @@ if [[  "$1" != "--automated" ]]; then # setup called when script is used manuall
     ENABLE_VRCHAT=true
     ENABLE_DISCORD=false
     ENABLE_WEBSITE=false
+    ENABLE_TO_PLURALKIT=false
 
     source ./test/source.sh
 fi
