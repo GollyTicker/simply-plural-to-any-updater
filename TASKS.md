@@ -28,6 +28,7 @@
 For the next steps, it probably makes sense to announce it in more discord servers and get a larger set of users.
 This way we can get even more early testers so that we can then move to the app earlier or later based on the feedback.
 
+* checkout inspirations channel in sunny plural to see how users use SP and which use cases suit make sense there
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
 * configureable order in which fronts are shown
