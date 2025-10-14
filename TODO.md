@@ -1,5 +1,7 @@
 # TODO
 
+Always read `AGENTS.md` for general info on the project.
+
 Add functionality such that users can also synchronize their fronting status from SimplyPlural to PluralKit.
 
 For that we need at least:
