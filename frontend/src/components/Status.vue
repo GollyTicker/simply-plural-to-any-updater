@@ -4,11 +4,9 @@
     <div class="status-list">
       <div v-for="(status, name) in updaters" :key="name" class="status-item">
         <span class="service-name">{{ name }}</span>
-        <span
-          :id="name.toLowerCase() + '-status'"
-          :class="['status-badge', 'status-' + statusKind(status!).toLowerCase()]"
-          >{{ statusKind(status!) }}</span
-        >
+        <span :id="name + '-status'" :class="['status-badge', 'status-' + statusKind(status!)]">{{
+          statusKind(status!)
+        }}</span>
         <span class="status-info">{{ statusInfo(status!) }}</span>
       </div>
     </div>
@@ -104,22 +102,22 @@ onUnmounted(() => {
   font-weight: bold;
 }
 
-.status-running {
+.status-Running {
   background-color: green;
   color: white;
 }
 
-.status-starting {
+.status-Starting {
   background-color: lightgreen;
   color: white;
 }
 
-.status-disabled {
+.status-Disabled {
   background-color: gray;
   color: white;
 }
 
-.status-error {
+.status-Error {
   background-color: orange;
   color: white;
 }

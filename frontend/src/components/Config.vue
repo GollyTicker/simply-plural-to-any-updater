@@ -170,6 +170,35 @@
         </div>
       </div>
       <div class="config-section">
+        <h2>PluralKit</h2>
+        <div class="config-grid">
+          <div class="config-item">
+            <label for="enable_to_pluralkit">Enable Sync to PluralKit</label>
+            <p class="config-description">
+              Automatically synchronize your fronting status to PluralKit.
+              <br />
+              Note: Syncing of the member information itself from SimplyPlural to PluralKit is not
+              done automatically yet. You need to import/export your system between both manually
+              for now to ensure, that all the members exist in both places.
+            </p>
+            <input id="enable_to_pluralkit" type="checkbox" v-model="config.enable_to_pluralkit" />
+          </div>
+          <div class="config-item">
+            <label for="pluralkit_token">PluralKit Token</label>
+            <p class="config-description">
+              The token to authenticate with the PluralKit API. You can get this from the PluralKit
+              bot via "pk;token".
+            </p>
+            <input
+              id="pluralkit_token"
+              type="password"
+              :value="config.pluralkit_token?.secret"
+              @input="setSecret('pluralkit_token', $event)"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="config-section">
         <h2>Website</h2>
         <div class="config-grid">
           <div class="config-item">
@@ -435,6 +464,7 @@ type SecretKeys =
   | 'vrchat_cookie'
   | 'vrchat_username'
   | 'discord_status_message_token'
+  | 'pluralkit_token'
 
 const simply_plural_privacy_buckets: Ref<PrivacyBucket[]> = ref([])
 const privacyBucketsStatus = ref('')

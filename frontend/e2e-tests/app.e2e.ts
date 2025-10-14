@@ -124,8 +124,9 @@ describe('sp2any updater status and config save and restarts', () => {
         await login()
         await loggedInAndOnStatusPage()
 
-        // await expect($('#vrchat-status')).toHaveText('Running');
-        await expect($('#discord-status')).toHaveText('Starting');
+        await expect($('#VRChat-status')).toHaveText('Disabled');
+        await expect($('#ToPluralKit-status')).toHaveText('Running');
+        await expect($('#Discord-status')).toHaveText('Starting');
     });
 
     it('should show the correct config values', async () => {
@@ -133,9 +134,10 @@ describe('sp2any updater status and config save and restarts', () => {
         await loggedInAndOnConfigPage();
 
         await expect($('#enable_website')).toBeSelected();
-        await expect($('#enable_vrchat')).toBeSelected();
+        await expect($('#enable_vrchat')).not.toBeSelected();
         await expect($('#enable_discord')).toBeSelected();
-        await expect($('#enable_discord_status_message')).not.toBeSelected();
+        await expect($('#enable_to_pluralkit')).toBeSelected();
+        await expect($('#enable_discord_status_message')).toBeSelected();
 
         await expect($('#wait_seconds')).toHaveValue(process.env.SECONDS_BETWEEN_UPDATES!);
         await expect($('#website_system_name')).toHaveValue(process.env.WEBSITE_SYSTEM_NAME!);
@@ -147,12 +149,10 @@ describe('sp2any updater status and config save and restarts', () => {
 
         await expect($('#simply_plural_token')).toHaveValue(process.env.SPS_API_TOKEN!);
         await expect($('#discord_status_message_token')).toHaveValue(process.env.DISCORD_STATUS_MESSAGE_TOKEN!);
-        await expect($('#vrchat_username')).toHaveValue(process.env.VRCHAT_USERNAME!);
-        await expect($('#vrchat_password')).toHaveValue(process.env.VRCHAT_PASSWORD!);
     });
 
-    it('should be able to disable discord and vrchat', async () => {
-        await $('#enable_vrchat').click();
+    it('should be able to disable discord and pluralkit', async () => {
+        await $('#enable_to_pluralkit').click();
         await $('#enable_discord').click();
 
         await $('button[type="submit"]').click();
@@ -161,15 +161,16 @@ describe('sp2any updater status and config save and restarts', () => {
         await navigateToStatus();
         await loggedInAndOnStatusPage();
 
-        await expect($('#vrchat-status')).toHaveText('Disabled');
-        await expect($('#discord-status')).toHaveText('Disabled');
+        await expect($('#VRChat-status')).toHaveText('Disabled');
+        await expect($('#ToPluralKit-status')).toHaveText('Disabled');
+        await expect($('#Discord-status')).toHaveText('Disabled');
     });
 
-    it('should be able to re-enable discord and vrchat', async () => {
+    it('should be able to re-enable discord and to-pluralkit', async () => {
         await navigateToConfig();
         await loggedInAndOnConfigPage();
 
-        await $('#enable_vrchat').click();
+        await $('#enable_to_pluralkit').click();
         await $('#enable_discord').click();
 
         await $('button[type="submit"]').click();
@@ -178,8 +179,9 @@ describe('sp2any updater status and config save and restarts', () => {
         await navigateToStatus();
         await loggedInAndOnStatusPage();
 
-        await expect($('#vrchat-status')).toHaveText('Running');
-        await expect($('#discord-status')).toHaveText('Starting');
+        await expect($('#VRChat-status')).toHaveText('Disabled');
+        await expect($('#ToPluralKit-status')).toHaveText('Running');
+        await expect($('#Discord-status')).toHaveText('Starting');
     });
 
     // todo. fix test. when running manually in browser, the field is correctly emptied and an error happens.

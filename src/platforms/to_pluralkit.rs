@@ -1,7 +1,9 @@
 use crate::{
     int_counter_metric, metric, plurality, record_if_error, users, users::UserConfigForUpdater,
 };
-use anyhow::Result;
+use anyhow::{Result, anyhow};
+use reqwest::StatusCode;
+use serde::Deserialize;
 
 int_counter_metric!(PLURAKIT_API_REQUESTS_TOTAL);
 metric!(
@@ -11,20 +13,20 @@ metric!(
     &["user_id", "scope"]
 );
 
-const PLURALKIT_UPDATER_USER_AGENT: &str =
+const TO_PLURALKIT_UPDATER_USER_AGENT: &str =
     concat!("SP2Any/", env!("CARGO_PKG_VERSION"), " Discord: .ay", "ake");
 
-pub struct PluralKitUpdater {
+pub struct ToPluralKitUpdater {
     pub last_operation_error: Option<String>,
 }
 
-impl Default for PluralKitUpdater {
+impl Default for ToPluralKitUpdater {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl PluralKitUpdater {
+impl ToPluralKitUpdater {
     #[must_use]
     pub const fn new() -> Self {
         Self {
@@ -68,13 +70,35 @@ async fn update_to_pluralkit(
         .post("https://api.pluralkit.me/v2/systems/@me/switches")
         .header("Authorization", &config.pluralkit_token.secret)
         .header("Content-Type", "application/json")
-        .header("User-Agent", PLURALKIT_UPDATER_USER_AGENT)
+        .header("User-Agent", TO_PLURALKIT_UPDATER_USER_AGENT)
         .json(&request_body)
         .send()
-        .await?
-        .error_for_status()?;
+        .await?;
 
     measure_rate_limits(config, &response);
+
+    let status = response.status();
+
+    // when the new fronters are equal to the old set of fronters, then pluralkit returns 400 with a specific message
+    // instead of creating a new switch. we are okay with that edge-case.
+    // Errors are documented here: https://pluralkit.me/api/errors/#json-error-codes
+    let bad_request_body: Result<PluralKitErrorResponse> = response
+        .text()
+        .await
+        .map_err(|e| anyhow!(e))
+        .and_then(|b| serde_json::from_str(&b).map_err(|e| anyhow!(e)));
+
+    match (status, bad_request_body) {
+        (
+            StatusCode::BAD_REQUEST,
+            Ok(PluralKitErrorResponse {
+                code: 40004,
+                message,
+            }),
+        ) if message.eq("Member list identical to current fronter list.") => (),
+        (status, _) if !(status.is_client_error() || status.is_server_error()) => (),
+        (status, _) => Err(anyhow!("Failed request against Pluralkit: {status}"))?,
+    }
 
     Ok(())
 }
@@ -108,4 +132,10 @@ fn measure_rate_limits(config: &UserConfigForUpdater, response: &reqwest::Respon
         rate_limit_reset,
         rate_limit_scope
     );
+}
+
+#[derive(Debug, Deserialize)]
+struct PluralKitErrorResponse {
+    code: usize,
+    message: String,
 }

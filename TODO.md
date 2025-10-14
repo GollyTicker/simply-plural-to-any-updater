@@ -12,6 +12,9 @@ For that we need at least:
     * a note should be added, that syncing of the members doesn't happen automatically yet! We need to tackle that in a next step
 * show the new updater in all the places where the existing ones are shown.
 
+DONE: Fix bug that creating a new switch in pk with member-list equal to already active switch returns a HTTP 400.
+For that, we should either detect this specific error and accept it or only make a switch, if the members list is different.
+
 # STEPS
 
 ### Database Migration
@@ -49,7 +52,7 @@ For that we need at least:
 
 3.  **DONE: Register new metrics:** In `src/metrics.rs`, register the new metrics in the `PROM_METRICS` static variable.
 
-### Frontend Implementation
+### Frontend Implementation - DONE
 1. In `frontend/src/components/Config.vue`, add a new section for "PluralKit Synchronization".
 2. Add a password input field for the "PluralKit Token" and bind it to the user's config object.
 3. Add a checkbox to "Enable PluralKit Sync" and bind it to the user's config object.

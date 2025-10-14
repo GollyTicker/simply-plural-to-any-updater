@@ -10,9 +10,9 @@ set -euo pipefail
 
 [[ "$VRCHAT_PASSWORD" != "" ]]
 
-export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=false
-ENABLE_DISCORD_STATUS_MESSAGE=false
-ENABLE_VRCHAT=true
+export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=true
+ENABLE_DISCORD_STATUS_MESSAGE=true
+ENABLE_VRCHAT=false # prevent hitting strict rate limits during dev iterations
 ENABLE_DISCORD=true
 ENABLE_WEBSITE=true
 ENABLE_TO_PLURALKIT=true
