@@ -42,6 +42,7 @@ This way we can get even more early testers so that we can then move to the app 
   * precondition: make queries.rs into trait and create local implementations for SQLite and Postgres
   * precondition: make HTTP requests layer between frontend and rocket server such that (1) the backend exposes itself as both http endpoints and Tauri commands (via cfg macro) and (2) the front-end uses an interface to decide whether to use Tauri invoke or HTTP requests to access the local/server back-end.
   * This might get complex... Most things should work, but probably not the wwbsocket thing for discord...
+  * **alternative: PWA**. see below
 * use websocket subscription to simply plural and only get the fronters + system, when it actually changes
   * and also make the discord websocket thing, that an update is sent immediately once the websocket is created
 * make sure, that stuff stays useable in mobile view
@@ -106,3 +107,170 @@ This way we can get even more early testers so that we can then move to the app 
 * DONE: fix content security policy issue where images are not allowed
 * DONE: ignore dark/light mode and always use light mode in frontend and bridge-frontend
 * DONE: add link to Ko-Fi for donations.
+
+---
+
+## PWA as a Native App Alternative
+
+Summary of the plan to create a PWA instead of native iOS/Android apps to ensure data remains on the user's device.
+
+### Core Architecture
+- **Goal**: Avoid app stores (iOS, Android) by using an installable PWA.
+- **Rust Code**: Compile the core Rust logic to **WebAssembly (WASM)**.
+- **Execution**: Run the WASM module inside a **Web Worker** to handle all data processing on the client-side, preventing UI blocking. This acts as a "local backend".
+- **Database**: Since direct SQLite access is not possible in a browser, use **IndexedDB** for storage. To keep SQL-based logic, a WASM-compiled version of SQLite (e.g., `sql.js`, `wa-sqlite`) can be used, which persists its data to IndexedDB.
+
+### Background Tasks & Notifications
+The primary challenge is running tasks (e.g., hourly sync, reacting to WebSocket events) when the app is in the background. A PWA cannot maintain a persistent background connection.
+The solution is a **server-driven push notification system**.
+
+**Workflow:**
+1.  **Server is the Listener/Scheduler**:
+    - The backend server (Rocket) listens for external WebSocket events.
+    - The backend server runs a cron job for scheduled tasks (e.g., once per hour).
+2.  **Server Sends Push Notification**:
+    - When an event occurs, the server sends a push notification to the user's device.
+3.  **Service Worker Executes Task**:
+    - The push notification wakes up the PWA's Service Worker.
+    - The Service Worker has a short time window to execute the required task (e.g., fetch data, update IndexedDB). A few seconds is well within the limits.
+
+### Platform-Specific Constraints
+- **Requirement**: The user must grant the PWA permission to receive push notifications.
+- **Android**: More flexible. Supports "silent" push notifications that can run tasks without displaying a visible alert.
+- **iOS**: More restrictive. Background execution is limited to ~30 seconds. To guarantee the task runs, the push notification may need to be user-visible (e.g., display a message or update the app's badge).
+
+---
+
+## Minimal PWA Test Plan
+
+A short guide to creating a minimal PWA to test core features (installability, offline, push notifications) on Android and iOS.
+
+### 1. Create `index.html`
+The basic user interface.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PWA Test</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#000000"/>
+</head>
+<body>
+  <h1>PWA Push Test</h1>
+  <button id="subscribeButton">Subscribe to Push</button>
+  <script src="/app.js"></script>
+</body>
+</html>
+```
+
+### 2. Create `manifest.json`
+This file makes the web app installable.
+```json
+{
+  "short_name": "PWA Test",
+  "name": "PWA Test App",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone"
+}
+```
+*(You will need to create a simple 192x192 `icon.png` file)*
+
+### 3. Create `sw.js` (Service Worker)
+Handles offline caching and incoming push notifications.
+```javascript
+// On install, cache the offline page
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open('pwa-test-cache').then(cache => {
+      return cache.add('/');
+    })
+  );
+});
+
+// On fetch, serve from cache if offline
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    caches.match(e.request).then(response => {
+      return response || fetch(e.request);
+    })
+  );
+});
+
+// On push, show a notification
+self.addEventListener('push', (e) => {
+  const data = e.data.json();
+  self.registration.showNotification(data.title, {
+    body: 'This is a push notification!',
+  });
+});
+```
+
+### 4. Create `app.js` (Client-Side Logic)
+Registers the service worker and handles the push subscription process.
+```javascript
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    console.log('Service Worker Registered');
+    document.getElementById('subscribeButton').addEventListener('click', () => {
+      subscribeToPush(reg);
+    });
+  });
+}
+
+async function subscribeToPush(registration) {
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') {
+    throw new Error('Permission not granted for Notification');
+  }
+
+  // IMPORTANT: Replace with your backend's VAPID public key
+  const vapidPublicKey = 'YOUR_VAPID_PUBLIC_KEY';
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+  });
+
+  // Send this 'subscription' object to your backend to store it
+  await fetch('/save-subscription', {
+    method: 'POST',
+    body: JSON.stringify(subscription),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  console.log('Subscribed to push notifications');
+}
+
+// Utility function to convert VAPID key
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+```
+
+### 5. Backend Server (Conceptual)
+You need a simple backend (e.g., using Node.js with the `web-push` library) to:
+1.  **Generate VAPID keys**: These keys identify your server to the push services.
+2.  **Create an endpoint `/save-subscription`**: This endpoint receives the `subscription` object from the client and saves it.
+3.  **Create a trigger**: An endpoint or script that sends a push message to the saved subscription URL.
+
+### 6. Testing
+1.  **Serve over HTTPS**: PWA features require a secure context. Start a local server and use a tool like **`ngrok`** to create a public HTTPS URL (`ngrok http <your-port>`).
+2.  **Access on Device**: Open the `ngrok` HTTPS URL on your Android or iOS device.
+3.  **Install the PWA**:
+    - **Android (Chrome)**: Look for the "Install app" prompt or use the "Add to Home Screen" option in the menu.
+    - **iOS (Safari)**: Use the "Share" button and select "Add to Home Screen".
+4.  **Test Push**: Click the "Subscribe" button in the app. Then, trigger the push message from your backend. The notification should appear on your device, even if the app is closed.
+5. Close and end the app (also remove it from the background tasks). Then trigger another push message and check if it's sent correctly even from the background.
+
