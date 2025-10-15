@@ -12,7 +12,7 @@
 * sp2any-bridge
   * auto-update
   * DONE: auto-start on system start
-* On UI:
+* DONE:
   * add quick and easy feedback field
   * add link to Discord Server
   * add link to KoFi and ask for kind donations
