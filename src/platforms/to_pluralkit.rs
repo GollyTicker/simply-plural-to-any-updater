@@ -9,7 +9,7 @@ int_counter_metric!(PLURALKIT_API_REQUESTS_TOTAL);
 metric!(
     rocket_prometheus::prometheus::IntGaugeVec,
     PLURALKIT_API_RATELIMIT_REMAINING,
-    "plurakit_api_ratelimit_remaining",
+    "pluralkit_api_ratelimit_remaining",
     &["user_id", "scope"]
 );
 
