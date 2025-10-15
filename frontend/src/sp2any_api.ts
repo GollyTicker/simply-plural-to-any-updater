@@ -9,6 +9,7 @@ import type {
   VRChatCredentialsWithCookie,
   VRChatCredentialsWithTwoFactorAuth,
   VRChatAuthResponse,
+  GenericFrontingStatus,
 } from './sp2any.bindings'
 import { getJwt, logoutAndBackToStart, setJwt } from './jwt'
 import router from './router'
@@ -67,6 +68,13 @@ export const sp2any_api = {
     await http.post('/api/user/config_and_restart', config, {
       headers: { Authorization: `Bearer ${jwtString.inner}` },
     })
+  },
+  get_fronting_status: async function (): Promise<GenericFrontingStatus> {
+    const jwtString = await getJwt()
+    const response = await http.get<GenericFrontingStatus>('/api/fronting-status', {
+      headers: { Authorization: `Bearer ${jwtString.inner}` },
+    })
+    return response.data
   },
   vrchat_request_2fa: async function (creds: VRChatCredentials): Promise<VRChatAuthResponse> {
     const jwtString = await getJwt()

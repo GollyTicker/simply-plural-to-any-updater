@@ -4,7 +4,7 @@
 * complete features from first test users
   * primarily vrchat rate limit fix
   * possibly also system sync with pluralkit
-* show example fronters in status page
+* DONE: show example fronters in status page
 * announce and get second test phase users: pk server, sp server, rl plural channel, pridevr plural channel, reddit?
 * use websocket subscription to simply plural and only get the fronters + system, when it actually changes
   * and also make the discord websocket thing, that an update is sent immediately once the websocket is created

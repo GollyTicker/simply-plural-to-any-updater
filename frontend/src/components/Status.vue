@@ -1,6 +1,9 @@
 <template>
   <div class="status-container">
     <h1 id="status-page-title">Updaters Status</h1>
+    <p v-if="fronting_status?.inner">
+      Example fronting status: <span id="fronting-status-example">{{ fronting_status?.inner }}</span>
+    </p>
     <div class="status-list">
       <div v-for="(status, name) in updaters" :key="name" class="status-item">
         <span class="service-name">{{ name }}</span>
@@ -9,18 +12,25 @@
         }}</span>
         <span class="status-info">{{ statusInfo(status!) }}</span>
       </div>
+      <div v-if="Object.keys(updaters).length === 0" class="status-item">
+        <span class="status-info">
+          No updaters configured. Go to <a href="/config">Settings</a> to add some!
+        </span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
-import type { UpdaterStatus, UserUpdatersStatuses } from '@/sp2any.bindings'
+import type { GenericFrontingStatus, UpdaterStatus, UserUpdatersStatuses } from '@/sp2any.bindings'
 import { sp2any_api } from '@/sp2any_api'
 
 const updaters: Ref<UserUpdatersStatuses> = ref({})
+const fronting_status: Ref<GenericFrontingStatus | undefined> = ref(undefined)
 
-let refreshViewIntervalTimer: number | undefined = undefined
+let refreshViewIntervalTimer1: number | undefined = undefined
+let refreshViewIntervalTimer2: number | undefined = undefined
 
 function statusKind(status: UpdaterStatus): string {
   switch (status) {
@@ -57,13 +67,25 @@ const fetchUpdatersState = async () => {
   }
 }
 
+const fetchFrontingStatus = async () => {
+  try {
+    fronting_status.value = await sp2any_api.get_fronting_status()
+    console.log('get_fronting_status: ', fronting_status.value)
+  } catch (e) {
+    console.warn(e)
+  }
+}
+
 onMounted(async () => {
   await fetchUpdatersState()
-  refreshViewIntervalTimer = setInterval(fetchUpdatersState, 5000)
+  await fetchFrontingStatus()
+  refreshViewIntervalTimer1 = setInterval(fetchUpdatersState, 5000)
+  refreshViewIntervalTimer2 = setInterval(fetchFrontingStatus, 5000)
 })
 
 onUnmounted(() => {
-  clearInterval(refreshViewIntervalTimer)
+  clearInterval(refreshViewIntervalTimer1)
+  clearInterval(refreshViewIntervalTimer2)
 })
 </script>
 
@@ -87,6 +109,14 @@ onUnmounted(() => {
   padding: 1rem;
   background-color: var(--color-background-soft);
   border-radius: 5px;
+}
+
+#fronting-status-example {
+  font-family: monospace;
+  padding: 0.2em 0.5em;
+  border-radius: 6px;
+  display: inline-block;
+  background-color: var(--color-background-soft);
 }
 
 .service-name {

@@ -3,9 +3,67 @@ use crate::meta_api::HttpResult;
 use crate::meta_api::expose_internal_error;
 use crate::plurality;
 use crate::updater;
+use crate::users;
 use anyhow::anyhow;
+use rocket::serde::json::Json;
 use rocket::{State, response::content::RawHtml};
+use serde::Serialize;
 use sqlx::PgPool;
+
+#[derive(Debug, Clone, Serialize, specta::Type)]
+pub struct GenericFrontingStatus {
+    inner: String,
+}
+
+#[get("/api/fronting-status")]
+pub async fn get_api_fronting_status(
+    jwt: users::Jwt,
+    db_pool: &State<PgPool>,
+    application_user_secrets: &State<database::ApplicationUserSecrets>,
+    client: &State<reqwest::Client>,
+    shared_updaters: &State<updater::UpdaterManager>,
+) -> HttpResult<Json<GenericFrontingStatus>> {
+    let user_id = jwt.user_id().map_err(expose_internal_error)?;
+
+    log::info!("# | GET /api/fronting-status/{user_id}");
+
+    let config =
+        database::get_user_config_with_secrets(db_pool, &user_id, client, application_user_secrets)
+            .await
+            .map_err(expose_internal_error)?;
+
+    log::info!("# | GET /api/fronting-status/{user_id} | got_config");
+
+    let fronters = shared_updaters
+        .fronter_channel_get_most_recent_value(&user_id)
+        .map_err(expose_internal_error)?
+        .ok_or_else(|| anyhow!("No data from Simply Plural found (2)?"))
+        .map_err(expose_internal_error)?;
+
+    log::info!(
+        "# | GET /api/fronting-status/{user_id} | got_config | {} fronts",
+        fronters.len()
+    );
+
+    let fronting_format = plurality::FrontingFormat {
+        cleaning: plurality::CleanForPlatform::NoClean,
+        max_length: None,
+        prefix: config.status_prefix,
+        status_if_no_fronters: config.status_no_fronts,
+        truncate_names_to_length_if_status_too_long: config.status_truncate_names_to,
+    };
+
+    let as_status = plurality::format_fronting_status(&fronting_format, &fronters);
+
+    let result = GenericFrontingStatus { inner: as_status };
+
+    log::info!(
+        "# | GET /api/fronting-status/{user_id} | got_config | {} fronts | rendered to status string",
+        fronters.len()
+    );
+
+    Ok(Json(result))
+}
 
 #[get("/fronting/<website_url_name>")]
 pub async fn get_api_fronting_by_user_id(

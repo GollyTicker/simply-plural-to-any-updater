@@ -164,6 +164,7 @@ describe('sp2any updater status and config save and restarts', () => {
         await expect($('#VRChat-status')).toHaveText('Disabled');
         await expect($('#ToPluralKit-status')).toHaveText('Disabled');
         await expect($('#Discord-status')).toHaveText('Disabled');
+        await expect($('#fronting-status-example')).toHaveText('F: Annalea 💖 A., Borgn B., Daenssa 📶 D., Cstm First');
     });
 
     it('should be able to re-enable discord and to-pluralkit', async () => {
@@ -182,6 +183,7 @@ describe('sp2any updater status and config save and restarts', () => {
         await expect($('#VRChat-status')).toHaveText('Disabled');
         await expect($('#ToPluralKit-status')).toHaveText('Running');
         await expect($('#Discord-status')).toHaveText('Starting');
+        await expect($('#fronting-status-example')).toHaveText('F: Annalea 💖 A., Borgn B., Daenssa 📶 D., Cstm First');
     });
 
     // todo. fix test. when running manually in browser, the field is correctly emptied and an error happens.

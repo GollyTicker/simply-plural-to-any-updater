@@ -2,8 +2,7 @@ use anyhow::Result;
 use sp2any::{
     database::Decrypted,
     platforms::{
-        TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
-        VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
+        webview_api::GenericFrontingStatus, TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth
     },
     updater::Platform,
     users::PrivacyFineGrained,
@@ -66,6 +65,7 @@ fn main() -> Result<()> {
             "export const LICENSE_INFO_SHORT_HTML: string = \"{}\"",
             license::info_short_html().replace('"', "\\\"")
         ),
+        export::<GenericFrontingStatus>(conf)?,
         export::<VRChatCredentials>(conf)?,
         export::<VRChatCredentialsWithCookie>(conf)?,
         export::<TwoFactorAuthMethod>(conf)?,
