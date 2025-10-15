@@ -183,7 +183,7 @@
               <br />
               We simply tell PluralKit the member IDs of the fronters (after they have been filtered
               through the above privacy conditions). The members themselves are shown with the same
-              privacy rules as you have configured them in PluralKit. 
+              privacy rules as you have configured them in PluralKit.
             </p>
             <input id="enable_to_pluralkit" type="checkbox" v-model="config.enable_to_pluralkit" />
           </div>

@@ -1,4 +1,4 @@
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 use serde::Deserialize;
 use serde_json::{self};
 use sp2any::{plurality, setup};
@@ -11,7 +11,7 @@ use tokio_tungstenite::tungstenite;
 */
 #[derive(Debug, Clone, Deserialize)]
 struct Event<'a> {
-    msg: Option<&'a str>,
+    msg: &'a str,
     title: Option<&'a str>,
 }
 
@@ -39,22 +39,16 @@ async fn main() -> Result<()> {
 
 async fn process_event(token: &str, json_string: tungstenite::Utf8Bytes) -> Result<()> {
     let event = serde_json::from_str::<Event>(&json_string)?;
-    match event.msg {
-        None => log::info!("Ok empty event."),
-        Some("Successfully authenticated") => log::info!("Ok authenticated."),
-        Some("Authentication violation: Token is missing or invalid. Goodbye :)") => {
-            Err(anyhow!("Auth failed."))?;
+
+    match event {
+        Event {
+            msg: "notification",
+            title: Some("Friend request received"),
+        } => {
+            log::info!("Friend request received.");
+            accept_all_friend_requests(token).await?;
         }
-        _ => match event {
-            Event {
-                msg: Some("notification"),
-                title: Some("Friend request received"),
-            } => {
-                log::info!("Friend request received.");
-                accept_all_friend_requests(token).await?;
-            }
-            _ => log::info!("Ignoring irrelevant event: {event:?}"),
-        },
+        _ => log::info!("Ignoring irrelevant event: {event:?}"),
     }
 
     Ok(())

@@ -2,17 +2,15 @@ use anyhow::Result;
 use sp2any::{
     database::Decrypted,
     platforms::{
-        webview_api::GenericFrontingStatus, TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials, VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth
+        TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
+        VRChatCredentialsWithCookie, VRChatCredentialsWithTwoFactorAuth,
+        webview_api::GenericFrontingStatus,
     },
     updater::Platform,
     users::PrivacyFineGrained,
 };
 use sp2any_base::{
-    license,
-    meta::{
-        CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
-        SP2AnyVariantInfo,
-    },
+    meta::{CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL, SP2AnyVariantInfo},
     users::{Email, JwtString, UserLoginCredentials, UserProvidedPassword},
 };
 use specta::ts::{ExportConfiguration, export};
@@ -61,10 +59,6 @@ fn main() -> Result<()> {
         export::<Platform>(conf)?,
         "export type UpdaterStatus = \"Disabled\" | \"Running\" | { \"Error\": string } | \"Starting\"".to_owned(),
         "export type UserUpdatersStatuses = { [p in Platform]?: UpdaterStatus }".to_owned(),
-        format!(
-            "export const LICENSE_INFO_SHORT_HTML: string = \"{}\"",
-            license::info_short_html().replace('"', "\\\"")
-        ),
         export::<GenericFrontingStatus>(conf)?,
         export::<VRChatCredentials>(conf)?,
         export::<VRChatCredentialsWithCookie>(conf)?,

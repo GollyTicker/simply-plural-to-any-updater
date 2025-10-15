@@ -23,4 +23,4 @@ await sp2any-api "Rocket has launched from"
 
 await sp2any-entrypoint "start worker processes"
 
-await sp2any-global-manager "Ok authenticated."
+await sp2any-global-manager "Authenticated."

@@ -3,5 +3,5 @@
 set -euo pipefail
 
 cat sp-events.log | \
-    jq -R 'capture("^\\[(?<timestamp>[^ ]+).*?\\((?<user_id>.*)\\).*?: (?<json>{.*})$") | .json |= fromjson'
+    jq -R 'capture("^\\[(?<timestamp>[^ ]+).*?\\((?<user_id>.*)\\).*?: \\+(?<changed>.*) (?<json>.*)$") | .json |= fromjson'
 

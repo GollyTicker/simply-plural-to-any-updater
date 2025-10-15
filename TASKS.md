@@ -8,24 +8,23 @@
 * announce and get second test phase users: pk server, sp server, rl plural channel, pridevr plural channel, reddit?
 * use websocket subscription to simply plural and only get the fronters + system, when it actually changes
   * and also make the discord websocket thing, that an update is sent immediately once the websocket is created
-* make sure, that stuff stays useable in mobile view
+  * this also resolves the bottleneck of allowing users to set a 1s update duration
 * sp2any-bridge
   * auto-update
   * DONE: auto-start on system start
+* do not clean stuff by default in vrchat. make that configureable
+  * add todo to adapt it to work with many other characters as well (chinese, japanese, etc.)
+* Remove 'VRChat Status Name' field and change it
+  * INSTEAD: change this functionality to have this new name configured in SP2Any UI!
+  * and tell users in the setting page, that this is configureable
+* make sure, that stuff stays useable in mobile view
+* deploy first proper version
+* finalize README
 * DONE:
   * add quick and easy feedback field
   * add link to Discord Server
   * add link to KoFi and ask for kind donations
   * add link to source code
-* checkout inspirations channel in simply plural to see how users use SP and which use cases suit make sense there
-* finalize README
-  * find out how to fix or configure the VRChat cleaned name thing
-* Remove 'VRChat Status Name' field and change it
-  * INSTEAD: change this functionality to have this new name configured in SP2Any UI!
-  * and tell users in the setting page, that this is configureable
-* do not clean stuff by default in vrchat
-  * or make that configureable
-  * and adapt it to work with many other characters as well (chinese, japanese, etc.)
 
 ## Feedback after first deployment of public-test
 
@@ -61,6 +60,7 @@
 For the next steps, it probably makes sense to announce it in more discord servers and get a larger set of users.
 This way we can get even more early testers so that we can then move to the app earlier or later based on the feedback.
 
+* checkout inspirations channel in simply plural to see how users use SP and which use cases suit make sense there
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
 * configureable order in which fronts are shown

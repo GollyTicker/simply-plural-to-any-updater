@@ -210,7 +210,7 @@ pub fn relevantly_changed_based_on_simply_plural_websocket_event(
     let irrelevant_change = matches!(
         event,
         Event {
-            msg: Some("update"),
+            msg: "update",
             // collections we can safely ignore
             target: Some(
                 "automatedReminders"
@@ -225,15 +225,7 @@ pub fn relevantly_changed_based_on_simply_plural_websocket_event(
         }
     );
 
-    let empty_message = matches!(
-        event,
-        Event {
-            msg: None,
-            target: None
-        }
-    );
-
-    Ok(!(irrelevant_change || empty_message))
+    Ok(!irrelevant_change)
 }
 
 /** The Message as sent by Simply Plural on the Websocket.
@@ -242,7 +234,7 @@ pub fn relevantly_changed_based_on_simply_plural_websocket_event(
 */
 #[derive(Debug, Clone, Deserialize)]
 struct Event<'a> {
-    msg: Option<&'a str>,
+    msg: &'a str,
     target: Option<&'a str>,
 }
 
@@ -253,16 +245,16 @@ mod tests {
 
     #[test]
     fn test_relevantly_changed_based_on_simply_plural_websocket_event() {
-        let utf8_bytes = tungstenite::Utf8Bytes::from("{}");
+        let utf8_bytes =
+            tungstenite::Utf8Bytes::from("{\"msg\": \"update\", \"target\": \"notes\"}");
         assert!(!relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
 
-        let utf8_bytes = tungstenite::Utf8Bytes::from("{\"msg\": \"update\", \"target\": \"notes\"}");
-        assert!(!relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
-
-        let utf8_bytes = tungstenite::Utf8Bytes::from("{\"msg\": \"update\", \"target\": \"members\"}");
+        let utf8_bytes =
+            tungstenite::Utf8Bytes::from("{\"msg\": \"update\", \"target\": \"members\"}");
         assert!(relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
 
-        let utf8_bytes = tungstenite::Utf8Bytes::from("{\"msg\": \"notification\", \"title\": \"Test\"}");
+        let utf8_bytes =
+            tungstenite::Utf8Bytes::from("{\"msg\": \"notification\", \"title\": \"Test\"}");
         assert!(relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
     }
 }
