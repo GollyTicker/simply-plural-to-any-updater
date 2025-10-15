@@ -73,6 +73,7 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
             plurality::SIMPLY_PLURAL_WEBSOCKET_UNKNOWN_MESSAGES_TOTAL,
             updater::UPDATER_MANAGER_RESTART_TOTAL_COUNT,
             updater::UPDATER_MANAGER_RESTART_SUCCESS_COUNT,
+            updater::UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT,
             updater::UPDATER_PLATFORM_STATUS,
             platforms::PLURALKIT_API_REQUESTS_TOTAL,
             platforms::PLURALKIT_API_RATELIMIT_REMAINING,
