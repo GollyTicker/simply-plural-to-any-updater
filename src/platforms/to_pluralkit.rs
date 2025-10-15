@@ -5,10 +5,10 @@ use anyhow::{Result, anyhow};
 use reqwest::StatusCode;
 use serde::Deserialize;
 
-int_counter_metric!(PLURAKIT_API_REQUESTS_TOTAL);
+int_counter_metric!(PLURALKIT_API_REQUESTS_TOTAL);
 metric!(
     rocket_prometheus::prometheus::IntGaugeVec,
-    PLURAKIT_API_RATELIMIT_REMAINING,
+    PLURALKIT_API_RATELIMIT_REMAINING,
     "plurakit_api_ratelimit_remaining",
     &["user_id", "scope"]
 );
@@ -61,7 +61,7 @@ async fn update_to_pluralkit(
 
     let request_body = serde_json::json!({ "members": pluralkit_ids });
 
-    PLURAKIT_API_REQUESTS_TOTAL
+    PLURALKIT_API_REQUESTS_TOTAL
         .with_label_values(&[&config.user_id.to_string()])
         .inc();
 
@@ -119,7 +119,7 @@ fn measure_rate_limits(config: &UserConfigForUpdater, response: &reqwest::Respon
         .and_then(|v| v.to_str().ok());
 
     if let (Some(remaining), Some(scope)) = (rate_limit_remaining, rate_limit_scope) {
-        PLURAKIT_API_RATELIMIT_REMAINING
+        PLURALKIT_API_RATELIMIT_REMAINING
             .with_label_values(&[&config.user_id.to_string(), scope])
             .set(remaining);
     }
