@@ -3,7 +3,6 @@ use crate::meta_api::HttpResult;
 use crate::meta_api::expose_internal_error;
 use crate::plurality;
 use crate::updater;
-use crate::users;
 use anyhow::anyhow;
 use rocket::{State, response::content::RawHtml};
 use sqlx::PgPool;
@@ -25,12 +24,9 @@ pub async fn get_api_fronting_by_user_id(
 
     log::info!("# | GET /fronting/{website_url_name} | {user_id}");
 
-    let user_config = database::get_user_secrets(db_pool, &user_id, application_user_secrets)
-        .await
-        .map_err(expose_internal_error)?;
-
-    let (updater_config, _) =
-        users::create_config_with_strong_constraints(&user_id, client, &user_config)
+    let config =
+        database::get_user_config_with_secrets(db_pool, &user_id, client, application_user_secrets)
+            .await
             .map_err(expose_internal_error)?;
 
     log::info!("# | GET /fronting/{website_url_name} | {user_id} | got_config");
@@ -46,7 +42,7 @@ pub async fn get_api_fronting_by_user_id(
         fronts.len()
     );
 
-    let html = generate_html(&updater_config.website_system_name, &fronts);
+    let html = generate_html(&config.website_system_name, &fronts);
 
     log::info!(
         "# | GET /fronting/{website_url_name} | {user_id} | got_config | {} fronts | HTML generated",

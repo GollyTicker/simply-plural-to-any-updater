@@ -149,6 +149,21 @@ pub async fn set_user_config_secrets(
     Ok(())
 }
 
+pub async fn get_user_config_with_secrets(
+    db_pool: &PgPool,
+    user_id: &UserId,
+    client: &reqwest::Client,
+    application_user_secret: &secrets::ApplicationUserSecrets,
+) -> Result<users::UserConfigForUpdater> {
+    log::debug!("# | db::get_user_config_with_secrets | {user_id}");
+
+    let config = get_user_secrets(db_pool, user_id, application_user_secret).await?;
+
+    let (config, _) = users::create_config_with_strong_constraints(user_id, client, &config)?;
+
+    Ok(config)
+}
+
 pub async fn get_user_secrets(
     db_pool: &PgPool,
     user_id: &UserId,

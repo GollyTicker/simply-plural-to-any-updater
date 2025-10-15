@@ -1,3 +1,33 @@
+## Steps to first public release version
+
+* Get new test users by posting about it in more channels
+* complete features from first test users
+  * primarily vrchat rate limit fix
+  * possibly also system sync with pluralkit
+* show example fronters in status page
+* announce and get second test phase users: pk server, sp server, rl plural channel, pridevr plural channel, reddit?
+* use websocket subscription to simply plural and only get the fronters + system, when it actually changes
+  * and also make the discord websocket thing, that an update is sent immediately once the websocket is created
+* make sure, that stuff stays useable in mobile view
+* sp2any-bridge
+  * auto-update
+  * DONE: auto-start on system start
+* On UI:
+  * add quick and easy feedback field
+  * add link to Discord Server
+  * add link to KoFi and ask for kind donations
+  * add link to source code
+* checkout inspirations channel in simply plural to see how users use SP and which use cases suit make sense there
+* finalize README
+  * find out how to fix or configure the VRChat cleaned name thing
+* Rename 'VRChat Status Name' field to 'SP2Any Name' field
+  * and tell users in the setting page, that this is configureable
+  * or change this functionality based on user feedback
+  * ask for feedback on how people want to configure such stuff
+* do not clean stuff by default in vrchat
+  * or make that configureable
+  * and adapt it to work with many other characters as well (chinese, japanese, etc.)
+
 ## Feedback after first deployment of public-test
 
 * member privacy
@@ -32,7 +62,6 @@
 For the next steps, it probably makes sense to announce it in more discord servers and get a larger set of users.
 This way we can get even more early testers so that we can then move to the app earlier or later based on the feedback.
 
-* checkout inspirations channel in sunny plural to see how users use SP and which use cases suit make sense there
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
 * configureable order in which fronts are shown
@@ -43,33 +72,11 @@ This way we can get even more early testers so that we can then move to the app 
   * precondition: make HTTP requests layer between frontend and rocket server such that (1) the backend exposes itself as both http endpoints and Tauri commands (via cfg macro) and (2) the front-end uses an interface to decide whether to use Tauri invoke or HTTP requests to access the local/server back-end.
   * This might get complex... Most things should work, but probably not the wwbsocket thing for discord...
   * **alternative: PWA**. see below
-* use websocket subscription to simply plural and only get the fronters + system, when it actually changes
-  * and also make the discord websocket thing, that an update is sent immediately once the websocket is created
-* make sure, that stuff stays useable in mobile view
-* sp2any-bridge
-  * auto-update
-  * DONE: auto-start on system start
 * password reset for users
 * BUG: when discord rich presence is disabled and the bridge is started, it connects and shows up as "running" though it doesn't show any
   rich presence in discord. this might be confusing. and also, there happens some related errors in the bridge logs which should be investigated
 * add status not only for updaters but also for SP itself.
 * DONE: remove `0.1.0` from sp2any bridge executable
-* Rename 'VRChat Status Name' field to 'SP2Any Simple Name' field
-  * ask users on how to best configure this
-* Ask on Reddit and various discord servers for what features the users want
-* persistent deployment:
-  * cheap free tier VMs and docker based deployment?
-  * using [free managed postgres](https://www.bytebase.com/blog/postgres-hosting-options-pricing-comparison/) with free tier serverless functions?
-  * alternatively a mixture of the above?
-* make it such that the code can ALSO run in a mobile app.
-  * UI should be easily adapted to be running in mobile app in additional to a web-app
-  * backend would be mostly in the cloud OR locally on the modile.
-  * database needs to support both postgres and SQLite, since the database will be different based on mobile vs. cloud
-* On UI:
-  * add quick and easy feedback field
-  * add link to Discord Server
-  * add link to KoFi and ask for kind donations
-  * add link to source code
 * make sure, that during production, only my own domains are allowed and not localhost or so.
 * DONE: restart updaters once in a while, just to get temporary issues out of the way (e.g. vrchat someimes just doesn't work after a re-deployment)
 * DONE: make website view such that it doesn't eagery fetch data from simply plural every time but instead uses the latest values from a channel

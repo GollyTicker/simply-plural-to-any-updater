@@ -1,6 +1,6 @@
 use crate::plurality::{self};
 use crate::updater::{self, work_loop};
-use crate::users::{UserId, create_config_with_strong_constraints};
+use crate::users::UserId;
 use crate::{database, users};
 use crate::{int_counter_metric, metric, setup};
 use anyhow::{Result, anyhow};
@@ -361,14 +361,13 @@ pub async fn restart_first_long_living_updater(
                 log::info!(
                     "restart_first_long_living_updater | restarting {user_id} ({active_since})"
                 );
-                let config =
-                    database::get_user_secrets(&db_pool, &user_id, &application_user_secrets)
-                        .await?;
-                let (config, _) = create_config_with_strong_constraints(
+                let config = database::get_user_config_with_secrets(
+                    &db_pool,
                     &user_id,
                     &setup::make_client()?,
-                    &config,
-                )?;
+                    &application_user_secrets,
+                )
+                .await?;
                 let _ = shared_updaters.restart_updater(
                     &user_id,
                     config,

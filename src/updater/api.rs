@@ -66,9 +66,9 @@ pub async fn restart_updater_for_user(
 ) -> Result<()> {
     log::info!("# | restart_updater_for_user | {user_id}");
 
-    let db_config = database::get_user_secrets(db_pool, user_id, application_user_secrets).await?;
-
-    let (config, _) = users::create_config_with_strong_constraints(user_id, client, &db_config)?;
+    let config =
+        database::get_user_config_with_secrets(db_pool, user_id, client, application_user_secrets)
+            .await?;
 
     let () = shared_updaters.restart_updater(
         user_id,

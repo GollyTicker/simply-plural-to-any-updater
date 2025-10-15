@@ -26,8 +26,9 @@ pub async fn get_api_user_platform_discord_bridge_events(
     let user_id_c = user_id.clone();
     log::info!("# | GET /api/user/platform/discord/bridge-events | {user_id}");
 
-    let config = database::get_user_secrets(db_pool, &user_id, application_user_secrets).await?;
-    let (config, _) = users::create_config_with_strong_constraints(&user_id, client, &config)?;
+    let config =
+        database::get_user_config_with_secrets(db_pool, &user_id, client, application_user_secrets)
+            .await?;
 
     let mut fronting_channel = shared_updaters.subscribe_fronter_channel(&user_id)?;
 
