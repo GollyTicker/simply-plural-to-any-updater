@@ -225,7 +225,15 @@ pub fn relevantly_changed_based_on_simply_plural_websocket_event(
         }
     );
 
-    Ok(!irrelevant_change)
+    let empty_message = matches!(
+        event,
+        Event {
+            msg: None,
+            target: None
+        }
+    );
+
+    Ok(!(irrelevant_change || empty_message))
 }
 
 /** The Message as sent by Simply Plural on the Websocket.
@@ -236,4 +244,25 @@ pub fn relevantly_changed_based_on_simply_plural_websocket_event(
 struct Event<'a> {
     msg: Option<&'a str>,
     target: Option<&'a str>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio_tungstenite::tungstenite;
+
+    #[test]
+    fn test_relevantly_changed_based_on_simply_plural_websocket_event() {
+        let utf8_bytes = tungstenite::Utf8Bytes::from("{}");
+        assert!(!relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
+
+        let utf8_bytes = tungstenite::Utf8Bytes::from("{\"msg\": \"update\", \"target\": \"notes\"}");
+        assert!(!relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
+
+        let utf8_bytes = tungstenite::Utf8Bytes::from("{\"msg\": \"update\", \"target\": \"members\"}");
+        assert!(relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
+
+        let utf8_bytes = tungstenite::Utf8Bytes::from("{\"msg\": \"notification\", \"title\": \"Test\"}");
+        assert!(relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
+    }
 }

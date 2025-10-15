@@ -28,6 +28,7 @@ metric!(
     "updater_platform_status",
     &["user_id", "platform", "status"]
 );
+int_counter_metric!(UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT);
 
 #[derive(Clone)]
 pub struct UpdaterManager {
@@ -317,6 +318,9 @@ fn create_simply_plural_websocket_listener_task(
                 let changed =
                     plurality::relevantly_changed_based_on_simply_plural_websocket_event(&message)?;
                 log::info!("SP WS payload '{user_id}': +{changed} {message}");
+                UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT
+                    .with_label_values(&[&user_id.to_string()])
+                    .inc();
                 Ok(())
             },
         )
