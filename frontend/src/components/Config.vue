@@ -180,6 +180,10 @@
               Note: Syncing of the member information itself from SimplyPlural to PluralKit is not
               done automatically yet. You need to import/export your system between both manually
               for now to ensure, that all the members exist in both places.
+              <br />
+              We simply tell PluralKit the member IDs of the fronters (after they have been filtered
+              through the above privacy conditions). The members themselves are shown with the same
+              privacy rules as you have configured them in PluralKit. 
             </p>
             <input id="enable_to_pluralkit" type="checkbox" v-model="config.enable_to_pluralkit" />
           </div>

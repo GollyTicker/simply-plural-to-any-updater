@@ -20,10 +20,9 @@
 * checkout inspirations channel in simply plural to see how users use SP and which use cases suit make sense there
 * finalize README
   * find out how to fix or configure the VRChat cleaned name thing
-* Rename 'VRChat Status Name' field to 'SP2Any Name' field
+* Remove 'VRChat Status Name' field and change it
+  * INSTEAD: change this functionality to have this new name configured in SP2Any UI!
   * and tell users in the setting page, that this is configureable
-  * or change this functionality based on user feedback
-  * ask for feedback on how people want to configure such stuff
 * do not clean stuff by default in vrchat
   * or make that configureable
   * and adapt it to work with many other characters as well (chinese, japanese, etc.)
