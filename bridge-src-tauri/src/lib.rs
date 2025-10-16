@@ -41,18 +41,15 @@ async fn fetch_base_url_and_variant_info_anyhow() -> Result<(String, SP2AnyVaria
     Ok((base_url, variant_info))
 }
 
-#[tauri::command]
-async fn initiate_discord_rpc_loop(app: tauri::AppHandle) -> () {
+fn initiate_discord_rpc_loop(
+    app: tauri::AppHandle,
+    rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage>,
+    updater_status_channel: FireAndForgetChannel<UpdaterStatus>,
+) {
     log::debug!("initiate_discord_rpc_loop");
-    let rich_presence_channel = app
-        .state::<FireAndForgetChannel<ServerToBridgeSseMessage>>()
-        .inner()
-        .clone();
-    let mut updater_status_channel = app
-        .state::<FireAndForgetChannel<UpdaterStatus>>()
-        .inner()
-        .clone();
     tauri::async_runtime::spawn(async move {
+        let app = app;
+        let mut updater_status_channel = updater_status_channel;
         discord_bridge::discord_ipc_loop(&app, rich_presence_channel, &mut updater_status_channel)
             .await;
     });
@@ -216,15 +213,19 @@ pub fn run() -> Result<()> {
             login_with_stored_credentials,
             stop_and_clear_credentials,
             subscribe_to_bridge_channel,
-            initiate_discord_rpc_loop,
             fetch_base_url_and_variant_info,
             get_bridge_version
         ])
         .manage(new_background_tasks_container())
-        .manage(rich_presence_channel)
-        .manage(updater_status_channel)
+        .manage(rich_presence_channel.clone())
+        .manage(updater_status_channel.clone())
         .setup(|app| {
             app.handle().plugin(logging_plugin)?;
+            initiate_discord_rpc_loop(
+                app.handle().clone(),
+                rich_presence_channel,
+                updater_status_channel,
+            );
             Ok(())
         })
         .run(tauri::generate_context!())

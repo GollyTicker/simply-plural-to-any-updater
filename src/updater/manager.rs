@@ -337,6 +337,14 @@ impl UpdaterManager {
                     }
                     Ok(())
                 },
+                || {
+                    self2.fetch_and_update_fronters(
+                        &user_id,
+                        &client,
+                        &db_pool,
+                        &application_user_secrets,
+                    )
+                },
             )
             .await;
         })

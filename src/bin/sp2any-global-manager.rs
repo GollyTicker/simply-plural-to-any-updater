@@ -31,9 +31,12 @@ async fn main() -> Result<()> {
     log::info!("Accept all friend requests before starting loop.");
     accept_all_friend_requests(&token).await?;
 
-    plurality::auto_reconnecting_websocket_client_to_simply_plural("global-mgr", &token, |ev| {
-        process_event(&token, ev)
-    })
+    plurality::auto_reconnecting_websocket_client_to_simply_plural(
+        "global-mgr",
+        &token,
+        |ev| process_event(&token, ev),
+        || accept_all_friend_requests(&token),
+    )
     .await
 }
 

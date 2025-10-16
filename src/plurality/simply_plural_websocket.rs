@@ -32,18 +32,23 @@ const SIMPLY_PLURAL_AUTH_FAILURE: &str = "Authentication against SP failed.";
 /**
  * Simplifies the handling of messages from Simpl Plural.
  *
- * Takes an message handler, and applies that handler to each event message from simply plural.
+ * Takes an message handler `process_event`, and applies that handler to each event message from simply plural.
  *
  * This function takes care of the responsiblities of connection, re-connection, authentication, aborting on failures, etc.
+ *
+ * When the websocket reconnects, it might miss events it would have otherwise received. Hence,
+ * on each successfull connect + authentication, the `on_connect` handler is called to notify such situations.
  */
 #[allow(clippy::future_not_send)]
-pub async fn auto_reconnecting_websocket_client_to_simply_plural<F>(
+pub async fn auto_reconnecting_websocket_client_to_simply_plural<F1, F2>(
     log_prefix: &str,
     token: &str,
-    process_event: impl Fn(tungstenite::Utf8Bytes) -> F,
+    process_event: impl Fn(tungstenite::Utf8Bytes) -> F1,
+    on_connect: impl Fn() -> F2,
 ) -> !
 where
-    F: Future<Output = Result<()>>,
+    F1: Future<Output = Result<()>>,
+    F2: Future<Output = Result<()>>,
 {
     loop {
         log::info!("WS {log_prefix} client starting ...");
@@ -51,7 +56,7 @@ where
             .with_label_values(&[log_prefix])
             .inc();
         let wait_seconds = if let Err(e) =
-            run_single_websocket_connection(log_prefix, token, &process_event).await
+            run_single_websocket_connection(log_prefix, token, &process_event, &on_connect).await
         {
             log::error!("WS {log_prefix} client error: {e}.",);
 
@@ -79,13 +84,15 @@ where
     }
 }
 
-async fn run_single_websocket_connection<F>(
+async fn run_single_websocket_connection<F1, F2>(
     log_prefix: &str,
     token: &str,
-    process_event: impl Fn(tungstenite::Utf8Bytes) -> F,
+    process_event: impl Fn(tungstenite::Utf8Bytes) -> F1,
+    on_connect: impl Fn() -> F2,
 ) -> Result<()>
 where
-    F: Future<Output = Result<()>>,
+    F1: Future<Output = Result<()>>,
+    F2: Future<Output = Result<()>>,
 {
     let (mut write, mut read) = create_connection(log_prefix, WEBSOCKET_URL).await?;
 
@@ -105,6 +112,7 @@ where
                     Message::Text(auth_success) if auth_success.contains("Successfully authenticated") => {
                         log::info!("WS {log_prefix} Authenticated.");
                         authenticated = true;
+                        on_connect().await?;
                     },
                     Message::Text(auth_failure) if auth_failure.contains("Authentication violation") => return Err(anyhow!(SIMPLY_PLURAL_AUTH_FAILURE)),
                     Message::Text(json_string) => {
