@@ -1,9 +1,9 @@
 ## Steps to first public release version
 
 * accounce and get second phase test users by posting about it in more channels
-  * pk server
-  * sp server
-  * rl plural channel
+  * DONE: pk server
+  * DONE: sp server
+  * DONE: rl plural channel
   * pridevr plural channel
     * ticket asking for approval created
   * reddit?
