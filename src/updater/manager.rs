@@ -6,7 +6,7 @@ use crate::{int_counter_metric, metric, setup};
 use anyhow::{Result, anyhow};
 use sp2any_base::communication;
 use sp2any_base::updater::UpdaterStatus;
-use sqlx::PgPool;
+use sqlx;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use strum::VariantNames;
@@ -88,6 +88,7 @@ impl UpdaterManager {
         Ok(receiver)
     }
 
+    // todo. this should be removed and inlined into it's sole user in this class
     pub fn send_fronter_channel_update(
         &self,
         user_id: &UserId,
@@ -185,8 +186,12 @@ impl UpdaterManager {
         let () = self.recreate_fronter_channel(user_id)?;
         let foreign_status_updater_task = self.recreate_foreign_status_channel(user_id)?;
         let () = self.recreate_updater_statuses(user_id, &config)?;
-        let simply_plural_websocket_listener_task =
-            create_simply_plural_websocket_listener_task(&config);
+        let simply_plural_websocket_listener_task = self
+            .create_simply_plural_websocket_listener_task(
+                &config,
+                &db_pool,
+                application_user_secrets,
+            );
 
         let owned_self = self.to_owned();
         let application_user_secrets = application_user_secrets.clone();
@@ -283,6 +288,79 @@ impl UpdaterManager {
         Ok(())
     }
 
+    fn create_simply_plural_websocket_listener_task(
+        &self,
+        config: &users::UserConfigForUpdater,
+        db_pool: &sqlx::PgPool,
+        application_user_secrets: &database::ApplicationUserSecrets,
+    ) -> JoinHandle<()> {
+        let user_id = config.user_id.clone();
+        let sp_token = config.simply_plural_token.clone();
+        let self2 = self.clone();
+        let client = config.client.clone();
+        let db_pool = db_pool.clone();
+        let application_user_secrets = application_user_secrets.clone();
+
+        tokio::spawn(async move {
+            if sp_token.secret.is_empty() {
+                log::info!("SP WS '{user_id}': Not creating websocket, because token is not set.");
+                return;
+            }
+            match self2
+                .fetch_and_update_fronters(&user_id, &client, &db_pool, &application_user_secrets)
+                .await
+            {
+                Ok(()) => log::info!("Initial SP update after restart OK."),
+                Err(e) => log::info!("Initial SP update after restart Err: {e}"),
+            }
+            plurality::auto_reconnecting_websocket_client_to_simply_plural(
+                &user_id.to_string(),
+                &sp_token.secret,
+                async |message| {
+                    let changed =
+                        plurality::relevantly_changed_based_on_simply_plural_websocket_event(
+                            &message,
+                        )?;
+                    log::info!("SP WS payload '{user_id}': +{changed} {message}");
+                    UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT
+                        .with_label_values(&[&user_id.to_string()])
+                        .inc();
+                    if changed {
+                        self2
+                            .fetch_and_update_fronters(
+                                &user_id,
+                                &client,
+                                &db_pool,
+                                &application_user_secrets,
+                            )
+                            .await?;
+                    }
+                    Ok(())
+                },
+            )
+            .await;
+        })
+    }
+
+    async fn fetch_and_update_fronters(
+        &self,
+        user_id: &UserId,
+        client: &reqwest::Client,
+        db_pool: &sqlx::Pool<sqlx::Postgres>,
+        application_user_secrets: &database::ApplicationUserSecrets,
+    ) -> Result<(), anyhow::Error> {
+        let config = database::get_user_config_with_secrets(
+            db_pool,
+            user_id,
+            client,
+            application_user_secrets,
+        )
+        .await?;
+        let fronters = plurality::fetch_fronts(&config).await?;
+        let () = self.send_fronter_channel_update(user_id, fronters)?;
+        Ok(())
+    }
+
     #[allow(clippy::significant_drop_tightening)]
     fn updater_active_since(&self, user_id: &UserId) -> Result<chrono::DateTime<chrono::Utc>> {
         let locked = self
@@ -296,36 +374,6 @@ impl UpdaterManager {
 
         Ok(*start_time)
     }
-}
-
-fn create_simply_plural_websocket_listener_task(
-    config: &users::UserConfigForUpdater,
-) -> JoinHandle<()> {
-    let user_id = config.user_id.clone();
-    let sp_token = config.simply_plural_token.clone();
-
-    tokio::spawn(async move {
-        if sp_token.secret.is_empty() {
-            log::info!("SP WS '{user_id}': Not creating websocket, because token is not set.");
-            return;
-        }
-        plurality::auto_reconnecting_websocket_client_to_simply_plural(
-            &user_id.to_string(),
-            &sp_token.secret,
-            async |message| {
-                // currently we only want to listen to the websocket events so that we know what kind of messages we're even receiving.
-                // they'll be extracted from the logs lateron.
-                let changed =
-                    plurality::relevantly_changed_based_on_simply_plural_websocket_event(&message)?;
-                log::info!("SP WS payload '{user_id}': +{changed} {message}");
-                UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT
-                    .with_label_values(&[&user_id.to_string()])
-                    .inc();
-                Ok(())
-            },
-        )
-        .await;
-    })
 }
 
 fn record_status_in_metrics(user_id: &UserId, p: updater::Platform, new_status: &UpdaterStatus) {
@@ -348,7 +396,7 @@ fn record_status_in_metrics(user_id: &UserId, p: updater::Platform, new_status: 
  * We only restart the first long living updater, because we want to avoid too many updaters scheduled at the same time
  */
 pub async fn restart_first_long_living_updater(
-    db_pool: PgPool,
+    db_pool: sqlx::PgPool,
     shared_updaters: UpdaterManager,
     application_user_secrets: database::ApplicationUserSecrets,
 ) -> Result<()> {
