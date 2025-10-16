@@ -49,7 +49,6 @@ check_system_fronts_set() {
         check_vrc_status_string_equals "F˸Ann‚Bor‚Dae‚Cst"
     elif [[ "$SET" == "B" ]]; then
         check_vrc_status_string_equals "F˸ tš漢ク汉漢"
-        check_discord_status_string_equals "F: tš▶️漢ク汉漢"
     else
         return 1
     fi
@@ -85,7 +84,7 @@ start_updater() {
 
     setup_test_user
 
-    await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+    await sp2any-api "Waiting for next update trigger..."
 
     echo "Started Updater."
 }

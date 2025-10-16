@@ -329,7 +329,6 @@ mod tests {
             },
             simply_plural_base_url: "".to_string(),
             discord_base_url: "".to_string(),
-            wait_seconds: Default::default(),
             status_prefix: "".to_string(),
             status_no_fronts: "".to_string(),
             status_truncate_names_to: 0,

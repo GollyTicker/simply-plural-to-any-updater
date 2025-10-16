@@ -36,8 +36,6 @@ where
 
     // None: Use default value, if available
     // Some(x): Use this value
-    pub wait_seconds: Option<i32>,
-
     pub status_prefix: Option<String>,
     pub status_no_fronts: Option<String>,
     pub status_truncate_names_to: Option<i32>,
@@ -72,7 +70,6 @@ impl<S: SecretType> UserConfigDbEntries<S> {
     pub fn with_defaults(&self) -> Self {
         let defaults: Self = Self::default();
         Self {
-            wait_seconds: self.wait_seconds.or(defaults.wait_seconds),
             website_system_name: self
                 .website_system_name
                 .clone()
@@ -117,7 +114,6 @@ impl<S: SecretType> UserConfigDbEntries<S> {
 impl<S: SecretType> Default for UserConfigDbEntries<S> {
     fn default() -> Self {
         Self {
-            wait_seconds: Some(60),
             status_prefix: Some(String::from("F:")),
             status_no_fronts: Some(String::from("none?")),
             status_truncate_names_to: Some(3),
@@ -207,8 +203,6 @@ pub struct UserConfigForUpdater {
     pub discord_base_url: String,
 
     // Note: v Keep this in sync with UserConfigDbEntries AND the ts-bindings! v
-    pub wait_seconds: WaitSeconds,
-
     pub status_prefix: String,
     pub status_no_fronts: String,
     pub status_truncate_names_to: usize,
@@ -287,7 +281,6 @@ where
     let config = UserConfigForUpdater {
         user_id: user_id.clone(),
         client: client.clone(),
-        wait_seconds: config_value!(local_config_with_defaults, wait_seconds)?.into(),
         simply_plural_token: config_value!(local_config_with_defaults, simply_plural_token)?,
         simply_plural_base_url: String::from("https://api.apparyllis.com/v1"),
         status_prefix: config_value!(local_config_with_defaults, status_prefix)?,
@@ -391,7 +384,6 @@ mod tests {
         let unused_client = reqwest::Client::new();
 
         let mut db_config = UserConfigDbEntries::<Decrypted> {
-            wait_seconds: None,
             enable_website: false,
             website_system_name: Some("Our System".to_string()),
             website_url_name: Some("our-system".to_string()),
@@ -436,7 +428,6 @@ mod tests {
     #[test]
     fn test_user_config_db_entries_serialization() {
         let config = UserConfigDbEntries::<Decrypted> {
-            wait_seconds: Some(30),
             enable_website: false,
             website_system_name: Some("Our System".to_string()),
             website_url_name: Some("our-system".to_string()),
@@ -470,7 +461,6 @@ mod tests {
 
         let json_string = serde_json::to_string_pretty(&config).unwrap();
         let expected_json = r#"{
-  "wait_seconds": 30,
   "status_prefix": "SP:",
   "status_no_fronts": "No one fronting",
   "status_truncate_names_to": 5,

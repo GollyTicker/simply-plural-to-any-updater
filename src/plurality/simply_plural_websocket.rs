@@ -58,7 +58,7 @@ where
         let wait_seconds = if let Err(e) =
             run_single_websocket_connection(log_prefix, token, &process_event, &on_connect).await
         {
-            log::error!("WS {log_prefix} client error: {e}.",);
+            log::error!("WS {log_prefix} client error: {e}.");
 
             if e.to_string() == SIMPLY_PLURAL_AUTH_FAILURE {
                 SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_ERROR_AUTH_TOTAL

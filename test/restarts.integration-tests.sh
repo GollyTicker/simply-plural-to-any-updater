@@ -11,20 +11,20 @@ ENABLE_TO_PLURALKIT=true
 
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
-set -a; source ./test/ensure-vrchat-cookie-available.dev.sh --automated ; set +a
 
 main() {
     stop_updater
     ./steps/12-backend-cargo-build.sh
-
+    clear_all_fronts
 
     # regression test: Ensure, that restarts don't create duplicate tasks
     start_updater
     sleep 3s
     set_user_config_and_restart
+    sleep 5s
     BEFORE_COUNT="$(get_updater_loop_count)"
-    sleep "$SECONDS_BETWEEN_UPDATES"
-    sleep 1s
+    set_to_front "$TEST_MEMBER_ID"
+    sleep 2s
     AFTER_COUNT="$(get_updater_loop_count)"
     # exactly one update happened in that period
     echo "$BEFORE_COUNT + 1" =? "$AFTER_COUNT"
@@ -37,12 +37,12 @@ main() {
 }
 
 get_updater_loop_count() {
-    docker logs sp2any-api 2>&1 | grep "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..." | wc -l
+    docker logs sp2any-api 2>&1 | grep "Waiting for next update trigger..." | wc -l
 }
 
 check_updater_loop_continues() {
     echo "check_updater_loop_continues"
-    docker logs sp2any-api 2>&1 | grep -q "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+    docker logs sp2any-api 2>&1 | grep -q "Waiting for next update trigger..."
 }
 
 export BASE_URL="http://localhost:8080"
@@ -53,7 +53,7 @@ start_updater() {
 
     setup_test_user
 
-    await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+    await sp2any-api "Waiting for next update trigger..."
 
     echo "Started startup-test."
 }

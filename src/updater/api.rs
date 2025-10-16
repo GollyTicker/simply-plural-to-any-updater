@@ -1,7 +1,7 @@
 use crate::database;
 use crate::meta_api::{HttpResult, expose_internal_error};
 use crate::setup;
-use crate::updater::{manager, work_loop};
+use crate::updater::{change_processor, manager};
 use crate::users;
 use crate::users::UserId;
 use anyhow::Result;
@@ -13,12 +13,12 @@ use sqlx::PgPool;
 pub fn get_api_updaters_status(
     shared_updaters: &State<manager::UpdaterManager>,
     jwt: users::Jwt,
-) -> HttpResult<Json<work_loop::UserUpdatersStatuses>> {
+) -> HttpResult<Json<change_processor::UserUpdatersStatuses>> {
     let user_id = jwt.user_id().map_err(expose_internal_error)?;
 
     log::info!("# | GET /api/updaters/status | {user_id}");
 
-    let updaters_state: work_loop::UserUpdatersStatuses = shared_updaters
+    let updaters_state: change_processor::UserUpdatersStatuses = shared_updaters
         .get_updaters_statuses(&user_id)
         .map_err(expose_internal_error)?;
 

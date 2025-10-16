@@ -47,7 +47,6 @@ pub async fn get_user(
     log::debug!("# | db::get_user | {user_id}");
     sqlx::query_as(
         "SELECT
-            wait_seconds,
             website_system_name,
             website_url_name,
             status_prefix,
@@ -92,7 +91,6 @@ pub async fn set_user_config_secrets(
     let _: Option<UserConfigDbEntries<secrets::Decrypted>> = sqlx::query_as(
         "UPDATE users
         SET
-            wait_seconds = $2,
             website_system_name = $3,
             status_prefix = $4,
             status_no_fronts = $5,
@@ -118,7 +116,7 @@ pub async fn set_user_config_secrets(
         WHERE id = $1",
     )
     .bind(user_id.inner)
-    .bind(config.wait_seconds)
+    .bind(0)
     .bind(&config.website_system_name)
     .bind(&config.status_prefix)
     .bind(&config.status_no_fronts)
@@ -175,7 +173,6 @@ pub async fn get_user_secrets(
 
     sqlx::query_as(
         "SELECT
-            wait_seconds,
             website_system_name,
             website_url_name,
             status_prefix,

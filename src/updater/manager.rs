@@ -1,5 +1,5 @@
 use crate::plurality::{self};
-use crate::updater::{self, work_loop};
+use crate::updater::{self, change_processor};
 use crate::users::UserId;
 use crate::{database, users};
 use crate::{int_counter_metric, metric, setup};
@@ -33,7 +33,7 @@ int_counter_metric!(UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESS
 #[derive(Clone)]
 pub struct UpdaterManager {
     pub tasks: ThreadSafePerUser<CancleableTasks>,
-    pub statuses: ThreadSafePerUser<work_loop::UserUpdatersStatuses>,
+    pub statuses: ThreadSafePerUser<change_processor::UserUpdatersStatuses>,
     pub fronter_channel: ThreadSafePerUser<FronterChannel>,
     pub foreign_managed_status_channel: ThreadSafePerUser<ForeignStatusChannel>,
     pub discord_status_message_available: bool,
@@ -88,29 +88,6 @@ impl UpdaterManager {
         Ok(receiver)
     }
 
-    // todo. this should be removed and inlined into it's sole user in this class
-    pub fn send_fronter_channel_update(
-        &self,
-        user_id: &UserId,
-        fronters: Vec<plurality::Fronter>,
-    ) -> Result<()> {
-        let receiver_count = self
-            .fronter_channel
-            .lock()
-            .map_err(|e| anyhow!(e.to_string()))?
-            .get_mut(user_id)
-            .ok_or_else(|| {
-                anyhow!("send_fronter_channel_update: No fronter channel found for  {user_id}")
-            })?
-            .send(fronters);
-
-        log::info!(
-            "# | send_fronter_channel_update | {user_id} | Send fronter update to {receiver_count} receivers."
-        );
-
-        Ok(())
-    }
-
     #[allow(clippy::significant_drop_tightening)]
     pub fn get_foreign_status_channel(
         &self,
@@ -132,7 +109,7 @@ impl UpdaterManager {
     pub fn get_updaters_statuses(
         &self,
         user_id: &UserId,
-    ) -> Result<work_loop::UserUpdatersStatuses> {
+    ) -> Result<change_processor::UserUpdatersStatuses> {
         Ok(self
             .statuses
             .lock()
@@ -146,7 +123,7 @@ impl UpdaterManager {
     pub fn notify_updater_statuses(
         &self,
         user_id: &UserId,
-        updater_state: work_loop::UserUpdatersStatuses,
+        updater_state: change_processor::UserUpdatersStatuses,
     ) -> Result<()> {
         let mut locked = self.statuses.lock().map_err(|e| anyhow!(e.to_string()))?;
 
@@ -195,8 +172,16 @@ impl UpdaterManager {
 
         let owned_self = self.to_owned();
         let application_user_secrets = application_user_secrets.clone();
+        let fronter_receiver = self.subscribe_fronter_channel(user_id)?;
         let work_loop_task = tokio::spawn(async move {
-            work_loop::run_loop(config, owned_self, &db_pool, &application_user_secrets).await;
+            change_processor::run_listener_for_changes(
+                config,
+                owned_self,
+                &db_pool,
+                &application_user_secrets,
+                fronter_receiver,
+            )
+            .await;
         });
 
         locked_task.insert(
@@ -306,10 +291,15 @@ impl UpdaterManager {
                 log::info!("SP WS '{user_id}': Not creating websocket, because token is not set.");
                 return;
             }
-            match self2
-                .fetch_and_update_fronters(&user_id, &client, &db_pool, &application_user_secrets)
-                .await
-            {
+            let update_fronters_from_simply_plural = || {
+                self2.fetch_and_update_fronters(
+                    &user_id,
+                    &client,
+                    &db_pool,
+                    &application_user_secrets,
+                )
+            };
+            match update_fronters_from_simply_plural().await {
                 Ok(()) => log::info!("Initial SP update after restart OK."),
                 Err(e) => log::info!("Initial SP update after restart Err: {e}"),
             }
@@ -326,25 +316,11 @@ impl UpdaterManager {
                         .with_label_values(&[&user_id.to_string()])
                         .inc();
                     if changed {
-                        self2
-                            .fetch_and_update_fronters(
-                                &user_id,
-                                &client,
-                                &db_pool,
-                                &application_user_secrets,
-                            )
-                            .await?;
+                        update_fronters_from_simply_plural().await?;
                     }
                     Ok(())
                 },
-                || {
-                    self2.fetch_and_update_fronters(
-                        &user_id,
-                        &client,
-                        &db_pool,
-                        &application_user_secrets,
-                    )
-                },
+                update_fronters_from_simply_plural,
             )
             .await;
         })
@@ -357,6 +333,8 @@ impl UpdaterManager {
         db_pool: &sqlx::Pool<sqlx::Postgres>,
         application_user_secrets: &database::ApplicationUserSecrets,
     ) -> Result<(), anyhow::Error> {
+        log::info!("# | fetch_and_update_fronters | {user_id}");
+
         let config = database::get_user_config_with_secrets(
             db_pool,
             user_id,
@@ -364,8 +342,26 @@ impl UpdaterManager {
             application_user_secrets,
         )
         .await?;
+
         let fronters = plurality::fetch_fronts(&config).await?;
-        let () = self.send_fronter_channel_update(user_id, fronters)?;
+        let fronters_count = fronters.len();
+
+        log::info!("# | fetch_and_update_fronters | {user_id} | {fronters_count} fronters fetched");
+
+        let receiver_count = self
+            .fronter_channel
+            .lock()
+            .map_err(|e| anyhow!(e.to_string()))?
+            .get_mut(user_id)
+            .ok_or_else(|| {
+                anyhow!("fetch_and_update_fronters: No fronter channel found for {user_id}")
+            })?
+            .send(fronters);
+
+        log::info!(
+            "# | fetch_and_update_fronters | {user_id} | {fronters_count} fronters fetched | sent to {receiver_count} receivers."
+        );
+
         Ok(())
     }
 

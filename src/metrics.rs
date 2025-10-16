@@ -77,6 +77,9 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
             updater::UPDATER_MANAGER_RESTART_SUCCESS_COUNT,
             updater::UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT,
             updater::UPDATER_PLATFORM_STATUS,
+            updater::UPDATER_PROCESS_START_TOTAL,
+            updater::UPDATER_PROCESS_SUCCESS_TOTAL,
+            updater::UPDATER_PROCESS_UNEXPECTED_STOP_TOTAL,
             platforms::PLURALKIT_API_REQUESTS_TOTAL,
             platforms::PLURALKIT_API_RATELIMIT_REMAINING,
             SP2ANY_USER_CONFIG_FEATURE

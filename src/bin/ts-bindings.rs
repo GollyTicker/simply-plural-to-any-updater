@@ -30,7 +30,6 @@ fn main() -> Result<()> {
         format!("export const CANONICAL_SP2ANY_BASE_URL: string = \"{CANONICAL_SP2ANY_BASE_URL}\""),
         format!("export const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: string = \"{SP2ANY_GITHUB_REPOSITORY_RELEASES_URL}\""),
 "export type UserConfigDbEntries = {
-    wait_seconds?: number;
     website_system_name?: string;
     website_url_name?: string;
     status_prefix?: string;

@@ -6,7 +6,6 @@ export type SP2AnyVariantInfo = { version: string; variant: string; description:
 export const CANONICAL_SP2ANY_BASE_URL: string = "https://public-test.sp2any.ayake.net";
 export const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: string = "https://github.com/GollyTicker/simply-plural-to-any-updater/releases";
 export type UserConfigDbEntries = {
-    wait_seconds?: number;
     website_system_name?: string;
     website_url_name?: string;
     status_prefix?: string;

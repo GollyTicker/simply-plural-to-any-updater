@@ -139,7 +139,6 @@ describe('sp2any updater status and config save and restarts', () => {
         await expect($('#enable_to_pluralkit')).toBeSelected();
         await expect($('#enable_discord_status_message')).toBeSelected();
 
-        await expect($('#wait_seconds')).toHaveValue(process.env.SECONDS_BETWEEN_UPDATES!);
         await expect($('#website_system_name')).toHaveValue(process.env.WEBSITE_SYSTEM_NAME!);
         await expect($('#website_url_name')).toHaveValue(process.env.WEBSITE_URL_NAME!);
 
@@ -216,6 +215,5 @@ describe('sp2any updater status and config save and restarts', () => {
     //     // The config is re-fetched on navigation, so the value should be gone
     //     await navigateToStatus();
     //     await navigateToConfig();
-    //     await expect($('#wait_seconds')).toHaveValue('');
     // });
 });

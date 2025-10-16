@@ -10,25 +10,6 @@
       <button type="submit">Save and Restart</button>
       <p id="config-update-status">{{ status }}</p>
       <div class="config-section">
-        <h2>General</h2>
-        <div class="config-grid">
-          <div class="config-item">
-            <label for="wait_seconds">Update Interval Seconds</label>
-            <p class="config-description">
-              The number of seconds to wait before SP2Any checks for changes at SimplyPlural before
-              syncing them to other services. Set to at least
-              <span style="font-weight: bold">60</span> seconds.
-            </p>
-            <input
-              id="wait_seconds"
-              type="number"
-              v-model.number="config.wait_seconds"
-              :placeholder="defaults.wait_seconds?.toString()"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="config-section">
         <h2>Simply Plural</h2>
         <div class="config-grid">
           <div class="config-item">

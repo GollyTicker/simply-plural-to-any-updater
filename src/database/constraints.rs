@@ -68,7 +68,6 @@ pub fn downgrade<Secret: secrets::SecretType, C: ConstraintsType>(
 ) -> UserConfigDbEntries<Secret, InvalidConstraints> {
     UserConfigDbEntries {
         valid_constraints: Some(InvalidConstraints {}),
-        wait_seconds: value.wait_seconds,
         website_system_name: value.website_system_name.clone(),
         website_url_name: value.website_url_name.clone(),
         status_prefix: value.status_prefix.clone(),
@@ -101,7 +100,6 @@ pub fn only_use_this_function_to_mark_validation_after_you_have_actually_validat
 ) -> UserConfigDbEntries<Secret, ValidConstraints> {
     UserConfigDbEntries {
         valid_constraints: Some(ValidConstraints {}),
-        wait_seconds: value.wait_seconds,
         website_system_name: value.website_system_name.clone(),
         website_url_name: value.website_url_name.clone(),
         status_prefix: value.status_prefix.clone(),

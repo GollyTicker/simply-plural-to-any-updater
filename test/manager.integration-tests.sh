@@ -22,7 +22,7 @@ ENABLE_VRCHAT=true
 ENABLE_DISCORD=false
 ENABLE_WEBSITE=true
 ENABLE_TO_PLURALKIT=false
-
+    
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
 set -a; source ./test/ensure-vrchat-cookie-available.dev.sh --automated ; set +a
@@ -90,7 +90,7 @@ main() {
 
 check_updater_loop_continues() {
     echo "check_updater_loop_continues"
-    docker logs sp2any-api 2>&1 | grep -q "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+    docker logs sp2any-api 2>&1 | grep -q "Waiting for next update trigger..."
 }
 
 check_updater_has_no_errors() {
@@ -172,7 +172,7 @@ start_updater() {
 
     setup_test_user
 
-    await sp2any-api "Waiting ${SECONDS_BETWEEN_UPDATES}s for next update trigger..."
+    await sp2any-api "Waiting for next update trigger..."
 
     echo "Started startup-test."
 }
