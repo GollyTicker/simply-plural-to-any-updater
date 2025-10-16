@@ -2,7 +2,10 @@
   <div class="config-container">
     <h1>Settings</h1>
     <p>
-      Configure the various updaters to synchronize your fronting status. At any point, you can
+      Configure the various updaters to synchronize your fronting status. Whenever you enter a switch into SimplyPlural
+      the fronting will be updated on all configured and enabled platforms within seconds!
+      <br />
+      At any point, you can
       remove your login information from here by disabling the corresponding updater, emptying the
       field and saving the changes.
     </p>

@@ -1,14 +1,19 @@
 ## Steps to first public release version
 
-* Get new test users by posting about it in more channels
+* accounce and get second phase test users by posting about it in more channels
+  * pk server
+  * sp server
+  * rl plural channel
+  * pridevr plural channel
+    * ticket asking for approval created
+  * reddit?
 * complete features from first test users
   * primarily vrchat rate limit fix
   * possibly also system sync with pluralkit
 * DONE: show example fronters in status page
-* announce and get second test phase users: pk server, sp server, rl plural channel, pridevr plural channel, reddit?
-* use websocket subscription to simply plural and only get the fronters + system, when it actually changes
-  * and also make the discord websocket thing, that an update is sent immediately once the websocket is created
-  * this also resolves the bottleneck of allowing users to set a 1s update duration
+* DONE: use websocket subscription to simply plural and only get the fronters + system, when it actually changes
+  * DONE: and also make the discord websocket thing, that an update is sent immediately once the websocket is created
+  * DONE: this also resolves the bottleneck of allowing users to set a 1s update duration
 * sp2any-bridge
   * auto-update
   * DONE: auto-start on system start
@@ -21,10 +26,10 @@
 * deploy first proper version
 * finalize README
 * DONE:
-  * add quick and easy feedback field
-  * add link to Discord Server
-  * add link to KoFi and ask for kind donations
-  * add link to source code
+  * DONE: add quick and easy feedback field
+  * DONE: add link to Discord Server
+  * DONE: add link to KoFi and ask for kind donations
+  * DONE: add link to source code
 
 ## Feedback after first deployment of public-test
 
