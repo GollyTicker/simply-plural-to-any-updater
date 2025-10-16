@@ -65,6 +65,9 @@
 For the next steps, it probably makes sense to announce it in more discord servers and get a larger set of users.
 This way we can get even more early testers so that we can then move to the app earlier or later based on the feedback.
 
+* allow back-directional sync of fronters from pluralkit
+  * allow automatic import/export of system info between pluralkit and simplyplural
+* long-term: synchronize fronters without requiring users to also use simplyplural. make core independent from simply plural
 * checkout inspirations channel in simply plural to see how users use SP and which use cases suit make sense there
 * registration logs in by default as well automatically
 * security: make it such that on my private instance, only handpicked users may register and use it.
@@ -94,7 +97,7 @@ This way we can get even more early testers so that we can then move to the app 
 ---
 
 ## Initial User Feedback before first Prototype
-* PARTIAL DONE: sync from and to pluralkit as well (checkout pk-rpc). most SP -> PK
+* DONE: sync to pluralkit as well
 * DONE add a warning, that using the discord self-botting comes with a risk for both the user and the dev
   * [artcle by discord](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots)
   * [self-botting](https://gist.github.com/nomsi/2684f5692cad5b0ceb52e308631859fd)
