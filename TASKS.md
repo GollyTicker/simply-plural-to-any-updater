@@ -31,6 +31,14 @@
   * DONE: add link to KoFi and ask for kind donations
   * DONE: add link to source code
 
+## Feedback from second test phase users
+* configureable fronting order (details in discord)
+* thoughts: It seems like some users have automated updates of their system members. (e.g. every 20-30s).
+  * At minimum, we should consider, if the change actually changes anything in our datamodel
+    and then only push the change to the other services if it actually causes a change there.
+  * furthermore, we should better analyse their usecase and patterns to reduce unnecessary load
+  * having a debouce, where updates are not done too frequently are also important.
+
 ## Feedback after first deployment of public-test
 
 * member privacy
