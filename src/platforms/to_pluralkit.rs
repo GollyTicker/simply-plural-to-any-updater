@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::{
     int_counter_metric, metric, plurality, record_if_error, users, users::UserConfigForUpdater,
 };
@@ -80,9 +82,9 @@ async fn update_to_pluralkit(
     let new_switch_members =
         customization_preserving_members_list_for_new_switch(&new_members, existing_members);
 
-    if new_switch_members.eq(existing_members) {
+    if same_members(&new_switch_members, existing_members) {
         log::info!(
-            "update_to_pluralkit | {} | No change will be propagated to PluralKit due to identical lists.",
+            "update_to_pluralkit | {} | No change will be propagated to PluralKit due to lists containing the same members (pk-order preservation).",
             config.user_id
         );
         return Ok(());
@@ -115,6 +117,12 @@ async fn update_to_pluralkit(
     );
 
     Ok(())
+}
+
+fn same_members(new_switch_members: &[String], existing_members: &[String]) -> bool {
+    let new_set: HashSet<_> = new_switch_members.iter().collect();
+    let existing_set: HashSet<_> = existing_members.iter().collect();
+    new_set == existing_set
 }
 
 // todo. add configurations values for these things here
