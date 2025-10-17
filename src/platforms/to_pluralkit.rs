@@ -1,9 +1,8 @@
 use crate::{
     int_counter_metric, metric, plurality, record_if_error, users, users::UserConfigForUpdater,
 };
-use anyhow::{Result, anyhow};
-use reqwest::StatusCode;
-use serde::Deserialize;
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 int_counter_metric!(PLURALKIT_API_REQUESTS_TOTAL);
 metric!(
@@ -53,13 +52,41 @@ async fn update_to_pluralkit(
     config: &UserConfigForUpdater,
     fronts: &[plurality::Fronter],
 ) -> Result<()> {
-    let pluralkit_ids: Vec<&str> = fronts
+    let new_members: Vec<String> = fronts
         .iter()
-        .filter_map(|f| f.pluralkit_id.as_ref())
-        .map(std::string::String::as_str)
+        .filter_map(|f| f.pluralkit_id.clone())
         .collect();
 
-    let request_body = serde_json::json!({ "members": pluralkit_ids });
+    let existing_members: &Vec<String> = &config
+        .client
+        .get("https://api.pluralkit.me/v2/systems/@me/switches?limit=1")
+        .header("Authorization", &config.pluralkit_token.secret)
+        .header("Content-Type", "application/json")
+        .header("User-Agent", TO_PLURALKIT_UPDATER_USER_AGENT)
+        .send()
+        .await?
+        .error_for_status()?
+        .json::<[PluralKitSwitch; 1]>()
+        .await?[0]
+        .members;
+
+    log::info!(
+        "update_to_pluralkit | {} | existing_members={:?} | new_members={:?}",
+        config.user_id,
+        existing_members,
+        new_members
+    );
+
+    let new_switch_members =
+        customization_preserving_members_list_for_new_switch(&new_members, existing_members);
+
+    if new_switch_members.eq(existing_members) {
+        log::info!(
+            "update_to_pluralkit | {} | No change will be propagated to PluralKit due to identical lists.",
+            config.user_id
+        );
+        return Ok(());
+    }
 
     PLURALKIT_API_REQUESTS_TOTAL
         .with_label_values(&[&config.user_id.to_string()])
@@ -71,36 +98,42 @@ async fn update_to_pluralkit(
         .header("Authorization", &config.pluralkit_token.secret)
         .header("Content-Type", "application/json")
         .header("User-Agent", TO_PLURALKIT_UPDATER_USER_AGENT)
-        .json(&request_body)
+        .json(&PluralKitSwitch {
+            members: new_switch_members.clone(),
+        })
         .send()
         .await?;
 
     measure_rate_limits(config, &response);
 
-    let status = response.status();
+    response.error_for_status()?;
 
-    // when the new fronters are equal to the old set of fronters, then pluralkit returns 400 with a specific message
-    // instead of creating a new switch. we are okay with that edge-case.
-    // Errors are documented here: https://pluralkit.me/api/errors/#json-error-codes
-    let bad_request_body: Result<PluralKitErrorResponse> = response
-        .text()
-        .await
-        .map_err(|e| anyhow!(e))
-        .and_then(|b| serde_json::from_str(&b).map_err(|e| anyhow!(e)));
-
-    match (status, bad_request_body) {
-        (
-            StatusCode::BAD_REQUEST,
-            Ok(PluralKitErrorResponse {
-                code: 40004,
-                message,
-            }),
-        ) if message.eq("Member list identical to current fronter list.") => (),
-        (status, _) if !(status.is_client_error() || status.is_server_error()) => (),
-        (status, _) => Err(anyhow!("Failed request against Pluralkit: {status}"))?,
-    }
+    log::info!(
+        "update_to_pluralkit | {} | Updated PluralKit to {:?}",
+        config.user_id,
+        new_switch_members
+    );
 
     Ok(())
+}
+
+// todo. add configurations values for these things here
+// For now we'll simply add the new members at the end (in the same order as from caller) and preserve the order of the old members
+fn customization_preserving_members_list_for_new_switch(
+    new_members: &[String],
+    existing_members: &[String],
+) -> Vec<String> {
+    let strictly_new_members = new_members
+        .iter()
+        .filter(|&new_member| !existing_members.contains(new_member))
+        .cloned();
+
+    existing_members // start with existing members
+        .iter()
+        .filter(|&existing_member| new_members.contains(existing_member))
+        .cloned() // keep only those which are also new members
+        .chain(strictly_new_members) // append new members at the end
+        .collect()
 }
 
 fn measure_rate_limits(config: &UserConfigForUpdater, response: &reqwest::Response) {
@@ -134,8 +167,63 @@ fn measure_rate_limits(config: &UserConfigForUpdater, response: &reqwest::Respon
     );
 }
 
-#[derive(Debug, Deserialize)]
-struct PluralKitErrorResponse {
-    code: usize,
-    message: String,
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct PluralKitSwitch {
+    members: Vec<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_customization_preserving_members_list_for_new_switch_simple() {
+        let new_members = vec!["a".to_string(), "b".to_string(), "c".to_string()];
+        let existing_members = vec!["b".to_string(), "d".to_string()];
+        let result =
+            customization_preserving_members_list_for_new_switch(&new_members, &existing_members);
+        assert_eq!(
+            result,
+            vec!["b".to_string(), "a".to_string(), "c".to_string()]
+        );
+    }
+
+    #[test]
+    fn test_customization_preserving_members_list_for_new_switch_no_new_members() {
+        let new_members = vec!["a".to_string(), "b".to_string()];
+        let existing_members = vec!["a".to_string(), "b".to_string(), "c".to_string()];
+        let result =
+            customization_preserving_members_list_for_new_switch(&new_members, &existing_members);
+        assert_eq!(result, vec!["a".to_string(), "b".to_string()]);
+    }
+
+    #[test]
+    fn test_customization_preserving_members_list_for_new_switch_all_new_members() {
+        let new_members = vec!["a".to_string(), "b".to_string()];
+        let existing_members = vec!["c".to_string(), "d".to_string()];
+        let result =
+            customization_preserving_members_list_for_new_switch(&new_members, &existing_members);
+        assert_eq!(result, vec!["a".to_string(), "b".to_string()]);
+    }
+
+    #[test]
+    fn test_customization_preserving_members_list_for_new_switch_identical_lists() {
+        let new_members = vec!["a".to_string(), "b".to_string()];
+        let existing_members = vec!["a".to_string(), "b".to_string()];
+        let result =
+            customization_preserving_members_list_for_new_switch(&new_members, &existing_members);
+        assert_eq!(result, vec!["a".to_string(), "b".to_string()]);
+    }
+
+    #[test]
+    fn test_customization_preserving_members_list_for_new_switch_order_preservation() {
+        let new_members = vec!["c".to_string(), "a".to_string(), "b".to_string()];
+        let existing_members = vec!["b".to_string(), "a".to_string()];
+        let result =
+            customization_preserving_members_list_for_new_switch(&new_members, &existing_members);
+        assert_eq!(
+            result,
+            vec!["b".to_string(), "a".to_string(), "c".to_string()]
+        );
+    }
 }
