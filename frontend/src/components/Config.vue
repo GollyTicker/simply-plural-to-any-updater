@@ -289,11 +289,14 @@
               This option only works via the SP2Any-Bridge, which you need to run on the same
               computer as your discord. For that, open
               <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">this</a>, then open
-              the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
+              the first "Assets" section to see and download the "SP2Any-Bridge" for your platform.
+              Use Setup.exe on Windows. deb/rpm for your Linux package manager. 
               <br />
               Then start it on the computer where Discord Desktop is running. You might get a
               warning, that the executable is not signed or executable. Simply accept warning that
-              and run it. (For small projects, it's infeasible to get this signed.)
+              and run it. On macOS you might need to use "Ctrl + Right-Click + Open" to by-pass the this warning.
+              For small projects like ours, it's infeasible to overcome such warnings/gatekeeping from large companies
+              like Microsoft and Apple. (You don't want to know how much effort and money it'd cost to do that.)
               <br />
               Once started, you can login to SP2Any. (You can safely ignore the "Variant" field.)
               When you have discord running on the same computer, SP2Any will show itself as a rich

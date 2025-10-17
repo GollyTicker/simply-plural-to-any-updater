@@ -32,6 +32,8 @@ build_binaries() {
         BUILD_OUT_PATH="bridge-src-tauri/target/$target/release/bundle"
         if [[ "$target" == *"windows"* ]]; then
             cp -v "$BUILD_OUT_PATH"/*/*.exe "$OUT_DIR/SP2Any-Bridge-Windows-Setup.exe"
+        elif [[ "$target" == *"apple"* ]]; then
+            cp -v "$BUILD_OUT_PATH"/*/*.dmg "$OUT_DIR/SP2Any-Bridge-macOS-Setup.dmg"
         else
             cp -v "$BUILD_OUT_PATH"/*/*.rpm "$OUT_DIR/SP2Any-Bridge.rpm"
             cp -v "$BUILD_OUT_PATH"/*/*.deb "$OUT_DIR/SP2Any-Bridge.deb"
