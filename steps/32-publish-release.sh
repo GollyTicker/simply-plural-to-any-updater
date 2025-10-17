@@ -23,6 +23,11 @@ fi
 
 git push
 git push --tags
-gh release create "$TAG" target/release_builds/* --title "$TAG" --notes ""
+
+ADDITIONAL_ARGS=()
+if [[ "$TAG" == *"-"* ]]; then
+  ADDITIONAL_ARGS+=(--prerelease)
+fi
+gh release create "$TAG" target/release_builds/* --title "$TAG" --notes "" "${ADDITIONAL_ARGS[@]}"
 
 echo "Release $TAG created successfully."

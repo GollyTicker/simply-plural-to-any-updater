@@ -5,6 +5,3 @@
 linker = "x86_64-w64-mingw32-gcc"
 rustflags = ["-C", "target-feature=+crt-static"]
 
-[target.i686-pc-windows-gnu]
-linker = "i686-w64-mingw32-gcc"
-rustflags = ["-C", "target-feature=+crt-static"]
