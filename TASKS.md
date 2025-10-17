@@ -1,15 +1,28 @@
 ## Steps to first public release version
 
-* accounce and get second phase test users by posting about it in more channels
+* DONE: accounce and get second phase test users by posting about it in more channels
   * DONE: pk server
   * DONE: sp server
   * DONE: rl plural channel
   * pridevr plural channel
     * ticket asking for approval created
   * reddit?
+* improve metrics:
+  * measure all the places which "shouldn't happen" in production
+  * distinguish between active and non-active members in metrics
+  * measure length's of suggested fronting statuses
+  * measure usage of many specific features
 * complete features from first test users
   * primarily vrchat rate limit fix
   * possibly also system sync with pluralkit
+* easily give quick feedback in website - whcih will be saved in db and then I can response to it
+* suggested by Aino: make general interviews with a few diverse systems. focus on their needs regardless of sp2any specifically.
+  * getting a hollistic/encompassing understanding is very useful. equally also having a high diversity there.
+  * it might also make sense to learn a bit more about plural systems in general and how they use social networks.
+    * we can do that in interviews or just browse through reddit and a few places on discord for that
+      * on discord just read some channels with plural systems
+      * and also checkout the inspirations channel on simply plural discord
+  * The core focus is to simply listen and be curious without any specific intention of being a sp2any user.
 * DONE: show example fronters in status page
 * DONE: use websocket subscription to simply plural and only get the fronters + system, when it actually changes
   * DONE: and also make the discord websocket thing, that an update is sent immediately once the websocket is created
@@ -26,7 +39,6 @@
 * deploy first proper version
 * finalize README
 * DONE:
-  * DONE: add quick and easy feedback field
   * DONE: add link to Discord Server
   * DONE: add link to KoFi and ask for kind donations
   * DONE: add link to source code
