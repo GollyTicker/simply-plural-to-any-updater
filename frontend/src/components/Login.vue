@@ -24,13 +24,16 @@ import { ref, type Ref } from 'vue'
 import router from '@/router'
 import type { UserLoginCredentials } from '@/sp2any.bindings'
 import { detailed_error_string, sp2any_api } from '@/sp2any_api'
-import type { AxiosError } from 'axios'
 
 const email: Ref<string> = ref('')
 const password: Ref<string> = ref('')
 const status: Ref<string> = ref('')
 
 const login = async () => {
+  if (!email.value || !password.value) {
+    status.value = 'Email/Password cannot be empty.'
+    return
+  }
   const creds = {
     email: { inner: email.value },
     password: { inner: password.value },
@@ -48,6 +51,10 @@ const login = async () => {
 }
 
 const register = async () => {
+  if (!email.value || !password.value) {
+    status.value = 'Email/Password cannot be empty.'
+    return
+  }
   const creds = {
     email: { inner: email.value },
     password: { inner: password.value },

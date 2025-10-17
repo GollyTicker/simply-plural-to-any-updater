@@ -4,6 +4,7 @@ use crate::meta_api::expose_internal_error;
 use crate::users::auth;
 use crate::users::jwt;
 use crate::users::model::UserId;
+use anyhow::anyhow;
 use rocket::http;
 use rocket::{State, serde::json::Json};
 use serde::Deserialize;
@@ -19,6 +20,11 @@ pub async fn post_api_user_register(
     credentials: Json<UserLoginCredentials>,
 ) -> HttpResult<()> {
     log::info!("# | POST /api/user/register | {}", credentials.email);
+
+    if credentials.is_empty_and_thus_invalid() {
+        return Err(anyhow!("Email/Passsword cannot be empty.")).map_err(expose_internal_error)?;
+    }
+
     let pwh = auth::create_password_hash(&credentials.password).map_err(expose_internal_error)?;
 
     let () = database::create_user(db_pool, credentials.email.clone(), pwh)
@@ -40,6 +46,10 @@ pub async fn post_api_user_login(
     credentials: Json<UserLoginCredentials>,
 ) -> Result<Json<JwtString>, (http::Status, String)> {
     log::info!("# | POST /api/user/login | {}", credentials.email);
+
+    if credentials.is_empty_and_thus_invalid() {
+        return Err(anyhow!("Email/Passsword cannot be empty.")).map_err(expose_internal_error)?;
+    }
 
     let user_id = database::get_user_id(db_pool, credentials.email.clone())
         .await

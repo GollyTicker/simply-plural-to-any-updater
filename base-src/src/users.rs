@@ -26,6 +26,13 @@ pub struct UserLoginCredentials {
     pub password: UserProvidedPassword,
 }
 
+impl UserLoginCredentials {
+    #[must_use]
+    pub const fn is_empty_and_thus_invalid(&self) -> bool {
+        self.email.inner.is_empty() || self.password.inner.is_empty()
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, specta::Type)]
 pub struct UserProvidedPassword {
     pub inner: String,
