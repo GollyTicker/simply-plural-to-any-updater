@@ -94,11 +94,11 @@ impl<'r> FromRequest<'r> for Jwt {
     }
 }
 
-const JWT_VALID_DAYS: i64 = 25;
+const JWT_VALID_HOURS: i64 = 15;
 
 pub fn create_token(user_id: &UserId, jwt_secret: &ApplicationJwtSecret) -> Result<JwtString> {
     let expiration: usize = Utc::now()
-        .checked_add_signed(Duration::days(JWT_VALID_DAYS))
+        .checked_add_signed(Duration::hours(JWT_VALID_HOURS))
         .ok_or_else(|| anyhow!("create_token: invalid timestamp"))?
         .timestamp()
         .try_into()?;

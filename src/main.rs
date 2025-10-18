@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
         &app_setup.shared_updaters,
         &app_setup.application_user_secrets,
         "user-metrics",
-        setup::EVERY_MINUTE,
+        setup::EVERY_5_MINUTES,
         metrics::collect_user_metrics,
     )
     .await?;
@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
         &app_setup.db_pool,
         &app_setup.shared_updaters,
         &app_setup.application_user_secrets,
-        "user-metrics",
+        "restart-long-living-updaters",
         setup::EVERY_MINUTE,
         updater::restart_first_long_living_updater,
     )

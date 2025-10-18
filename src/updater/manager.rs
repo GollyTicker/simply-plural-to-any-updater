@@ -1,3 +1,4 @@
+use crate::metrics::SHOULDNT_HAPPEN_BUT_IT_DID;
 use crate::plurality::{self};
 use crate::updater::{self, change_processor};
 use crate::users::UserId;
@@ -63,6 +64,9 @@ impl UpdaterManager {
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
             .ok_or_else(|| {
+                SHOULDNT_HAPPEN_BUT_IT_DID
+                    .with_label_values(&["updater_manager_subcribe_fronter_channel"])
+                    .inc();
                 anyhow!("subscribe_fronter_channel: No fronter channel found for {user_id}")
             })?
             .subscribe();
@@ -80,7 +84,12 @@ impl UpdaterManager {
             .map_err(|e| anyhow!(e.to_string()))?
             .get(user_id)
             .ok_or_else(|| {
-                anyhow!("subscribe_fronter_channel: No fronter channel found for {user_id}")
+                SHOULDNT_HAPPEN_BUT_IT_DID
+                    .with_label_values(&["updater_manager_fronter_channel_get_most_recent_value"])
+                    .inc();
+                anyhow!(
+                    "fronter_channel_get_most_recent_value: No fronter channel found for {user_id}"
+                )
             })?
             .most_recent_value
             .clone();
@@ -100,6 +109,9 @@ impl UpdaterManager {
             .map_err(|e| anyhow!(e.to_string()))?;
 
         let specific_channel = locked.get(user_id).ok_or_else(|| {
+            SHOULDNT_HAPPEN_BUT_IT_DID
+                .with_label_values(&["updater_manager_get_foreign_status_channel"])
+                .inc();
             anyhow!("get_foreign_status_channel: No foreign status channel found for {user_id}")
         })?;
 
@@ -128,6 +140,9 @@ impl UpdaterManager {
         let mut locked = self.statuses.lock().map_err(|e| anyhow!(e.to_string()))?;
 
         let statuses = locked.get_mut(user_id).ok_or_else(|| {
+            SHOULDNT_HAPPEN_BUT_IT_DID
+                .with_label_values(&["updater_manager_notify_updater_statuses"])
+                .inc();
             anyhow!("notify_updater_statuses: shouldn't happen. no statuses for user.")
         })?;
 
@@ -237,9 +252,8 @@ impl UpdaterManager {
                         }
                         Err(err) => {
                             log::warn!(
-                                "# | foreign_status_updater | {user_id} | ending_receiver_due_to_foreign_status_update_err {err}"
+                                "# | foreign_status_updater | {user_id} | status update failed: {err}"
                             );
-                            break;
                         }
                     }
                 } else {
@@ -249,6 +263,9 @@ impl UpdaterManager {
                     break;
                 }
             }
+            SHOULDNT_HAPPEN_BUT_IT_DID
+                .with_label_values(&["updater_manager_foreign_status_updater"])
+                .inc();
         });
 
         Ok(foreign_status_updater)
