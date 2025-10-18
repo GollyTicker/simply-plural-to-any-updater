@@ -18,7 +18,8 @@
 * complete features from first test users
   * primarily vrchat rate limit fix
   * possibly also system sync with pluralkit
-* extract user agent and make them non-public deployment/build vars
+* add a small log of the latest updates and their timestamps. this log is useful for the users to understand if and when the last update happened
+* DONE: extract user agent and make them non-public deployment/build vars
 * easily give quick feedback in website - whcih will be saved in db and then I can response to it
 * suggested by Aino: make general interviews with a few diverse systems. focus on their needs regardless of sp2any specifically.
   * getting a hollistic/encompassing understanding is very useful. equally also having a high diversity there.
