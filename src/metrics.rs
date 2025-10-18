@@ -50,6 +50,13 @@ macro_rules! int_counter_metric {
 }
 
 metric!(
+    rocket_prometheus::prometheus::IntCounterVec,
+    SHOULDNT_HAPPEN_BUT_IT_DID,
+    "shouldnt_happen_but_it_did",
+    &["id"]
+);
+
+metric!(
     rocket_prometheus::prometheus::IntGaugeVec,
     SP2ANY_USER_CONFIG_FEATURE,
     "sp2any_user_config_feature",
@@ -64,15 +71,15 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
             promtheus_metrics,
             plurality::SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER,
             plurality::SIMPLY_PLURAL_FETCH_FRONTS_FRONTERS_COUNT,
-            plurality::SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT,
+            plurality::SIMPLY_PLURAL_FETCH_FRONTS_ACTIVE_MEMBERS_COUNT,
+            plurality::SIMPLY_PLURAL_FETCH_FRONTS_ARCHIVED_MEMBERS_COUNT,
             plurality::SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT,
             plurality::SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ATTEMPTS_TOTAL,
             plurality::SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_ERROR_GENERAL_TOTAL,
             plurality::SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_ERROR_AUTH_TOTAL,
-            plurality::SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_CLEAN_UNEXPECTED_TOTAL,
             plurality::SIMPLY_PLURAL_WEBSOCKET_MESSAGES_RECEIVED_TOTAL,
             plurality::SIMPLY_PLURAL_WEBSOCKET_SEMANTIC_MESSAGES_RECEIVED_TOTAL,
-            plurality::SIMPLY_PLURAL_WEBSOCKET_UNKNOWN_MESSAGES_TOTAL,
+            plurality::FRONTING_STATUS_STRING,
             updater::UPDATER_MANAGER_RESTART_TOTAL_COUNT,
             updater::UPDATER_MANAGER_RESTART_SUCCESS_COUNT,
             updater::UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT,
@@ -82,7 +89,8 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
             updater::UPDATER_PROCESS_UNEXPECTED_STOP_TOTAL,
             platforms::PLURALKIT_API_REQUESTS_TOTAL,
             platforms::PLURALKIT_API_RATELIMIT_REMAINING,
-            SP2ANY_USER_CONFIG_FEATURE
+            SP2ANY_USER_CONFIG_FEATURE,
+            SHOULDNT_HAPPEN_BUT_IT_DID
         );
 
         promtheus_metrics

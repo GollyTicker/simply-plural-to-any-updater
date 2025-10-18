@@ -1,6 +1,6 @@
 use sqlx::{Decode, FromRow, Postgres, error::BoxDynError, postgres};
 
-use crate::{database::secrets, users::UserConfigDbEntries};
+use crate::{database::secrets, metrics::SHOULDNT_HAPPEN_BUT_IT_DID, users::UserConfigDbEntries};
 use anyhow::anyhow;
 
 pub trait ConstraintsType: Clone {}
@@ -35,6 +35,9 @@ impl<'r> Decode<'r, Postgres> for ValidConstraints {
         if valid_constraints {
             Ok(Self {})
         } else {
+            SHOULDNT_HAPPEN_BUT_IT_DID
+                .with_label_values(&["decode invalid"])
+                .inc();
             Err(anyhow!("decode: ValidConstraints. Implementation bug!").into())
         }
     }

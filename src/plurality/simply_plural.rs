@@ -14,7 +14,8 @@ use crate::{
 
 int_counter_metric!(SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER);
 int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_FRONTERS_COUNT);
-int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT);
+int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_ACTIVE_MEMBERS_COUNT);
+int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_ARCHIVED_MEMBERS_COUNT);
 int_gauge_metric!(SIMPLY_PLURAL_FETCH_FRONTS_CUSTOM_FRONTS_COUNT);
 
 #[allow(clippy::cast_possible_wrap)]
@@ -85,6 +86,16 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
         .cloned()
         .collect();
 
+    let active_members_count = all_members.iter().filter(|m| !m.content.archived).count() as i64;
+
+    SIMPLY_PLURAL_FETCH_FRONTS_ACTIVE_MEMBERS_COUNT
+        .with_label_values(&[&config.user_id.to_string()])
+        .set(active_members_count);
+
+    SIMPLY_PLURAL_FETCH_FRONTS_ARCHIVED_MEMBERS_COUNT
+        .with_label_values(&[&config.user_id.to_string()])
+        .set(all_members.len() as i64 - active_members_count);
+
     let all_custom_fronts: Vec<CustomFront> = if config.show_custom_fronts {
         let custom_fronts = simply_plural_http_get_custom_fronts(config, system_id).await?;
 
@@ -96,10 +107,6 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
     } else {
         vec![]
     };
-
-    SIMPLY_PLURAL_FETCH_FRONTS_MEMBERS_COUNT
-        .with_label_values(&[&config.user_id.to_string()])
-        .set(all_members.len() as i64);
 
     let all_frontables: Vec<Fronter> = all_members
         .into_iter()

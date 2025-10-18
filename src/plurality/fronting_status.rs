@@ -1,9 +1,16 @@
-use crate::plurality::Fronter;
+use crate::{metric, metrics::SHOULDNT_HAPPEN_BUT_IT_DID, plurality::Fronter};
 
 use encoding_rs::ISO_8859_15;
 
 pub const VRCHAT_MAX_ALLOWED_STATUS_LENGTH: usize = 23;
 pub const DISCORD_STATUS_MAX_LENGTH: usize = 128;
+
+metric!(
+    rocket_prometheus::prometheus::IntCounterVec,
+    FRONTING_STATUS_STRING,
+    "fronting_status_string",
+    &["length"]
+);
 
 pub struct FrontingFormat {
     pub max_length: Option<usize>,
@@ -29,7 +36,14 @@ pub fn format_fronting_status(fronting_format: &FrontingFormat, fronts: &[Fronte
             &cleaned_fronter_names,
         );
 
-    pick_longest_string_within_vrchat_status_length_limit(fronting_format, &status_strings)
+    let status =
+        pick_longest_string_within_vrchat_status_length_limit(fronting_format, &status_strings);
+
+    FRONTING_STATUS_STRING
+        .with_label_values(&[&status.len().to_string()])
+        .inc();
+
+    status
 }
 
 fn collect_clean_fronter_names(
@@ -128,7 +142,12 @@ fn pick_longest_string_within_vrchat_status_length_limit(
                 .is_none_or(|l| string_unicode_codepoints_length(*s) <= l)
         })
         .max_by_key(|s| string_unicode_codepoints_length(*s))
-        .unwrap_or(&empty_string) // can't happen due to compile time guarantee
+        .unwrap_or_else(|| {
+            SHOULDNT_HAPPEN_BUT_IT_DID
+                .with_label_values(&["pick_longest_string_within_vrchat_status_length_limit"])
+                .inc();
+            &empty_string
+        }) // can't happen due to compile time guarantee
         .to_string()
 }
 

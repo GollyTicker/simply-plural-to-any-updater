@@ -9,12 +9,17 @@
   * reddit?
 * improve metrics:
   * measure all the places which "shouldn't happen" in production
-  * distinguish between active and non-active members in metrics
+    * also do that for important places where errors shouldnt happen.
+      e.g. when parsing jsons from other services.
+    * or alternatively, simply setup to regularly look at WARN and ERROR logs?
+      and filter theose which are expected away?
+  * DONE: distinguish between active and non-active members in metrics
   * measure length's of suggested fronting statuses
   * measure usage of many specific features
 * complete features from first test users
   * primarily vrchat rate limit fix
   * possibly also system sync with pluralkit
+* extract user agent and make them non-public deployment/build vars
 * easily give quick feedback in website - whcih will be saved in db and then I can response to it
 * suggested by Aino: make general interviews with a few diverse systems. focus on their needs regardless of sp2any specifically.
   * getting a hollistic/encompassing understanding is very useful. equally also having a high diversity there.

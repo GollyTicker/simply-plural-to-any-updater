@@ -8,16 +8,14 @@ use tokio_tungstenite::{
     tungstenite::{self, protocol::Message},
 };
 
-use crate::int_counter_metric;
+use crate::{int_counter_metric, metrics::SHOULDNT_HAPPEN_BUT_IT_DID};
 use std::future::Future;
 
 int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ATTEMPTS_TOTAL);
 int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_ERROR_GENERAL_TOTAL);
 int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_ERROR_AUTH_TOTAL);
-int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_CLEAN_UNEXPECTED_TOTAL);
 int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_MESSAGES_RECEIVED_TOTAL);
 int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_SEMANTIC_MESSAGES_RECEIVED_TOTAL);
-int_counter_metric!(SIMPLY_PLURAL_WEBSOCKET_UNKNOWN_MESSAGES_TOTAL);
 
 const WEBSOCKET_URL: &str = "wss://api.apparyllis.com/v1/socket";
 const RETRY_WAIT_SECONDS: u64 = 60;
@@ -73,8 +71,8 @@ where
             }
         } else {
             log::warn!("WS {log_prefix} client exited cleanly, which should not happen.",);
-            SIMPLY_PLURAL_WEBSOCKET_CONNECTION_ENDED_CLEAN_UNEXPECTED_TOTAL
-                .with_label_values(&[log_prefix])
+            SHOULDNT_HAPPEN_BUT_IT_DID
+                .with_label_values(&["simply_plural_websocket_connection_ended_clean"])
                 .inc();
             RETRY_WAIT_SECONDS
         };
@@ -119,6 +117,9 @@ where
                         log::info!("WS {log_prefix} Received payload: '{json_string}'");
                         if !authenticated {
                             log::warn!("WS {log_prefix} Received message before authentication response: '{json_string}'");
+                            SHOULDNT_HAPPEN_BUT_IT_DID
+                                .with_label_values(&["simply_plural_websocket_message_before_auth"])
+                                .inc();
                             return Err(anyhow!(SIMPLY_PLURAL_AUTH_FAILURE));
                         }
                         SIMPLY_PLURAL_WEBSOCKET_SEMANTIC_MESSAGES_RECEIVED_TOTAL.with_label_values(&[log_prefix]).inc();
@@ -129,7 +130,9 @@ where
                     }
                     unknown => {
                         log::warn!("WS {log_prefix} Unknown message '{unknown}'. Ignoring and continueing.");
-                        SIMPLY_PLURAL_WEBSOCKET_UNKNOWN_MESSAGES_TOTAL.with_label_values(&[log_prefix]).inc();
+                        SHOULDNT_HAPPEN_BUT_IT_DID
+                            .with_label_values(&["simply_plural_websocket_unknown_message"])
+                            .inc();
                     }
                 }
             }

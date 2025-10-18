@@ -1,3 +1,4 @@
+use crate::metrics::SHOULDNT_HAPPEN_BUT_IT_DID;
 use crate::platforms::discord;
 use crate::updater::Platform;
 use crate::users::UserId;
@@ -114,6 +115,9 @@ fn create_bidirection_websocket_stream_to_bridge(
                                 Err(e) => {
                                     log::warn!("# | fronters_chan <-> WS | {user_id} | WS received | deserialise_err {e}");
                                     notify(UpdaterStatus::Error(format!("SP2Any-Bridge -> websocket -> SP2Any-Server | Message deserialisation error: {e}")));
+                                    SHOULDNT_HAPPEN_BUT_IT_DID
+                                        .with_label_values(&["discord_ws_deserialise_error"])
+                                        .inc();
                                     break; // end on reading error
                                 }
                             };
@@ -122,6 +126,9 @@ fn create_bidirection_websocket_stream_to_bridge(
                         },
                         Some(Ok(unknown_message)) => {
                             log::info!("# | fronters_chan <-> WS | {user_id} | WS received | unknown_msg_type {unknown_message:?}");
+                            SHOULDNT_HAPPEN_BUT_IT_DID
+                                .with_label_values(&["discord_ws_unknown_msg"])
+                                .inc();
                             continue; // unknown message ignored
                         }
                         Some(Err(_)) | None => {
@@ -143,6 +150,9 @@ fn create_bidirection_websocket_stream_to_bridge(
                                     Err(e) => {
                                         log::warn!("# | fronters_chan <-> WS | {user_id} | fronters received | serialisation_failed {e}");
                                         notify(UpdaterStatus::Error(format!("SP2Any-Server -> websocket -> SP2Any-Bridge: Server couldn't serialise fronters. Error: {e}")));
+                                        SHOULDNT_HAPPEN_BUT_IT_DID
+                                            .with_label_values(&["discord_ws_rich_presence_serialise_error"])
+                                            .inc();
                                         break;
                                     }
                                 };
@@ -152,12 +162,18 @@ fn create_bidirection_websocket_stream_to_bridge(
                             Err(err) => {
                                 log::warn!("# | fronters_chan <-> WS | {user_id} | fronters received | rendering_error {err}");
                                 notify(UpdaterStatus::Error(format!("SP2Any-Server -> websocket -> SP2Any-Bridge: Server rendering error: {err}")));
+                                SHOULDNT_HAPPEN_BUT_IT_DID
+                                    .with_label_values(&["discord_ws_rich_presence_render_error"])
+                                    .inc();
                                 break;
                             }
                         }
                     } else {
                         log::info!("# | fronters_chan <-> WS | {user_id} | fronters_chan_closed?");
                         notify(UpdaterStatus::Error("SP2Any-Server: Couldn't retrieve any fronters. (internal bug?)".into()));
+                        SHOULDNT_HAPPEN_BUT_IT_DID
+                            .with_label_values(&["discord_ws_fronters_chan_closed"])
+                            .inc();
                         break;
                     }
                 },
