@@ -168,6 +168,11 @@
               We simply tell PluralKit the member IDs of the fronters (after they have been filtered
               through the above privacy conditions). The members themselves are shown with the same
               privacy rules as you have configured them in PluralKit.
+              <br />
+              PluralKit cares about the order of the fronters (at it's relevant for autoproxy) but SimplyPlural does not.
+              Hence, when we sync to pluralkit, we don't change the order of existing fronters in pluralkit.
+              We only remove fronters which are not fronting anymore according to SimplyPlural -
+              and add new fronters at the end of the list.
             </p>
             <input id="enable_to_pluralkit" type="checkbox" v-model="config.enable_to_pluralkit" />
           </div>
