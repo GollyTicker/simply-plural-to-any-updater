@@ -18,9 +18,8 @@ use vrchatapi::{
 const VRCHAT_UPDATER_USER_AGENT: &str = concat!(
     "SP2Any/",
     env!("CARGO_PKG_VERSION"),
-    " golly.ticker",
-    "@",
-    "gmail.com"
+    " ",
+    env!("USER_AGENT_EMAIL")
 );
 /* Called in updater. Cookie is only validated, no new cookie is created. */
 pub async fn authenticate_vrchat_with_cookie(

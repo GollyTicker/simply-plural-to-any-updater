@@ -3124,6 +3124,7 @@ dependencies = [
  "argon2",
  "base64",
  "chrono",
+ "dotenvy",
  "either",
  "encoding_rs",
  "env_logger",
