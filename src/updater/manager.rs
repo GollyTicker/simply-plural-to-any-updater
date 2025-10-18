@@ -328,7 +328,7 @@ impl UpdaterManager {
                         plurality::relevantly_changed_based_on_simply_plural_websocket_event(
                             &message,
                         )?;
-                    log::info!("SP WS payload '{user_id}': +{changed} {message}");
+                    log::info!("SP WS payload '{user_id}': +{changed}");
                     UPDATER_MANAGER_SIMPLY_PLURAL_WEBSOCKET_RELEVANT_CHANGE_MESSAGE_COUNT
                         .with_label_values(&[&user_id.to_string()])
                         .inc();

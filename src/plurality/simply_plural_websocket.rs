@@ -114,7 +114,8 @@ where
                     },
                     Message::Text(auth_failure) if auth_failure.contains("Authentication violation") => return Err(anyhow!(SIMPLY_PLURAL_AUTH_FAILURE)),
                     Message::Text(json_string) => {
-                        log::info!("WS {log_prefix} Received payload: '{json_string}'");
+                        let json_string_truncated = json_string.chars().take(100).collect::<String>();
+                        log::info!("WS {log_prefix} Received payload: '{json_string_truncated}'");
                         if !authenticated {
                             log::warn!("WS {log_prefix} Received message before authentication response: '{json_string}'");
                             SHOULDNT_HAPPEN_BUT_IT_DID
