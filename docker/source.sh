@@ -13,7 +13,7 @@ await() {
         sleep 1
         echo -n "$SECONDS, "
 
-        if ((SECONDS >= 15)); then
+        if ((SECONDS >= 20)); then
             echo "Aborting."
             exit 1
         fi
