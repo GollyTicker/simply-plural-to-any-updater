@@ -6,6 +6,9 @@ pub mod platforms;
 pub mod updater;
 pub mod users;
 
+#[cfg(test)]
+mod communication_tests;
+
 pub mod for_discord_bridge {
     pub use crate::communication::{
         BridgeToServerSseMessage, FireAndForgetChannel, LatestReceiver, ServerToBridgeSseMessage,

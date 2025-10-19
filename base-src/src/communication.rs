@@ -1,9 +1,13 @@
-use std::marker;
+use std::{
+    marker,
+    sync::{self, Arc},
+    time,
+};
 
 use serde::{Deserialize, Serialize};
 use tokio::{sync::broadcast, task::JoinHandle};
 
-use crate::{platforms, updater};
+use crate::{clock, platforms, updater};
 
 pub fn blocking_abort_and_clear_tasks<T, F>(tasks: &mut Vec<T>, f: F)
 where
@@ -29,37 +33,87 @@ where
 /// Variation of the `tokio::sync::broadcast` channel, where the sender doesn't
 /// care if any receiver is listening. Useful to ensure, that all receivers get only the latest value.
 #[derive(Debug, Clone)]
-pub struct FireAndForgetChannel<T, C = DefaultConfig>
+pub struct FireAndForgetChannel<T, C = DefaultAlwaysImmediateSend>
 where
-    C: Config,
+    C: SendBehavior,
 {
     inner: broadcast::Sender<T>,
     pub most_recent_value: Option<T>,
-    marker: marker::PhantomData<C>,
+    send_behavior: C,
 }
 
-pub trait Config: Clone {}
+pub trait SendBehavior: Clone {}
+
+#[derive(Clone, Default)]
+pub struct DefaultAlwaysImmediateSend;
+
+impl SendBehavior for DefaultAlwaysImmediateSend {}
+
+#[derive(Clone, Default)]
+pub struct OnlyChangesImmediateSend;
+
+impl SendBehavior for OnlyChangesImmediateSend {}
 
 #[derive(Clone)]
-pub enum DefaultConfig {}
+pub struct RateLimitedMostRecentSend<T> {
+    /// The increment the rate-limiting will make the next send wait for, for each additional requested send.
+    wait_increment: chrono::Duration,
+    /// The maximum duration after a requested send where the next send will be pushed.
+    wait_max: chrono::Duration,
+    duration_to_count_over: chrono::Duration,
+    rate_limit_unique_data: sync::Arc<sync::Mutex<RateLimitUniqueData<T>>>,
+}
 
-impl Config for DefaultConfig {}
+struct RateLimitUniqueData<T> {
+    recently_received_sends: Vec<chrono::DateTime<chrono::Utc>>,
+    /// Newest value which should be sent on the next push. If no new values arrived since the last push, then this should be empty.
+    next_value_to_be_pushed: Option<T>,
+    scheduled_sender: Option<tokio::task::JoinHandle<()>>,
+}
 
-#[derive(Clone)]
-pub enum OnlyChanges {}
-
-impl Config for OnlyChanges {}
-
-#[must_use]
-pub fn fire_and_forget_channel<T: Clone, C: Config>() -> FireAndForgetChannel<T, C> {
-    FireAndForgetChannel {
-        inner: broadcast::channel(1).0,
-        most_recent_value: None,
-        marker: marker::PhantomData,
+impl<T> RateLimitedMostRecentSend<T> {
+    #[must_use]
+    pub fn new(
+        wait_min: chrono::Duration,
+        wait_max: chrono::Duration,
+        duration_to_count_over: chrono::Duration,
+    ) -> Self {
+        Self {
+            wait_increment: wait_min,
+            wait_max,
+            duration_to_count_over,
+            rate_limit_unique_data: sync::Arc::new(sync::Mutex::new(RateLimitUniqueData {
+                recently_received_sends: vec![],
+                next_value_to_be_pushed: None,
+                scheduled_sender: None,
+            })),
+        }
     }
 }
 
-impl<T: Clone, C: Config> FireAndForgetChannel<T, C> {
+impl<T: Clone> SendBehavior for RateLimitedMostRecentSend<T> {}
+
+#[must_use]
+pub fn fire_and_forget_channel<T: Clone, C: SendBehavior + Default>() -> FireAndForgetChannel<T, C>
+{
+    FireAndForgetChannel {
+        inner: broadcast::channel(1).0,
+        most_recent_value: None,
+        send_behavior: C::default(),
+    }
+}
+
+pub fn fire_and_forget_channel_with<T: Clone, C: SendBehavior>(
+    send_behavior: C,
+) -> FireAndForgetChannel<T, C> {
+    FireAndForgetChannel {
+        inner: broadcast::channel(1).0,
+        most_recent_value: None,
+        send_behavior,
+    }
+}
+
+impl<T: Clone, C: SendBehavior> FireAndForgetChannel<T, C> {
     #[must_use]
     pub fn subscribe(&self) -> LatestReceiver<T> {
         LatestReceiver {
@@ -68,7 +122,7 @@ impl<T: Clone, C: Config> FireAndForgetChannel<T, C> {
     }
 }
 
-impl<T: Clone> FireAndForgetChannel<T, DefaultConfig> {
+impl<T: Clone> FireAndForgetChannel<T, DefaultAlwaysImmediateSend> {
     /// Sends the value through the channel.
     /// There is no guarantee that any receivers are subscribed and whether they receive the message.
     /// Returns the number of receivers at the moment of the sending. May be 0.
@@ -78,7 +132,7 @@ impl<T: Clone> FireAndForgetChannel<T, DefaultConfig> {
     }
 }
 
-impl<T: Clone + Eq> FireAndForgetChannel<T, OnlyChanges> {
+impl<T: Clone + Eq> FireAndForgetChannel<T, OnlyChangesImmediateSend> {
     /// Sends the value through the channel.
     /// There is no guarantee that any receivers are subscribed and whether they receive the message.
     /// Returns the number of receivers at the moment of the sending. May be 0.
@@ -96,6 +150,98 @@ impl<T: Clone + Eq> FireAndForgetChannel<T, OnlyChanges> {
             Some(receivers)
         } else {
             None
+        }
+    }
+}
+
+impl<T: Clone> FireAndForgetChannel<T, RateLimitedMostRecentSend<T>> {
+    /// Sends the value through the channel.
+    /// There is no guarantee that any receivers are subscribed and whether they receive the message.
+    ///
+    /// In addition, it rate-limits. It will wait as configured in the send_behavior field.
+    /// This means, that invocations of *send* won't immediately send the value.
+    /// It will wait at least *wait_min* duration and at-max *wait_max* duration.
+    /// The more frequent *send* was invoked in the last *duration_to_count_over* duration,
+    /// the longer it will wait until it actually sends the most-recent value.
+    ///
+    /// This function has no return value, because the number of receivers is determind in future when the send actually occurs.
+    pub fn send(&mut self, newest_value_requested_to_send: T) -> () {
+        let mut locked_rate_limit_data = match self.send_behavior.rate_limit_unique_data.lock() {
+            Ok(x) => x,
+            Err(e) => {
+                log::error!(
+                    "this should't happen! RateLimitedMostRecentSend -> send. {}",
+                    e
+                );
+                // todo. bubble this up as result or ensure, that this can't happen!
+                return;
+            }
+        };
+
+        let current_send_time = clock::now();
+        log::info!(
+            "FireAndForgetChannel<_,RateLimitedMostRecentSend<_>>::send: Received send at {}",
+            current_send_time
+        );
+
+        // note, that the current send happened.
+        locked_rate_limit_data
+            .recently_received_sends
+            .push(current_send_time);
+
+        // remove outdated sends
+        locked_rate_limit_data
+            .recently_received_sends
+            .retain_mut(|t| {
+                current_send_time.signed_duration_since(t)
+                    > self.send_behavior.duration_to_count_over
+            });
+
+        // compute duration to wait for next send based on number of received send requests
+        let count = locked_rate_limit_data.recently_received_sends.len() as i32;
+        let duration_to_wait = self
+            .send_behavior
+            .wait_max
+            .min(self.send_behavior.wait_increment * count.pow(2));
+
+        locked_rate_limit_data.next_value_to_be_pushed.replace(newest_value_requested_to_send);
+
+        // if no existing task is scheduled, then we schedule a task in duration_to_wait in future
+        // to then send the most recent value
+        // if a task is already scheduled, then we don't do anything.
+
+        if locked_rate_limit_data.scheduled_sender.is_none() {
+            let self2 = self.clone();
+            let task = tokio::task::spawn(async move {
+                // let self2 = self2.clone();
+                // send the most recent value, whatever it might be, after waiting duration_to_wait.
+                let duration_to_wait = duration_to_wait
+                    .to_std()
+                    .unwrap_or_else(|_| time::Duration::from_secs(1)); // this error shouldn't happen
+                log::info!(
+                    "FireAndForgetChannel<_,RateLimitedMostRecentSend<_>>::send: Waiting to push send after '{:?}'",
+                    duration_to_wait
+                );
+                tokio::time::sleep(duration_to_wait.into()).await;
+                // now self2 might have changed and might have a new most recent value. whatever it is, we will send it now.
+                // let lock = self2.send_behavior.rate_limit_unique_data.lock();
+                // let locked = match lock {
+                //     Ok(x) => x,
+                //     Err(e) => {
+                //         todo!()
+                //         // log::error!(
+                //         //     "this should't happen! RateLimitedMostRecentSend -> send (2). {}",
+                //         //     e
+                //         // );
+                //         // // todo. bubble this up as result or ensure, that this can't happen!
+                //         // return;
+                //     }
+                // };
+                ()
+            });
+            locked_rate_limit_data.scheduled_sender.replace(task);
+        } else {
+            ()
         }
     }
 }
@@ -130,4 +276,81 @@ pub struct ServerToBridgeSseMessage {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct BridgeToServerSseMessage {
     pub discord_updater_status: updater::UpdaterStatus,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_fire_and_forget_channel_default_config() {
+        let mut channel = fire_and_forget_channel::<i32, DefaultAlwaysImmediateSend>();
+        let mut receiver = channel.subscribe();
+
+        // Test sending a value
+        channel.send(42);
+        assert_eq!(receiver.recv().await, Some(42));
+        assert_eq!(channel.most_recent_value, Some(42));
+
+        // Test sending multiple values, receiver only gets the last one
+        channel.send(1);
+        channel.send(2);
+        channel.send(3);
+        assert_eq!(receiver.recv().await, Some(3));
+        assert_eq!(channel.most_recent_value, Some(3));
+
+        // Test sending the same value again
+        channel.send(3);
+        assert_eq!(receiver.recv().await, Some(3));
+        assert_eq!(channel.most_recent_value, Some(3));
+    }
+
+    #[tokio::test]
+    async fn test_fire_and_forget_channel_only_changes_config() {
+        let mut channel = fire_and_forget_channel::<i32, OnlyChangesImmediateSend>();
+        let mut receiver = channel.subscribe();
+
+        // Test sending a new value
+        assert_eq!(channel.send(42), Some(1));
+        assert_eq!(receiver.recv().await, Some(42));
+        assert_eq!(channel.most_recent_value, Some(42));
+
+        // Test sending the same value again (should not send)
+        assert_eq!(channel.send(42), None);
+        // We can't easily test that nothing is received without a timeout,
+        // but we can check the `most_recent_value` and the return of `send`.
+        assert_eq!(channel.most_recent_value, Some(42));
+
+        // Test sending a different value
+        assert_eq!(channel.send(43), Some(1));
+        assert_eq!(receiver.recv().await, Some(43));
+        assert_eq!(channel.most_recent_value, Some(43));
+    }
+
+    #[tokio::test]
+    async fn test_channel_closing() {
+        let mut channel = fire_and_forget_channel::<i32, DefaultAlwaysImmediateSend>();
+        let mut receiver = channel.subscribe();
+
+        channel.send(1);
+        assert_eq!(receiver.recv().await, Some(1));
+
+        // Drop the channel (sender)
+        drop(channel);
+
+        // Receiver should now get None
+        assert_eq!(receiver.recv().await, None);
+    }
+
+    #[tokio::test]
+    async fn test_multiple_receivers() {
+        let mut channel = fire_and_forget_channel::<i32, DefaultAlwaysImmediateSend>();
+        let mut receiver1 = channel.subscribe();
+        let mut receiver2 = channel.subscribe();
+
+        channel.send(10);
+
+        assert_eq!(receiver1.recv().await, Some(10));
+        assert_eq!(receiver2.recv().await, Some(10));
+    }
 }

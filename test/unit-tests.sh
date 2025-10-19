@@ -2,5 +2,5 @@
 
 set -euo pipefail
 
-# unit tests
+(cd base-src && cargo test)
 cargo test
