@@ -7,6 +7,7 @@
   * pridevr plural channel
     * ticket asking for approval created
   * reddit?
+* BUG: almost no archived members found in the systems??? I think there is something fishy here!
 * improve metrics:
   * measure all the places which "shouldn't happen" in production
     * DONE also do that for important places where errors shouldnt happen.
