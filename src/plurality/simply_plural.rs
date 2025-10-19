@@ -79,12 +79,7 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
     vrcsn_field_id: Option<String>,
     config: &users::UserConfigForUpdater,
 ) -> Result<Vec<Fronter>> {
-    let all_members: Vec<Member> = simply_plural_http_get_members(config, system_id)
-        .await?
-        .iter()
-        .filter(|m| show_member_according_to_privacy_rules(config, m))
-        .cloned()
-        .collect();
+    let all_members: Vec<Member> = simply_plural_http_get_members(config, system_id).await?;
 
     let active_members_count = all_members.iter().filter(|m| !m.content.archived).count() as i64;
 
@@ -95,6 +90,11 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
     SIMPLY_PLURAL_FETCH_FRONTS_ARCHIVED_MEMBERS_COUNT
         .with_label_values(&[&config.user_id.to_string()])
         .set(all_members.len() as i64 - active_members_count);
+
+    let privacy_filtered_members: Vec<Member> = all_members
+        .into_iter()
+        .filter(|m| show_member_according_to_privacy_rules(config, m))
+        .collect();
 
     let all_custom_fronts: Vec<CustomFront> = if config.show_custom_fronts {
         let custom_fronts = simply_plural_http_get_custom_fronts(config, system_id).await?;
@@ -108,7 +108,7 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
         vec![]
     };
 
-    let all_frontables: Vec<Fronter> = all_members
+    let all_frontables: Vec<Fronter> = privacy_filtered_members
         .into_iter()
         .map(|m| {
             let mut enriched_member = m;
