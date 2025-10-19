@@ -8,6 +8,7 @@ rust-version = "1.90.0"
 
 [dependencies]
 serde = { version = "*", default-features = false, features = ["derive"] }
+chrono = "*"
 tokio = { version = "*", default-features = false, features = [] }
 log = "*"
 sqlx = { version = "*", default-features = false, features = ["macros"] }

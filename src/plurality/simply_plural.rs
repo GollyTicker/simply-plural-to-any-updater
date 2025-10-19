@@ -91,10 +91,9 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
         .with_label_values(&[&config.user_id.to_string()])
         .set(all_members.len() as i64 - active_members_count);
 
-    let privacy_filtered_members: Vec<Member> = all_members
+    let privacy_filtered_members = all_members
         .into_iter()
-        .filter(|m| show_member_according_to_privacy_rules(config, m))
-        .collect();
+        .filter(|m| show_member_according_to_privacy_rules(config, m));
 
     let all_custom_fronts: Vec<CustomFront> = if config.show_custom_fronts {
         let custom_fronts = simply_plural_http_get_custom_fronts(config, system_id).await?;

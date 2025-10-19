@@ -5,8 +5,8 @@ use crate::users::UserId;
 use crate::{database, users};
 use crate::{int_counter_metric, metric, setup};
 use anyhow::{Result, anyhow};
-use sp2any_base::communication;
 use sp2any_base::updater::UpdaterStatus;
+use sp2any_base::{clock, communication};
 use sqlx;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -43,12 +43,12 @@ pub struct UpdaterManager {
 
 impl UpdaterManager {
     #[must_use]
-    pub fn new(cli_args: &setup::ApplicationConfig) -> Self {
+    pub fn new(app_config: &setup::ApplicationConfig) -> Self {
         Self {
             tasks: Arc::new(Mutex::new(HashMap::new())),
             statuses: Arc::new(Mutex::new(HashMap::new())),
             fronter_channel: Arc::new(Mutex::new(HashMap::new())),
-            discord_status_message_available: cli_args.discord_status_message_updater_available,
+            discord_status_message_available: app_config.discord_status_message_updater_available,
             foreign_managed_status_channel: Arc::new(Mutex::new(HashMap::new())),
             updater_start_time: Arc::new(Mutex::new(HashMap::new())),
         }
@@ -211,7 +211,7 @@ impl UpdaterManager {
         self.updater_start_time
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
-            .insert(user_id.clone(), chrono::Utc::now());
+            .insert(user_id.clone(), clock::now());
 
         log::info!("# | restart_updater | {user_id} | aborting updaters | restarted");
         UPDATER_MANAGER_RESTART_SUCCESS_COUNT
@@ -459,7 +459,7 @@ pub async fn restart_first_long_living_updater(
 fn is_long_lived(active_since: chrono::DateTime<chrono::Utc>) -> bool {
     let long_lived_duration = std::time::Duration::from_secs(ONE_DAY_AS_SECONDS);
 
-    chrono::Utc::now()
+    clock::now()
         .signed_duration_since(active_since)
         .to_std()
         .is_ok_and(|duration| duration > long_lived_duration)

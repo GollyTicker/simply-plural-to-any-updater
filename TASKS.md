@@ -7,7 +7,6 @@
   * pridevr plural channel
     * ticket asking for approval created
   * reddit?
-* BUG: almost no archived members found in the systems??? I think there is something fishy here!
 * improve metrics:
   * measure all the places which "shouldn't happen" in production
     * DONE also do that for important places where errors shouldnt happen.
@@ -16,6 +15,7 @@
   * DONE: distinguish between active and non-active members in metrics
   * DONE: measure length's of suggested fronting statuses
   * measure usage of many specific features
+* Add + test: FireAndForgetChannel with only changes being propagates and another variant with integrated rate-limits
 * complete features from first test users
   * primarily vrchat rate limit fix
   * possibly also system sync with pluralkit

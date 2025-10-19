@@ -3161,6 +3161,7 @@ name = "sp2any-base"
 version = "0.1.0"
 dependencies = [
  "async-scoped",
+ "chrono",
  "log",
  "serde",
  "specta 1.0.5",

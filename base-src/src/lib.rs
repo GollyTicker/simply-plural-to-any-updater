@@ -1,3 +1,4 @@
+pub mod clock;
 pub mod communication;
 pub mod license;
 pub mod meta;

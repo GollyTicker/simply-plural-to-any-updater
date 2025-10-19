@@ -1,3 +1,5 @@
+use std::marker;
+
 use serde::{Deserialize, Serialize};
 use tokio::{sync::broadcast, task::JoinHandle};
 
@@ -27,32 +29,73 @@ where
 /// Variation of the `tokio::sync::broadcast` channel, where the sender doesn't
 /// care if any receiver is listening. Useful to ensure, that all receivers get only the latest value.
 #[derive(Debug, Clone)]
-pub struct FireAndForgetChannel<T> {
+pub struct FireAndForgetChannel<T, C = DefaultConfig>
+where
+    C: Config,
+{
     inner: broadcast::Sender<T>,
     pub most_recent_value: Option<T>,
+    marker: marker::PhantomData<C>,
 }
 
+pub trait Config: Clone {}
+
+#[derive(Clone)]
+pub enum DefaultConfig {}
+
+impl Config for DefaultConfig {}
+
+#[derive(Clone)]
+pub enum OnlyChanges {}
+
+impl Config for OnlyChanges {}
+
 #[must_use]
-pub fn fire_and_forget_channel<T: Clone>() -> FireAndForgetChannel<T> {
+pub fn fire_and_forget_channel<T: Clone, C: Config>() -> FireAndForgetChannel<T, C> {
     FireAndForgetChannel {
         inner: broadcast::channel(1).0,
         most_recent_value: None,
+        marker: marker::PhantomData,
     }
 }
 
-impl<T: Clone> FireAndForgetChannel<T> {
-    /// Sends the value through the channel.
-    /// There is no guarantee that any receivers are subscribed and whether they receive the message.
-    /// Returns the number of receivers at the moment of the sending. May be 0.
-    pub fn send(&mut self, value: T) -> usize {
-        self.most_recent_value = Some(value.clone());
-        self.inner.send(value).unwrap_or_default()
-    }
-
+impl<T: Clone, C: Config> FireAndForgetChannel<T, C> {
     #[must_use]
     pub fn subscribe(&self) -> LatestReceiver<T> {
         LatestReceiver {
             inner: self.inner.subscribe(),
+        }
+    }
+}
+
+impl<T: Clone> FireAndForgetChannel<T, DefaultConfig> {
+    /// Sends the value through the channel.
+    /// There is no guarantee that any receivers are subscribed and whether they receive the message.
+    /// Returns the number of receivers at the moment of the sending. May be 0.
+    pub fn send(&mut self, new_value: T) -> usize {
+        self.most_recent_value = Some(new_value.clone());
+        self.inner.send(new_value).unwrap_or_default()
+    }
+}
+
+impl<T: Clone + Eq> FireAndForgetChannel<T, OnlyChanges> {
+    /// Sends the value through the channel.
+    /// There is no guarantee that any receivers are subscribed and whether they receive the message.
+    /// Returns the number of receivers at the moment of the sending. May be 0.
+    ///
+    /// In addition, changes are sent only when the new value is different from the old one.
+    /// Returns None, if no update was sent.
+    pub fn send(&mut self, new_value: T) -> Option<usize> {
+        let is_different = self
+            .most_recent_value
+            .as_ref()
+            .map_or_else(|| true, |old| *old != new_value);
+        if is_different {
+            self.most_recent_value = Some(new_value.clone());
+            let receivers = self.inner.send(new_value).unwrap_or_default();
+            Some(receivers)
+        } else {
+            None
         }
     }
 }

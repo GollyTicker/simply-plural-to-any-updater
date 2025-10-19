@@ -1,6 +1,6 @@
 use crate::users::model::UserId;
 use anyhow::{Result, anyhow};
-use chrono::{Duration, Utc};
+use chrono::Duration;
 use jsonwebtoken::{EncodingKey, Header, encode};
 use rocket::{
     Request, State,
@@ -9,7 +9,7 @@ use rocket::{
     response,
 };
 use serde::{Deserialize, Serialize};
-use sp2any_base::users::JwtString;
+use sp2any_base::{clock, users::JwtString};
 
 #[derive(Clone)]
 pub struct ApplicationJwtSecret {
@@ -97,7 +97,7 @@ impl<'r> FromRequest<'r> for Jwt {
 const JWT_VALID_HOURS: i64 = 15;
 
 pub fn create_token(user_id: &UserId, jwt_secret: &ApplicationJwtSecret) -> Result<JwtString> {
-    let expiration: usize = Utc::now()
+    let expiration: usize = clock::now()
         .checked_add_signed(Duration::hours(JWT_VALID_HOURS))
         .ok_or_else(|| anyhow!("create_token: invalid timestamp"))?
         .timestamp()

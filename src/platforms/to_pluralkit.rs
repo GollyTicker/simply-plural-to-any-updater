@@ -14,8 +14,12 @@ metric!(
     &["user_id", "scope"]
 );
 
-const TO_PLURALKIT_UPDATER_USER_AGENT: &str =
-    concat!("SP2Any/", env!("CARGO_PKG_VERSION"), " Discord: ", env!("USER_AGENT_DISCORD_USERNAME"));
+const TO_PLURALKIT_UPDATER_USER_AGENT: &str = concat!(
+    "SP2Any/",
+    env!("CARGO_PKG_VERSION"),
+    " Discord: ",
+    env!("USER_AGENT_DISCORD_USERNAME")
+);
 
 pub struct ToPluralKitUpdater {
     pub last_operation_error: Option<String>,

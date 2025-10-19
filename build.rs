@@ -10,7 +10,7 @@ fn main() {
         dotenvy::from_path("test/secrets.env").ok();
         for var in ["USER_AGENT_EMAIL", "USER_AGENT_DISCORD_USERNAME"] {
             if let Ok(value) = std::env::var(var) {
-                println!("cargo:rustc-env={}={}", var, value);
+                println!("cargo:rustc-env={var}={value}");
             }
         }
     }

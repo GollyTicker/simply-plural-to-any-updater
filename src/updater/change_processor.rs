@@ -1,3 +1,4 @@
+use sp2any_base::clock;
 use sp2any_base::communication::LatestReceiver;
 use sp2any_base::updater::UpdaterStatus;
 use std::collections::HashMap;
@@ -6,7 +7,6 @@ use crate::updater::platforms::{Platform, Updater};
 use crate::updater::{manager, platforms};
 use crate::{database, int_counter_metric, plurality, users};
 use anyhow::Result;
-use chrono::Utc;
 
 // NOTE: specta::Type is manually exported in bindings
 pub type UserUpdatersStatuses = HashMap<Platform, UpdaterStatus>;
@@ -54,7 +54,7 @@ pub async fn run_listener_for_changes(
         log::info!(
             "# | updater processing change | {} | ======================= UTC {}",
             config.user_id,
-            Utc::now().format("%Y-%m-%d %H:%M:%S")
+            clock::now().format("%Y-%m-%d %H:%M:%S")
         );
         UPDATER_PROCESS_START_TOTAL
             .with_label_values(&[&user_id.to_string()])
