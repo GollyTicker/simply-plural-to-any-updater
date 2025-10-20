@@ -1,6 +1,5 @@
 mod discord_bridge;
 mod local_storage;
-mod never;
 mod streaming;
 
 use anyhow::{Result, anyhow};

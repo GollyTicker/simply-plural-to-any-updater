@@ -5,6 +5,7 @@ use discord_rich_presence::{
     DiscordIpc, DiscordIpcClient,
     activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
 };
+use futures::never;
 use serde::Deserialize;
 use sp2any_base::{
     for_discord_bridge::{DiscordRichPresence, FireAndForgetChannel, ServerToBridgeSseMessage},
@@ -12,7 +13,7 @@ use sp2any_base::{
 };
 use tokio::time::sleep;
 
-use crate::{never, notify_user_on_status};
+use crate::notify_user_on_status;
 
 // note. tell users they may need to activate rich presence sharing in their activity privacy settings. they can also customize it per server.
 
@@ -27,7 +28,7 @@ pub async fn discord_ipc_loop(
     loop {
         let err = match connect_to_discord_ipc() {
             Ok(mut client) => {
-                let err = never::get_err(
+                let err = get_err(
                     activity_loop(
                         app,
                         &mut client,
@@ -230,5 +231,12 @@ const fn status_display_type_from(u: u8) -> Option<StatusDisplayType> {
         1 => Some(StatusDisplayType::State),
         2 => Some(StatusDisplayType::Details),
         _ => None,
+    }
+}
+
+pub fn get_err(result: Result<never::Never>) -> anyhow::Error {
+    match result {
+        Err(e) => e,
+        Ok(_) => unreachable!("never value observerd."),
     }
 }
