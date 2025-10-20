@@ -17,7 +17,10 @@ type SharedMutable<T> = Arc<Mutex<T>>;
 type ThreadSafePerUser<T> = SharedMutable<HashMap<UserId, T>>;
 
 type CancleableTasks = Vec<tokio::task::JoinHandle<()>>;
-type FronterChannel = communication::FireAndForgetChannel<Vec<plurality::Fronter>>;
+type FronterChannel = communication::FireAndForgetChannel<
+    Vec<plurality::Fronter>,
+    communication::RateLimitedMostRecentSend<Vec<plurality::Fronter>>,
+>;
 type ForeignStatusChannel =
     communication::FireAndForgetChannel<Option<(updater::Platform, UpdaterStatus)>>;
 
@@ -221,10 +224,23 @@ impl UpdaterManager {
     }
 
     fn recreate_fronter_channel(&self, user_id: &UserId) -> Result<()> {
+        let rate_limit_config = communication::RateLimitedMostRecentSend::new(
+            // todo. value for testing. we need something else for production!
+            chrono::Duration::milliseconds(100),
+            chrono::Duration::seconds(1),
+            chrono::Duration::minutes(1),
+            /*
+            incr 300ms, max 1min, count over 10min
+            */
+        );
+
         self.fronter_channel
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
-            .insert(user_id.to_owned(), communication::fire_and_forget_channel()); // old value dropped
+            .insert(
+                user_id.to_owned(),
+                communication::fire_and_forget_channel_with(rate_limit_config),
+            ); // old value dropped
         Ok(())
     }
 
@@ -364,8 +380,7 @@ impl UpdaterManager {
 
         log::info!("# | fetch_and_update_fronters | {user_id} | {fronters_count} fronters fetched");
 
-        let receiver_count = self
-            .fronter_channel
+        self.fronter_channel
             .lock()
             .map_err(|e| anyhow!(e.to_string()))?
             .get_mut(user_id)
@@ -375,7 +390,7 @@ impl UpdaterManager {
             .send(fronters);
 
         log::info!(
-            "# | fetch_and_update_fronters | {user_id} | {fronters_count} fronters fetched | sent to {receiver_count} receivers."
+            "# | fetch_and_update_fronters | {user_id} | {fronters_count} fronters fetched | sent to channel."
         );
 
         Ok(())

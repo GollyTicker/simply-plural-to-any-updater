@@ -43,16 +43,32 @@ where
 
 pub trait SendBehavior: Clone {}
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct DefaultAlwaysImmediateSend<T> {
     most_recent_sent_value: Option<T>,
 }
 
+impl<T> Default for DefaultAlwaysImmediateSend<T> {
+    fn default() -> Self {
+        Self {
+            most_recent_sent_value: None,
+        }
+    }
+}
+
 impl<T: Clone> SendBehavior for DefaultAlwaysImmediateSend<T> {}
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct OnlyChangesImmediateSend<T> {
     most_recent_sent_value: Option<T>,
+}
+
+impl<T> Default for OnlyChangesImmediateSend<T> {
+    fn default() -> Self {
+        Self {
+            most_recent_sent_value: None,
+        }
+    }
 }
 
 impl<T: Clone> SendBehavior for OnlyChangesImmediateSend<T> {}
