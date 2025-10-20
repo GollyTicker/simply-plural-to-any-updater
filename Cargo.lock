@@ -3162,6 +3162,7 @@ version = "0.1.0"
 dependencies = [
  "async-scoped",
  "chrono",
+ "env_logger",
  "log",
  "serde",
  "specta 1.0.5",

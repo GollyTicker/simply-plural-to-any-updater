@@ -36,6 +36,7 @@ pub fn now() -> DateTime<Utc> {
  * When global clock was already before this call.
  * */
 #[allow(clippy::unwrap_used)]
+#[cfg(test)]
 pub fn set_global_clock_for_test<C: Clock + 'static>(test_clock: C) {
     GLOBAL_CLOCK
         .set(Box::new(test_clock))

@@ -32,7 +32,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
         database::get_user_config_with_secrets(db_pool, &user_id, client, application_user_secrets)
             .await?;
 
-    let initial_fronters = shared_updaters.fronter_channel_get_most_recent_value(&user_id)?;
+    let initial_fronters = shared_updaters.fronter_channel_get_most_recent_sent_value(&user_id)?;
 
     let fronting_channel = shared_updaters.subscribe_fronter_channel(&user_id)?;
 

@@ -35,7 +35,7 @@ pub async fn get_api_fronting_status(
     log::info!("# | GET /api/fronting-status/{user_id} | got_config");
 
     let fronters = shared_updaters
-        .fronter_channel_get_most_recent_value(&user_id)
+        .fronter_channel_get_most_recent_sent_value(&user_id)
         .map_err(expose_internal_error)?
         .ok_or_else(|| anyhow!("No data from Simply Plural found (2)?"))
         .map_err(expose_internal_error)?;
@@ -90,7 +90,7 @@ pub async fn get_api_fronting_by_user_id(
     log::info!("# | GET /fronting/{website_url_name} | {user_id} | got_config");
 
     let fronts = shared_updaters
-        .fronter_channel_get_most_recent_value(&user_id)
+        .fronter_channel_get_most_recent_sent_value(&user_id)
         .map_err(expose_internal_error)?
         .ok_or_else(|| anyhow!("No data from Simply Plural found?"))
         .map_err(expose_internal_error)?;

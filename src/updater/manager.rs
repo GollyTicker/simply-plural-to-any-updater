@@ -74,7 +74,7 @@ impl UpdaterManager {
         Ok(receiver)
     }
 
-    pub fn fronter_channel_get_most_recent_value(
+    pub fn fronter_channel_get_most_recent_sent_value(
         &self,
         user_id: &UserId,
     ) -> Result<Option<Vec<plurality::Fronter>>> {
@@ -91,8 +91,7 @@ impl UpdaterManager {
                     "fronter_channel_get_most_recent_value: No fronter channel found for {user_id}"
                 )
             })?
-            .most_recent_value
-            .clone();
+            .most_recent_sent_value();
 
         Ok(receiver)
     }
