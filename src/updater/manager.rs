@@ -224,15 +224,20 @@ impl UpdaterManager {
     }
 
     fn recreate_fronter_channel(&self, user_id: &UserId) -> Result<()> {
-        let rate_limit_config = communication::RateLimitedMostRecentSend::new(
-            // todo. value for testing. we need something else for production!
-            chrono::Duration::milliseconds(100),
-            chrono::Duration::seconds(1),
-            chrono::Duration::minutes(1),
-            /*
-            incr 300ms, max 1min, count over 10min
-            */
-        );
+        let rate_limit_config = if cfg!(debug_assertions) {
+            log::info!("recreate_fronter_channel: using debug rate limits");
+            communication::RateLimitedMostRecentSend::new(
+                chrono::Duration::milliseconds(100),
+                chrono::Duration::seconds(1),
+                chrono::Duration::seconds(5),
+            )
+        } else {
+            communication::RateLimitedMostRecentSend::new(
+                chrono::Duration::milliseconds(100),
+                chrono::Duration::seconds(60),
+                chrono::Duration::minutes(4),
+            )
+        };
 
         self.fronter_channel
             .lock()
