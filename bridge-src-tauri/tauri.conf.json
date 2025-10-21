@@ -29,6 +29,7 @@
     "targets": [
       "deb",
       "rpm",
+      "appimage",
       "nsis"
     ],
     "icon": [
