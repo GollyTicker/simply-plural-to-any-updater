@@ -84,6 +84,7 @@ pub struct RateLimitedMostRecentSend<T> {
 }
 
 struct RateLimitUniqueData<T> {
+    log_name: String,
     recently_received_sends: Vec<chrono::DateTime<chrono::Utc>>,
     /// Newest value which should be sent on the next push. If no new values arrived since the last push, then this should be empty.
     next_value_to_be_pushed: Option<T>,
@@ -94,6 +95,7 @@ struct RateLimitUniqueData<T> {
 impl<T> RateLimitedMostRecentSend<T> {
     #[must_use]
     pub fn new(
+        log_name: String,
         wait_increment: chrono::Duration,
         wait_max: chrono::Duration,
         duration_to_count_over: chrono::Duration,
@@ -103,6 +105,7 @@ impl<T> RateLimitedMostRecentSend<T> {
             wait_max,
             duration_to_count_over,
             rate_limit_unique_data: sync::Arc::new(sync::Mutex::new(RateLimitUniqueData {
+                log_name,
                 recently_received_sends: vec![],
                 next_value_to_be_pushed: None,
                 scheduled_sender: None,
@@ -204,9 +207,11 @@ impl<T: Clone + 'static + Send> FireAndForgetChannel<T, RateLimitedMostRecentSen
             }
         };
 
+        let log_name = locked_rate_limit_data.log_name.clone();
+
         let current_send_time = clock::now();
         log::info!(
-            "FireAndForgetChannel with RateLimitedMostRecentSend: Received send at {current_send_time}"
+            "{log_name}: FireAndForgetChannel with RateLimitedMostRecentSend: Received send at {current_send_time}",
         );
 
         // note, that the current send happened.
@@ -255,7 +260,7 @@ impl<T: Clone + 'static + Send> FireAndForgetChannel<T, RateLimitedMostRecentSen
                 .to_std()
                 .unwrap_or_else(|_| time::Duration::from_secs(1)); // this error shouldn't happen
             log::info!(
-                "FireAndForgetChannel with RateLimitedMostRecentSend: Waiting to push send after '{duration_to_wait:?}' (count = {count})"
+                "{log_name}: FireAndForgetChannel with RateLimitedMostRecentSend: Waiting to push send after '{duration_to_wait:?}' (count = {count})"
             );
             tokio::time::sleep(duration_to_wait).await;
             // now self2 might have changed and might have a new most recent value. whatever it is, we will send it now.
@@ -266,12 +271,14 @@ impl<T: Clone + 'static + Send> FireAndForgetChannel<T, RateLimitedMostRecentSen
                         x.scheduled_sender.take();
                         let _ = self2.inner.send(value_to_be_pushed).unwrap_or_default();
                         log::info!(
-                            "FireAndForgetChannel with RateLimitedMostRecentSend: New value sent."
+                            "{log_name}: FireAndForgetChannel with RateLimitedMostRecentSend: New value sent."
                         );
                     }
                 }
                 Err(e) => {
-                    log::error!("This should't happen! RateLimitedMostRecentSend -> send (2). {e}");
+                    log::error!(
+                        "{log_name}: This should't happen! RateLimitedMostRecentSend -> send (2). {e}"
+                    );
                 }
             }
         });

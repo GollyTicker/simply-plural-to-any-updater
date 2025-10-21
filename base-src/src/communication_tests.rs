@@ -85,6 +85,7 @@ async fn test_fire_and_forget_channel_rate_limited() {
     let duration_to_count_over = chrono::Duration::seconds(1);
 
     let mut channel = fire_and_forget_channel_with(RateLimitedMostRecentSend::<i32>::new(
+        "test".to_owned(),
         wait_increment,
         wait_max,
         duration_to_count_over,
