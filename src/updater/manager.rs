@@ -285,9 +285,7 @@ impl UpdaterManager {
                     break;
                 }
             }
-            SHOULDNT_HAPPEN_BUT_IT_DID
-                .with_label_values(&["updater_manager_foreign_status_updater"])
-                .inc();
+            // end of channel can sometimes happen, when asynchronously the updater is restarted
         });
 
         Ok(foreign_status_updater)

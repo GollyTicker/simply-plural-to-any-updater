@@ -185,13 +185,12 @@ fn process_message_from_fronting_channel(
             }
         }
     } else {
-        log::info!("# | fronters_chan <-> WS | {user_id} | fronters_chan_closed?");
+        log::info!("# | fronters_chan <-> WS | {user_id} | fronters_chan_closed.");
         notify(UpdaterStatus::Error(
-            "SP2Any-Server: Couldn't retrieve any fronters. (internal bug?)".into(),
+            "SP2Any-Server: Couldn't retrieve any fronters. Updater is likely being restarted."
+                .into(),
         ));
-        SHOULDNT_HAPPEN_BUT_IT_DID
-            .with_label_values(&["discord_ws_fronters_chan_closed"])
-            .inc();
+        // end of channel can sometimes happen, when asynchronously the updater is restarted
         Break
     }
 }

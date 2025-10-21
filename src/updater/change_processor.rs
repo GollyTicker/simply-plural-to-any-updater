@@ -80,10 +80,8 @@ pub async fn run_listener_for_changes(
             .inc();
     }
 
-    log::warn!("# | updater | {user_id} | unexpected end of fronter channel");
-    UPDATER_PROCESS_UNEXPECTED_STOP_TOTAL
-        .with_label_values(&[&user_id.to_string()])
-        .inc();
+    log::info!("# | updater | {user_id} | end of fronter channel");
+    // this only happens, when the updater is being restarted and the channel was asynchronously closed.
 }
 
 fn get_statuses(
