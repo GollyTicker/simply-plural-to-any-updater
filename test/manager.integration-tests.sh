@@ -6,26 +6,19 @@ set -euo pipefail
 
 [[ "$SPS_API_WRITE_TOKEN" != "" ]]
 
-[[ "$VRCHAT_USERNAME" != "" ]]
-
-[[ "$VRCHAT_PASSWORD" != "" ]]
-
-[[ "$DISCORD_STATUS_MESSAGE_TOKEN" != "" ]]
-
 FUNCTIONAL_DISCORD_STATUS_MESSAGE_TOKEN="$DISCORD_STATUS_MESSAGE_TOKEN"
-FUNCTIONAL_VRCHAT_USERNAME="$VRCHAT_USERNAME"
+FUNCTIONAL_PLURALKIT_TOKEN="$PLURALKIT_TOKEN"
 FUNCTIONAL_SPS_API_TOKEN="$SPS_API_TOKEN"
 
 export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=true
 ENABLE_DISCORD_STATUS_MESSAGE=true
-ENABLE_VRCHAT=true
+ENABLE_VRCHAT=false
 ENABLE_DISCORD=false
 ENABLE_WEBSITE=true
-ENABLE_TO_PLURALKIT=false
+ENABLE_TO_PLURALKIT=true
     
 source ./test/source.sh
 source ./test/plural_system_to_test.sh
-set -a; source ./test/ensure-vrchat-cookie-available.dev.sh --automated ; set +a
 
 main() {
     stop_updater
@@ -35,9 +28,9 @@ main() {
     setup_sp_rest_failure
     start_updater
     check_updater_failure
-    check_updater_loop_continues
+    check_logs_contain "Retrying in 3600 seconds..."
     check_updater "DiscordStatusMessage" "Running"
-    check_updater "VRChat" "Running"
+    check_updater "ToPluralKit" "Running"
     reset_changed_variables
     echo "✅ simply plural rest failure"
     
@@ -47,18 +40,18 @@ main() {
     start_updater
     check_updater_has_no_errors
     check_updater_loop_continues
-    check_updater "VRChat" "Running"
+    check_updater "ToPluralKit" "Running"
     check_missing "DiscordStatusMessage"
     reset_changed_variables
     echo "✅ discord status message failure"
 
 
-    setup_vrchat_only
+    setup_topluralkit_only
     start_updater
     check_updater_has_no_errors
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Disabled"
-    check_updater "VRChat" "Running"
+    check_updater "ToPluralKit" "Running"
     reset_changed_variables
     echo "✅ discord status message disabled"
 
@@ -68,25 +61,30 @@ main() {
     check_updater_has_no_errors
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
-    check_updater "VRChat" "Disabled"
+    check_updater "ToPluralKit" "Disabled"
     reset_changed_variables
-    echo "✅ vrchat disabled"
+    echo "✅ topluralkit disabled"
 
 
-    setup_vrchat_misconfigured
+    setup_topluralkit_misconfigured
     start_updater
     check_updater_failure
     check_updater_loop_continues
     check_updater "DiscordStatusMessage" "Running"
-    get_updater_statuses | jq -r ".VRChat" | grep -q "Error"
+    get_updater_statuses | jq -r ".ToPluralKit" | grep -q "Error"
     reset_changed_variables
-    echo "✅ vrchat failed"
+    echo "✅ topluralkit failed"
 
 
     clear_all_fronts
     echo "✅✅✅ Manager Integration Test ✅✅✅"
 }
 
+
+check_logs_contain() {
+    echo "check_logs_contain '$1'"
+    docker logs sp2any-api 2>&1 | grep -q "$1"
+}
 
 check_updater_loop_continues() {
     echo "check_updater_loop_continues"
@@ -125,16 +123,16 @@ setup_sp_rest_failure() {
     SPS_API_TOKEN="invalid"
 }
 
-setup_vrchat_only() {
-    echo "setup_vrchat_only"
+setup_topluralkit_only() {
+    echo "setup_topluralkit_only"
     DISCORD_STATUS_MESSAGE_TOKEN="invalid"
     ENABLE_DISCORD_STATUS_MESSAGE=false
 }
 
 setup_discord_status_message_only() {
     echo "setup_discord_status_message_only"
-    VRCHAT_USERNAME="invalid"
-    ENABLE_VRCHAT=false
+    ENABLE_TO_PLURALKIT=false
+    PLURALKIT_TOKEN=""
 }
 
 setup_discord_status_message_not_available() {
@@ -142,25 +140,20 @@ setup_discord_status_message_not_available() {
     unset DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE
 }
 
-setup_vrchat_misconfigured() {
-    echo "setup_vrchat_misconfigured"
-    
-    #VRCHAT_USERNAME="invalid"
-    VRCHAT_PASSWORD="invalid2348" # we still set an invalid password here to ensure, that no 2FA code is sent to the email
-    VRCHAT_COOKIE=""
-
-    # VRCHAT enabled!
+setup_topluralkit_misconfigured() {
+    echo "setup_topluralkit_misconfigured"
+    PLURALKIT_TOKEN=""
 }
 
 
 reset_changed_variables() {
     echo "reset_changed_variables"
     DISCORD_STATUS_MESSAGE_TOKEN="$FUNCTIONAL_DISCORD_STATUS_MESSAGE_TOKEN"
-    VRCHAT_USERNAME="$FUNCTIONAL_VRCHAT_USERNAME"
+    PLURALKIT_TOKEN="$FUNCTIONAL_PLURALKIT_TOKEN"
     SPS_API_TOKEN="$FUNCTIONAL_SPS_API_TOKEN"
     export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=true
     ENABLE_DISCORD_STATUS_MESSAGE=true
-    ENABLE_VRCHAT=true
+    ENABLE_TO_PLURALKIT=true
 }
 
 
@@ -172,7 +165,9 @@ start_updater() {
 
     setup_test_user
 
-    await sp2any-api "Waiting for next update trigger..."
+    await sp2any-api "client authentication sent."
+    
+    sleep 3s
 
     echo "Started startup-test."
 }

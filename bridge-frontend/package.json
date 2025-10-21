@@ -12,9 +12,9 @@
     "e2e": "export SP2ANY_BASE_URL=http://localhost:8080 && export SP2ANY_DATA_DIR=\"$(realpath \"$PWD/../test/tmp\")\" && rm -rv \"$SP2ANY_DATA_DIR\"; wdio run ./wdio.conf.js"
   },
   "devDependencies": {
-    "@tauri-apps/api": "^2.8.0",
-    "@tauri-apps/cli": "^2.8.4",
-    "@types/node": "^24.6.1",
+    "@tauri-apps/api": "^2.9.0",
+    "@tauri-apps/cli": "^2.9.0",
+    "@types/node": "^24.9.1",
     "@wdio/cli": "^9.20.0",
     "@wdio/local-runner": "^9.20.0",
     "@wdio/mocha-framework": "^9.20.0",
