@@ -5,6 +5,7 @@ use crate::updater::{change_processor, manager};
 use crate::users;
 use crate::users::UserId;
 use anyhow::Result;
+use futures::future;
 use rocket::{State, serde::json::Json};
 use sqlx::PgPool;
 
@@ -36,21 +37,26 @@ pub async fn restart_all_user_updaters_for_app_startups(
 
     log::info!("# | restart_all_user_updaters_for_app_startups | all_users {all_users:?}");
 
-    for user in all_users {
-        let _ = restart_updater_for_user(
-            &user,
+    let restart_futures = all_users.into_iter().map(async |user_id| {
+        let _: Result<()> = restart_updater_for_user(
+            &user_id,
             &setup.db_pool,
             &setup.application_user_secrets,
             &setup.client,
             &setup.shared_updaters,
         )
         .await
-        .inspect_err(|e| {
+        .or_else(|e| {
             log::warn!(
-                "# restart_all_user_updaters_for_app_startups | {user} failed. skipping. {e}"
+                "# restart_all_user_updaters_for_app_startups | {user_id} failed. skipping. {e}"
             );
+            Ok(())
         });
-    }
+        // allow failure by not checking the result.
+    });
+
+    // start all futures in parallel
+    future::join_all(restart_futures).await;
 
     log::info!("# | restart_all_user_updaters_for_app_startups | all_users | ok");
 
