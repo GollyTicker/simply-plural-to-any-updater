@@ -40,6 +40,16 @@ where
         .ok_or_else(|| serde::de::Error::custom("Datime<Utc> from timestamp failed"))
 }
 
+fn deserialize_non_empty_string_as_option<'de, D>(
+    deserializer: D,
+) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: Option<String> = Option::deserialize(deserializer)?;
+    Ok(s.filter(|s| !s.is_empty()))
+}
+
 #[derive(Debug, Clone)]
 pub struct Fronter {
     pub fronter_id: String,
@@ -127,6 +137,7 @@ pub struct MemberContent {
     pub privacy_buckets: Vec<String>,
 
     #[serde(rename = "pkId")]
+    #[serde(deserialize_with = "deserialize_non_empty_string_as_option")]
     pub pluralkit_id: Option<String>,
 
     // this will be populated later after deserialisation
@@ -256,5 +267,25 @@ mod tests {
         let utf8_bytes =
             tungstenite::Utf8Bytes::from("{\"msg\": \"notification\", \"title\": \"Test\"}");
         assert!(relevantly_changed_based_on_simply_plural_websocket_event(&utf8_bytes).unwrap());
+    }
+
+    #[test]
+    fn test_member_json_pluralkid_id_empty_strng() {
+        let json_str = r#"
+        {
+            "id": "member1",
+            "content": {
+                "name": "Test Member",
+                "avatarUrl": "",
+                "info": {},
+                "archived": false,
+                "preventsFrontNotifs": false,
+                "buckets": [],
+                "pkId": ""
+            }
+        }
+        "#;
+        let member: Member = serde_json::from_str(json_str).unwrap();
+        assert_eq!(member.content.pluralkit_id, None);
     }
 }
