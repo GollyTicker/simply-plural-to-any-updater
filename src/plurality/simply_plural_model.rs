@@ -270,7 +270,7 @@ mod tests {
     }
 
     #[test]
-    fn test_member_json_pluralkid_id_empty_strng() {
+    fn test_member_json_pluralkid_id_empty_string_as_none() {
         let json_str = r#"
         {
             "id": "member1",
