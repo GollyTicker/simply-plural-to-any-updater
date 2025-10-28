@@ -77,6 +77,9 @@ fn create_bidirection_websocket_stream_to_bridge(
 
     rocket_ws::Stream! { ws =>
         let mut ws = ws.fuse();
+        
+        let ping_interval = std::time::Duration::from_secs(60);
+        let mut last_received_fronters_msg = initial_fronters.clone();
 
         if let Some(m) = send_initial_discord_rich_presence_message(initial_fronters, &user_id, &config, notify.clone()) {
             yield m;
@@ -94,12 +97,23 @@ fn create_bidirection_websocket_stream_to_bridge(
                     }
                 },
                 fronters_msg = fronting_channel.recv() => {
+                    last_received_fronters_msg = fronters_msg.clone();
                     match process_message_from_fronting_channel(fronters_msg, &user_id, &config, notify) {
                         Break => break,
                         Continue => continue,
                         Yield(m) => yield m,
                     }
                 },
+                // The websocket connection can be unstable at times and getting the TCP keepalive configured correctly wasn't easy.
+                // So we just send a ping intentionally every minute and re-send the last fronters message.
+                _ = tokio::time::sleep(ping_interval) => {
+                    log::info!("# | fronters_chan <-> WS | {user_id} | ping re-sending last fronters.");
+                    match process_message_from_fronting_channel(last_received_fronters_msg.clone(), &user_id, &config, notify) {
+                        Break => break,
+                        Continue => continue,
+                        Yield(m) => yield m,
+                    }
+                }
             }
         }
         log::info!("# | fronters_chan <-> WS | {user_id} | ws_stream_end");
@@ -116,7 +130,12 @@ fn send_initial_discord_rich_presence_message(
     let initial_discord_rich_presence_message = initial_fronters
         .ok_or_else(|| anyhow!("No initial fronters found!"))
         .and_then(|f| discord::render_fronts_to_discord_rich_presence(f, config))
-        .and_then(|rp| serde_json::to_string(&rp).map_err(|e| anyhow!(e)));
+        .map(|rp| communication::ServerToBridgeSseMessage {
+            discord_rich_presence: Some(rp),
+        })
+        .and_then(|message: communication::ServerToBridgeSseMessage| {
+            serde_json::to_string(&message).map_err(|e| anyhow!(e))
+        });
 
     match initial_discord_rich_presence_message {
         Ok(payload) => {
