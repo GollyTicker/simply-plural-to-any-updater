@@ -99,7 +99,7 @@ async fn set_discord_status(
             "# | set_discord_status | {} | {} | input: {}",
             config.user_id,
             e,
-            response
+            response.chars().take(500).collect::<String>()
         );
     })?;
 

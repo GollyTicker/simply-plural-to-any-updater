@@ -204,7 +204,7 @@ async fn simply_plural_http_request_get_fronters(
             "# | simply_plural_http_request_get_fronters | {} | {} | input: {}",
             config.user_id,
             e,
-            result
+            result.chars().take(500).collect::<String>()
         );
     })?;
 
@@ -235,7 +235,7 @@ async fn get_vrchat_status_name_field_id(
             "# | get_vrchat_status_name_field_id | {} | {} | input: {}",
             config.user_id,
             e,
-            response
+            response.chars().take(500).collect::<String>()
         );
     })?;
 
@@ -271,7 +271,10 @@ async fn simply_plural_http_get_members(
         .await?;
 
     let result = serde_json::from_str(&result).inspect_err(|e| {
-        log::warn!("# | simply_plural_http_get_members | {e} | input: {result}");
+        log::warn!(
+            "# | simply_plural_http_get_members | {e} | input: {}",
+            result.chars().take(500).collect::<String>()
+        );
     })?;
 
     Ok(result)
@@ -304,7 +307,7 @@ async fn simply_plural_http_get_custom_fronts(
             "# | simply_plural_http_get_custom_fronts | {} | {} | input: {}",
             config.user_id,
             e,
-            result
+            result.chars().take(500).collect::<String>()
         );
     })?;
 
@@ -338,7 +341,7 @@ async fn simply_plural_http_request_get_sp2any_assigned_buckets(
             "# | simply_plural_http_request_get_sp2any_assigned_buckets | {} | {} | input: {}",
             config.user_id,
             e,
-            response
+            response.chars().take(500).collect::<String>()
         );
     })?;
 

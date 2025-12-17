@@ -46,8 +46,9 @@ fn deserialize_non_empty_string_as_option<'de, D>(
 where
     D: Deserializer<'de>,
 {
-    let s: Option<String> = Option::deserialize(deserializer)?;
-    Ok(s.filter(|s| !s.is_empty()))
+    let s: String = String::deserialize(deserializer)?;
+    let non_empty_str_option = if s.is_empty() { None } else { Some(s) };
+    Ok(non_empty_str_option)
 }
 
 #[derive(Debug, Clone)]
@@ -137,6 +138,7 @@ pub struct MemberContent {
     pub privacy_buckets: Vec<String>,
 
     #[serde(rename = "pkId")]
+    #[serde(default)]
     #[serde(deserialize_with = "deserialize_non_empty_string_as_option")]
     pub pluralkit_id: Option<String>,
 
@@ -198,7 +200,8 @@ pub fn relevantly_changed_based_on_simply_plural_websocket_event(
 ) -> Result<bool> {
     let event = serde_json::from_str(message).inspect_err(|e| {
         log::warn!(
-            "# | relevantly_changed_based_on_simply_plural_websocket_event | {e} | input: {message}"
+            "# | relevantly_changed_based_on_simply_plural_websocket_event | {e} | input: {}",
+            message.chars().take(500).collect::<String>()
         );
     })?;
 
@@ -286,6 +289,25 @@ mod tests {
                 "preventsFrontNotifs": false,
                 "buckets": [],
                 "pkId": ""
+            }
+        }
+        "#;
+        let member: Member = serde_json::from_str(json_str).unwrap();
+        assert_eq!(member.content.pluralkit_id, None);
+    }
+
+    #[test]
+    fn test_member_json_pluralkid_id_missing_as_none() {
+        let json_str = r#"
+        {
+            "id": "member1",
+            "content": {
+                "name": "Test Member",
+                "avatarUrl": "",
+                "info": {},
+                "archived": false,
+                "preventsFrontNotifs": false,
+                "buckets": []
             }
         }
         "#;

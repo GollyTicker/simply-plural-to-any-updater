@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
 
 async fn process_event(token: &str, json_string: tungstenite::Utf8Bytes) -> Result<()> {
     let event = serde_json::from_str::<Event>(&json_string).inspect_err(|e| {
-        log::warn!("# | process_event | {e} | input: {json_string}");
+        log::warn!("# | process_event | {e} | input: {}", json_string.chars().take(500).collect::<String>());
     })?;
 
     match event {
@@ -77,7 +77,7 @@ async fn accept_all_friend_requests(token: &str) -> Result<()> {
         .await?;
 
     let friend_requests: Vec<FriendRequest> = serde_json::from_str(&response)
-        .inspect_err(|e| log::warn!("# | accept_all_friend_requests | {e} | input: {response}"))?;
+        .inspect_err(|e| log::warn!("# | accept_all_friend_requests | {e} | input: {}", response.chars().take(500).collect::<String>()))?;
 
     for friend_request in &friend_requests {
         let url = format!(

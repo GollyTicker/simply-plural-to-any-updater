@@ -75,29 +75,38 @@ async fn update_to_pluralkit(
         .text()
         .await?;
 
-    let existing_switch: [PluralKitSwitch; 1] =
+    let existing_switches: Vec<PluralKitSwitch> =
         serde_json::from_str(&response).inspect_err(|e| {
             log::warn!(
                 "# | update_to_pluralkit | {} | {} | input: {}",
                 config.user_id,
                 e,
-                response
+                response.chars().take(500).collect::<String>()
             );
         })?;
 
-    let existing_members: &Vec<String> = &existing_switch[0].members;
+    // if no switch exists, then no switch was ever recorded into pluralkit. then the switch-members are effectively empty.
+    let existing_fronting_members: Vec<String> = existing_switches
+        .into_iter()
+        .map(|s| s.members)
+        .collect::<Vec<Vec<String>>>()
+        .first()
+        .cloned()
+        .unwrap_or_else(std::vec::Vec::new);
 
     log::info!(
         "update_to_pluralkit | {} | existing_members={:?} | new_members={:?}",
         config.user_id,
-        existing_members,
+        existing_fronting_members,
         new_members
     );
 
-    let new_switch_members =
-        customization_preserving_members_list_for_new_switch(&new_members, existing_members);
+    let new_switch_members = customization_preserving_members_list_for_new_switch(
+        &new_members,
+        &existing_fronting_members,
+    );
 
-    if same_members(&new_switch_members, existing_members) {
+    if same_members(&new_switch_members, &existing_fronting_members) {
         log::info!(
             "update_to_pluralkit | {} | No change will be propagated to PluralKit due to lists containing the same members (pk-order preservation).",
             config.user_id
