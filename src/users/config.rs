@@ -24,7 +24,6 @@ pub enum PrivacyFineGrained {
 }
 
 #[allow(clippy::struct_excessive_bools)]
-#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq)]
 pub struct UserConfigDbEntries<Secret, Constraints = database::InvalidConstraints>
 where

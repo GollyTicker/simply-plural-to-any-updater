@@ -63,7 +63,7 @@ async fn update_to_pluralkit(
         .filter_map(|f| f.pluralkit_id.clone())
         .collect();
 
-    let existing_members: &Vec<String> = &config
+    let response = config
         .client
         .get("https://api.pluralkit.me/v2/systems/@me/switches?limit=1")
         .header("Authorization", &config.pluralkit_token.secret)
@@ -72,9 +72,20 @@ async fn update_to_pluralkit(
         .send()
         .await?
         .error_for_status()?
-        .json::<[PluralKitSwitch; 1]>()
-        .await?[0]
-        .members;
+        .text()
+        .await?;
+
+    let existing_switch: [PluralKitSwitch; 1] =
+        serde_json::from_str(&response).inspect_err(|e| {
+            log::warn!(
+                "# | update_to_pluralkit | {} | {} | input: {}",
+                config.user_id,
+                e,
+                response
+            );
+        })?;
+
+    let existing_members: &Vec<String> = &existing_switch[0].members;
 
     log::info!(
         "update_to_pluralkit | {} | existing_members={:?} | new_members={:?}",

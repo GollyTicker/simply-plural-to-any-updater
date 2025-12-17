@@ -63,6 +63,7 @@ pub async fn get_api_user_platform_discord_bridge_events(
     Ok(stream)
 }
 
+#[allow(clippy::assigning_clones)]
 fn create_bidirection_websocket_stream_to_bridge(
     ws: rocket_ws::WebSocket,
     user_id: UserId,
@@ -77,7 +78,7 @@ fn create_bidirection_websocket_stream_to_bridge(
 
     rocket_ws::Stream! { ws =>
         let mut ws = ws.fuse();
-        
+
         let ping_interval = std::time::Duration::from_secs(60);
         let mut last_received_fronters_msg = initial_fronters.clone();
 
@@ -106,7 +107,7 @@ fn create_bidirection_websocket_stream_to_bridge(
                 },
                 // The websocket connection can be unstable at times and getting the TCP keepalive configured correctly wasn't easy.
                 // So we just send a ping intentionally every minute and re-send the last fronters message.
-                _ = tokio::time::sleep(ping_interval) => {
+                () = tokio::time::sleep(ping_interval) => {
                     log::info!("# | fronters_chan <-> WS | {user_id} | ping re-sending last fronters.");
                     match process_message_from_fronting_channel(last_received_fronters_msg.clone(), &user_id, &config, notify) {
                         Break => break,

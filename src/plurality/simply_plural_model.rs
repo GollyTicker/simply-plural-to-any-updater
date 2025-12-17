@@ -196,7 +196,11 @@ pub struct FriendContent {
 pub fn relevantly_changed_based_on_simply_plural_websocket_event(
     message: &tungstenite::Utf8Bytes,
 ) -> Result<bool> {
-    let event = serde_json::from_str(message)?;
+    let event = serde_json::from_str(message).inspect_err(|e| {
+        log::warn!(
+            "# | relevantly_changed_based_on_simply_plural_websocket_event | {e} | input: {message}"
+        );
+    })?;
 
     /*
     all possible collections are here:

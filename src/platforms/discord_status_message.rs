@@ -82,7 +82,7 @@ async fn set_discord_status(
         },
     };
 
-    let result_user: User = config
+    let response = config
         .client
         .patch(discord_status_url)
         .header("Authorization", &config.discord_status_message_token.secret)
@@ -91,8 +91,17 @@ async fn set_discord_status(
         .send()
         .await?
         .error_for_status()?
-        .json()
+        .text()
         .await?;
+
+    let result_user: User = serde_json::from_str(&response).inspect_err(|e| {
+        log::warn!(
+            "# | set_discord_status | {} | {} | input: {}",
+            config.user_id,
+            e,
+            response
+        );
+    })?;
 
     log::info!(
         "# | set_discord_status | {} | {status_string} | result {result_user:?}",

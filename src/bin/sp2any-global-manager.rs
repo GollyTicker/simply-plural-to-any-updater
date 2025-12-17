@@ -41,7 +41,9 @@ async fn main() -> Result<()> {
 }
 
 async fn process_event(token: &str, json_string: tungstenite::Utf8Bytes) -> Result<()> {
-    let event = serde_json::from_str::<Event>(&json_string)?;
+    let event = serde_json::from_str::<Event>(&json_string).inspect_err(|e| {
+        log::warn!("# | process_event | {e} | input: {json_string}");
+    })?;
 
     match event {
         Event {
@@ -65,14 +67,17 @@ async fn accept_all_friend_requests(token: &str) -> Result<()> {
     let client = setup::make_client()?;
 
     let incoming_requests_url = "https://api.apparyllis.com/v1/friends/requests/incoming";
-    let friend_requests: Vec<FriendRequest> = client
+    let response = client
         .get(incoming_requests_url)
         .header("Authorization", token)
         .send()
         .await?
         .error_for_status()?
-        .json()
+        .text()
         .await?;
+
+    let friend_requests: Vec<FriendRequest> = serde_json::from_str(&response)
+        .inspect_err(|e| log::warn!("# | accept_all_friend_requests | {e} | input: {response}"))?;
 
     for friend_request in &friend_requests {
         let url = format!(

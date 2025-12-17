@@ -196,8 +196,17 @@ async fn simply_plural_http_request_get_fronters(
         .send()
         .await?
         .error_for_status()?
-        .json()
+        .text()
         .await?;
+
+    let result = serde_json::from_str(&result).inspect_err(|e| {
+        log::warn!(
+            "# | simply_plural_http_request_get_fronters | {} | {} | input: {}",
+            config.user_id,
+            e,
+            result
+        );
+    })?;
 
     Ok(result)
 }
@@ -211,15 +220,24 @@ async fn get_vrchat_status_name_field_id(
         "{}/customFields/{}",
         &config.simply_plural_base_url, system_id
     );
-    let custom_fields: Vec<CustomField> = config
+    let response = config
         .client
         .get(&custom_fields_url)
         .header("Authorization", &config.simply_plural_token.secret)
         .send()
         .await?
         .error_for_status()?
-        .json()
+        .text()
         .await?;
+
+    let custom_fields: Vec<CustomField> = serde_json::from_str(&response).inspect_err(|e| {
+        log::warn!(
+            "# | get_vrchat_status_name_field_id | {} | {} | input: {}",
+            config.user_id,
+            e,
+            response
+        );
+    })?;
 
     let vrchat_status_name_field = custom_fields
         .iter()
@@ -249,8 +267,12 @@ async fn simply_plural_http_get_members(
         .send()
         .await?
         .error_for_status()?
-        .json()
+        .text()
         .await?;
+
+    let result = serde_json::from_str(&result).inspect_err(|e| {
+        log::warn!("# | simply_plural_http_get_members | {e} | input: {result}");
+    })?;
 
     Ok(result)
 }
@@ -274,8 +296,17 @@ async fn simply_plural_http_get_custom_fronts(
         .send()
         .await?
         .error_for_status()?
-        .json()
+        .text()
         .await?;
+
+    let result = serde_json::from_str(&result).inspect_err(|e| {
+        log::warn!(
+            "# | simply_plural_http_get_custom_fronts | {} | {} | input: {}",
+            config.user_id,
+            e,
+            result
+        );
+    })?;
 
     Ok(result)
 }
@@ -292,15 +323,24 @@ async fn simply_plural_http_request_get_sp2any_assigned_buckets(
         "{}/friend/{}/{}",
         &config.simply_plural_base_url, system_id, GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID
     );
-    let friend: Friend = config
+    let response = config
         .client
         .get(&friend_url)
         .header("Authorization", &config.simply_plural_token.secret)
         .send()
         .await?
         .error_for_status()?
-        .json()
+        .text()
         .await?;
+
+    let friend: Friend = serde_json::from_str(&response).inspect_err(|e| {
+        log::warn!(
+            "# | simply_plural_http_request_get_sp2any_assigned_buckets | {} | {} | input: {}",
+            config.user_id,
+            e,
+            response
+        );
+    })?;
 
     let allowed_buckets = friend
         .content

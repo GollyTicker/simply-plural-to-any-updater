@@ -147,8 +147,8 @@ fn pick_longest_string_within_vrchat_status_length_limit(
                 .with_label_values(&["pick_longest_string_within_vrchat_status_length_limit"])
                 .inc();
             &empty_string
-        }) // can't happen due to compile time guarantee
-        .to_string()
+        })
+        .clone()
 }
 
 pub fn string_unicode_codepoints_length<S: Into<String>>(s: S) -> usize {
