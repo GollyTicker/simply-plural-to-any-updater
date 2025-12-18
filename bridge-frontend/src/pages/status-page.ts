@@ -7,9 +7,9 @@ import * as tauriAutoStartPlugin from '@tauri-apps/plugin-autostart'
 const WEBSOCKET_RETRY_INTERVAL_MILLIS = 10 * 1000
 
 const AUTOSTART_IS_ENABLED_TEXT =
-  'SP2Any-Bridge will automatically start when you start the computer.'
+  'PluralSync-Bridge will automatically start when you start the computer.'
 const AUTOSTART_IS_DISABLED_TEXT =
-  'It is recommended to set SP2Any-Bridge to automatically start when you start the computer.'
+  'It is recommended to set PluralSync-Bridge to automatically start when you start the computer.'
 
 let retryTimer: NodeJS.Timeout | undefined
 
@@ -17,7 +17,7 @@ export async function renderStatusPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
       <h1>Status</h1>
-      <div id="bridge-status">Connecting to SP2Any Server and local Discord client ...</div>
+      <div id="bridge-status">Connecting to PluralSync Server and local Discord client ...</div>
       <div>
         <div class="autostart-container">
           <label for="autostart">Checking autostart....</label>
@@ -53,11 +53,11 @@ async function subscribe_to_bridge_channel() {
   try {
     const jwt: JwtString = JSON.parse(localStorage.getItem('jwt')!)
     await invoke('subscribe_to_bridge_channel', { jwt })
-    bridgeStatus().textContent = 'Connected to SP2Any and receiving updates...'
+    bridgeStatus().textContent = 'Connected to PluralSync and receiving updates...'
   } catch (e) {
     console.warn(e)
     restart_websocket_connection_after_retry_interval()
-    bridgeStatus().textContent = `Failed to connect to SP2Any: ${e}. Retrying in ${WEBSOCKET_RETRY_INTERVAL_MILLIS / 1000} seconds...`
+    bridgeStatus().textContent = `Failed to connect to PluralSync: ${e}. Retrying in ${WEBSOCKET_RETRY_INTERVAL_MILLIS / 1000} seconds...`
   }
 }
 

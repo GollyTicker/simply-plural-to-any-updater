@@ -29,7 +29,7 @@ impl Jwt {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
-    /// `SP2Any` `user_id`
+    /// `PluralSync` `user_id`
     pub sub: String,
     pub exp: usize,
 }

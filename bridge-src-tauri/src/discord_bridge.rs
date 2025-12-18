@@ -66,7 +66,7 @@ async fn activity_loop(
 ) -> Result<never::Never> {
     let mut receiver = rich_presence_channel.subscribe();
     loop {
-        log::info!("Waiting for SP2Any backend events...");
+        log::info!("Waiting for PluralSync backend events...");
         if let Some(message) = receiver.recv().await {
             match message.discord_rich_presence {
                 Some(drp) => set_activity(client, &drp)?,
@@ -75,7 +75,7 @@ async fn activity_loop(
             updater_status_channel.send(UpdaterStatus::Running);
             notify_user_on_status(
                 app,
-                "Connected to SP2Any and syncing to local Discord client ✅\nIf you can't see it, then check your Discord profile and the SP2Any settings.",
+                "Connected to PluralSync and syncing to local Discord client ✅\nIf you can't see it, then check your Discord profile and the PluralSync settings.",
             );
         } else {
             clear_activity(client)?;

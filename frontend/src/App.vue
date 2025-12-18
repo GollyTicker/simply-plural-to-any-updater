@@ -3,7 +3,7 @@
     <nav>
       <div id="app-header">
         <img src="/favicon.png" alt="logo" />
-        <h1 class="title">SP2Any</h1>
+        <h1 class="title">PluralSync</h1>
         <p
           v-if="variantInfo?.show_in_ui"
           id="variant-info"

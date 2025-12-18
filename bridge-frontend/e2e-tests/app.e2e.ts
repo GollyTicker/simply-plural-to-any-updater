@@ -22,7 +22,7 @@ async function logout() {
 }
 
 async function loggedInAndConnected() {
-    await expect($('#bridge-status')).toHaveText("Connected to SP2Any and receiving updates...")
+    await expect($('#bridge-status')).toHaveText("Connected to PluralSync and receiving updates...")
 }
 
 describe('sp2any-bridge login flow', () => {

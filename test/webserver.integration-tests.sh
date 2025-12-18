@@ -35,14 +35,14 @@ check_system_fronts_set() {
     HTML="$(curl -s --fail-with-body "$BASE_URL/fronting/$WEBSITE_URL_NAME")"
 
     if [[ "$SET" == "A" ]]; then
-        grep '<title>SP-Updater-Test - Fronting Status</title>' <<< "$HTML"
+        grep '<title>PS-Updater-Test - Fronting Status</title>' <<< "$HTML"
         grep '<div><img src="https://example.com/a" /><p>Annalea 💖 A.</p></div>' <<< "$HTML"
         grep '<div><img src="https://example.com/b" /><p>Borgnen 👍 B.</p></div>' <<< "$HTML"
         grep '<div><img src="" /><p>Daenssa 📶 D.</p></div>' <<< "$HTML"
         grep '<div><img src="" /><p>Cstm First</p></div>' <<< "$HTML"
         [[ "$( grep '<div>' <<< "$HTML" | wc -l )" == "4" ]]
     elif [[ "$SET" == "B" ]]; then
-        grep '<title>SP-Updater-Test - Fronting Status</title>' <<< "$HTML"
+        grep '<title>PS-Updater-Test - Fronting Status</title>' <<< "$HTML"
         grep '<div><img src="" /><p>tešt ▶️ t. 漢字 クケ 汉字 漢字</p></div>' <<< "$HTML"
         [[ "$( grep '<div>' <<< "$HTML" | wc -l )" == "1" ]]
     else
@@ -52,7 +52,7 @@ check_system_fronts_set() {
 
 export BASE_URL="http://localhost:8080"
 
-WEBSITE_SYSTEM_NAME="SP-Updater-Test"
+WEBSITE_SYSTEM_NAME="PS-Updater-Test"
 ENABLE_DISCORD=false
 ENABLE_DISCORD_STATUS_MESSAGE=false
 ENABLE_VRCHAT=false

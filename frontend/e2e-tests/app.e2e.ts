@@ -59,7 +59,7 @@ async function registrationFailed() {
 }
 
 
-describe('sp2any registration logic', () => {
+describe('PluralSync registration logic', () => {
     const test_email = `test-${Date.now()}@example.com`;
 
     it('should allow a new user to register', async () => {
@@ -88,7 +88,7 @@ describe('sp2any registration logic', () => {
 });
 
 
-describe('sp2any login logic', () => {
+describe('PluralSync login logic', () => {
     it('should be intially not logged in', async () => {
         await browser.url(env.SP2ANY_BASE_URL!);
         await notLoggedIn()
@@ -118,7 +118,7 @@ describe('sp2any login logic', () => {
 });
 
 
-describe('sp2any updater status and config save and restarts', () => {
+describe('PluralSync updater status and config save and restarts', () => {
     it('should show the correct updater status', async () => {
         await browser.url(env.SP2ANY_BASE_URL!);
         await login()

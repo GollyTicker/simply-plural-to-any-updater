@@ -109,7 +109,7 @@ check_vrc_cookie_works() {
     RESPONSE="$(curl -s --fail-with-body "https://api.vrchat.cloud/api/1/auth/user" \
         --cookie "$VRCHAT_COOKIE_STR" \
         -u "$VRCHAT_USERNAME:$VRCHAT_PASSWORD" \
-        -H "User-Agent: SP2Any/0.1.0 does-not-exist-792374@gmail.com"
+        -H "User-Agent: PluralSync/0.1.0 does-not-exist-792374@gmail.com"
     )"
 
     STATUS="$( echo "$RESPONSE" | jq -r '.statusDescription' )"

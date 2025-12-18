@@ -16,7 +16,7 @@ use vrchatapi::{
 };
 
 const VRCHAT_UPDATER_USER_AGENT: &str = concat!(
-    "SP2Any/",
+    "PluralSync/",
     env!("CARGO_PKG_VERSION"),
     " ",
     env!("USER_AGENT_EMAIL")

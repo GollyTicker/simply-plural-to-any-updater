@@ -22,7 +22,7 @@ export async function fetchAndRenderVariantInfo(): Promise<[string, SP2AnyVarian
 
   if (bridgeVersion !== result[1].version) {
     document.querySelector<HTMLDivElement>('#update-bridge-note')!.innerText =
-      '⚠️ SP2Any-Bridge is outdated. Install the newest version from SP2Any Website! ⚠️'
+      '⚠️ PluralSync-Bridge is outdated. Install the newest version from PluralSync Website! ⚠️'
   }
 
   return result

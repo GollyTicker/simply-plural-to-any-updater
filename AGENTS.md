@@ -1,17 +1,22 @@
 # Instructions for AI Coding Agents
 
 
-## What is SP2Any?
+## What is PluralSync?
 
-A cloud service where users can automatically sync their [Simply Plural](https://apparyllis.com/) fronting status
-to various social platforms such as [VRChat](https://hello.vrchat.com/), [Discord](https://discord.com) or their own website. Users of SimplyPlural (plural systems, DID/OSDD systems, etc.) benefit from this as it makes it easier for them to communicate who's fronting while only
+A cloud service where users can automatically sync their plural systems' fronting status
+between various system managers and social platforms such as [SimplyPLural](https://apparyllis.com/), [PluralKit](https://pluralkit.me/), [VRChat](https://hello.vrchat.com/), [Discord](https://discord.com) or their own website. Users of system managers (plural systems, DID/OSDD systems, etc.) benefit from this as it makes it easier for them to communicate who's fronting while only
 needing to update their fronting on Simply Plural.
 
-An unstable / public test version can be found online at [SP2Any](https://public-test.sp2any.ayake.net). (*Use this at your own risk.*)
+A public test version can be found online at [public-test.sp2any.ayake.net](https://public-test.sp2any.ayake.net). (*Use this at your own risk.*)
+
+Currently the following updates are supported:
+* SimplyPlural to VRChat Status
+* SimplyPlural to Discord Status / Discord Rich Presence
+* SimplyPlural to Website with fronter names and avatars
+* SimplyPlural to PluralKit Fronters Switch 
 
 We, the developers, take data security and privacy seriously. The data to synchronise between the services
-is stored encrypted and at industry-standard security. Additionally, we're planning to add an local app-based version
-where the data is stored on the smartphone only and not on our servers. Self hosting is possible if you have some tech knowledge.
+is stored encrypted and at industry-standard security. Self hosting is possible if you have some tech knowledge.
 
 ## General DOs
 

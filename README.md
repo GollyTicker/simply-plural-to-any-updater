@@ -1,16 +1,14 @@
-# !! UNDER DEVELOPMENT !!
-
-**Project is actively under development. Some things work. Some don't.**
+**Project is actively under development. Most things work well however.**
 
 ----
 
-# SP2Any - Simply Plural to *Any* Updater
+# PluralSync - Sync your plural system across platforms
 
-A cloud service where users can automatically sync their [Simply Plural](https://apparyllis.com/) fronting status
-to various social platforms such as [VRChat](https://hello.vrchat.com/), [Discord](https://discord.com) or their own website. Users of SimplyPlural (plural systems, DID/OSDD systems, etc.) benefit from this as it makes it easier for them to communicate who's fronting while only
+A cloud service where users can automatically sync their plural systems' fronting status
+between various system managers and social platforms such as [SimplyPLural](https://apparyllis.com/), [PluralKit](https://pluralkit.me/), [VRChat](https://hello.vrchat.com/), [Discord](https://discord.com) or their own website. Users of system managers (plural systems, DID/OSDD systems, etc.) benefit from this as it makes it easier for them to communicate who's fronting while only
 needing to update their fronting on Simply Plural.
 
-An early public test version can be found online at [public-test.sp2any.ayake.net](https://public-test.sp2any.ayake.net). (*Use this at your own risk.*)
+A public test version can be found online at [public-test.sp2any.ayake.net](https://public-test.sp2any.ayake.net). (*Use this at your own risk.*)
 
 Currently the following updates are supported:
 * SimplyPlural to VRChat Status
@@ -19,8 +17,7 @@ Currently the following updates are supported:
 * SimplyPlural to PluralKit Fronters Switch 
 
 We, the developers, take data security and privacy seriously. The data to synchronise between the services
-is stored encrypted and at industry-standard security. Additionally, we're thinking to add an local app-based version
-where the data is stored on the smartphone only and not on our servers. Self hosting is possible if you have some tech knowledge.
+is stored encrypted and at industry-standard security. Self hosting is possible if you have some tech knowledge.
 
 Developed with ❤️ by [Ayake](https://github.com/GollyTicker)\*.
 
@@ -46,6 +43,3 @@ as well as `VRCHAT_USERNAME`, `VRCHAT_PASSWORD` and `VRCHAT_COOKIE` of the VRC t
 To create a release, make a new tag (e.g. `v2.10`) and run `./steps/32-publish-release.sh`.
 
 Check dependencies bloat via `cargo bloat --release --bin sp2any`.
-
-`v1` was the previous version of this tool. It didn't have any UI but was a simple CLI-based tool to run a small server which would sync SP status to VRChat as well as serve a website with the fronting.
-

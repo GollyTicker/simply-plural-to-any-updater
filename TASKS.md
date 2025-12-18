@@ -22,13 +22,13 @@
 * add a small log of the latest updates and their timestamps. this log is useful for the users to understand if and when the last update happened
 * DONE: extract user agent and make them non-public deployment/build vars
 * easily give quick feedback in website - whcih will be saved in db and then I can response to it
-* suggested by Aino: make general interviews with a few diverse systems. focus on their needs regardless of sp2any specifically.
+* suggested by Aino: make general interviews with a few diverse systems. focus on their needs regardless of pluralsync specifically.
   * getting a hollistic/encompassing understanding is very useful. equally also having a high diversity there.
   * it might also make sense to learn a bit more about plural systems in general and how they use social networks.
     * we can do that in interviews or just browse through reddit and a few places on discord for that
       * on discord just read some channels with plural systems
       * and also checkout the inspirations channel on simply plural discord
-  * The core focus is to simply listen and be curious without any specific intention of being a sp2any user.
+  * The core focus is to simply listen and be curious without any specific intention of being a pluralsync user.
 * DONE: show example fronters in status page
 * DONE: use websocket subscription to simply plural and only get the fronters + system, when it actually changes
   * DONE: and also make the discord websocket thing, that an update is sent immediately once the websocket is created
@@ -39,7 +39,7 @@
 * do not clean stuff by default in vrchat. make that configureable
   * add todo to adapt it to work with many other characters as well (chinese, japanese, etc.)
 * Remove 'VRChat Status Name' field and change it
-  * INSTEAD: change this functionality to have this new name configured in SP2Any UI!
+  * INSTEAD: change this functionality to have this new name configured in PluralSync UI!
   * and tell users in the setting page, that this is configureable
 * make sure, that stuff stays useable in mobile view
 * deploy first proper version
@@ -48,6 +48,7 @@
   * DONE: add link to Discord Server
   * DONE: add link to KoFi and ask for kind donations
   * DONE: add link to source code
+* add data-base backups
 
 ## Feedback from second test phase users
 * configureable fronting order (details in discord)
@@ -67,19 +68,19 @@
   * make lists of members / CFs / archived members collapeble and searchable to manage large systems
   * probably start with defaults for actives / archived / CFs and integration with privacy buckets from SP
     * DONE: [privacy buckets in SimplyPlual](https://docs.apparyllis.com/docs/help/features/buckets/intro). Perhaps
-      we can also instead make a singleton "SP2Any" account on SP and people can add that one as a friend.
-      This way, they can simply assign SP2Any to existing privacy bucket groups and chose what should be shown.
-      This is an alternative to asking the users to make a new privacy bucket with the name "SP2Any" which is then read by the API.
+      we can also instead make a singleton "pluralsync" account on SP and people can add that one as a friend.
+      This way, they can simply assign pluralsync to existing privacy bucket groups and chose what should be shown.
+      This is an alternative to asking the users to make a new privacy bucket with the name "pluralsync" which is then read by the API.
     * DONE: privacy bucket API doesn't seem to be documented. I'll have to reverse-engineer that.
-  * bidrectional sync of privacy bucket membership and "show in SP2Any" setting
+  * bidrectional sync of privacy bucket membership and "show in pluralsync" setting
     > If I search for myself, and toggle the "show as fronting" button in SP2A, it autoadds me to the privacy bucket in SP.
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
-  * DONE: add SP2Any user to config explanations and to the sp2any-deployments as a global singular
+  * DONE: add pluralsync user to config explanations and to the sp2any-deployments as a global singular
   * DONE: testing of privacy features
 * DONE: websocket connection restarts
 * DONE: better error messages which the users can also understand and which handle most common error paths
   * also let users know, when the VRChat 429 too many requests happen during login - so that they can try again in a day.
-* vrchat rate limits hinders SP2Any users to login into VRChat. possibily related to the frequent re-deployments from the same IP-addr on the day before. can we maybe avoid logging in the user at system-startup, then the vrchat cookie already exists from a previous login? what other ways can we use to bypass the rate-limits? maybe do the login in browser instead of via the backend?
+* vrchat rate limits hinders pluralsync users to login into VRChat. possibily related to the frequent re-deployments from the same IP-addr on the day before. can we maybe avoid logging in the user at system-startup, then the vrchat cookie already exists from a previous login? what other ways can we use to bypass the rate-limits? maybe do the login in browser instead of via the backend?
 * PARTIAL DONE: Add automatic sync to PluralKit
   * DONE: SimplyPlural -> PluralKit sync
   * automatic system sync?
@@ -116,7 +117,7 @@ This way we can get even more early testers so that we can then move to the app 
 * DONE: restart updaters once in a while, just to get temporary issues out of the way (e.g. vrchat someimes just doesn't work after a re-deployment)
 * DONE: make website view such that it doesn't eagery fetch data from simply plural every time but instead uses the latest values from a channel
 * merge cargo crates into a single workspace to improve build times
-* DONE: better split sp2any crate into what is exported to bridge-src-tauri and what is not. makes for much faster compiles
+* DONE: better split pluralsync crate into what is exported to bridge-src-tauri and what is not. makes for much faster compiles
 * IRRELEVANT?: reduce compile times by removing vrchatapi library and using http rest requests directly
 * DONE: complete migration to webapp
 
@@ -132,23 +133,7 @@ This way we can get even more early testers so that we can then move to the app 
   * [reddit 1](https://old.reddit.com/r/Discord_selfbots/comments/t9o5xf/anyone_got_banned/), [reddit 2](https://old.reddit.com/r/discordapp/comments/7nl35v/regarding_the_ban_on_selfbots/)
   * perhaps use the same approach as used by the discord chat exporter? this might actually work well.
 * share with refactionvr server mods before sharing in channel
-* extend SP2Any to also cover tone-tags / interaction hints as an additional use case? (e.g. IWC = interact-with-care)
-
----
-
-## First deployment
-* DONE: test that workflows work with deployed dev-online. WORKED WELL ON WINDOWS ON FIRST TRY!!
-* DONE: add note that running the exec on windows will show a signature warning. ask users to accept it.
-* DONE: deploy for discord test server users
-* DONE: make SP2ANY_BASE_URL configureable for frontend-dist
-* DONE: deploy on private space once and share with friend
-* DONE: add hint on all deployments where it warns about which variant one is on on the nav bar
-* DONE: add variant picker for sp2any-bridge, such that it even knows where to connect to!
-* DONE: add download link to bridge frontend in UI
-* DONE: add `enable_website` config
-* DONE: fix content security policy issue where images are not allowed
-* DONE: ignore dark/light mode and always use light mode in frontend and bridge-frontend
-* DONE: add link to Ko-Fi for donations.
+* extend pluralsync to also cover tone-tags / interaction hints as an additional use case? (e.g. IWC = interact-with-care)
 
 ---
 
@@ -180,139 +165,3 @@ The solution is a **server-driven push notification system**.
 - **Requirement**: The user must grant the PWA permission to receive push notifications.
 - **Android**: More flexible. Supports "silent" push notifications that can run tasks without displaying a visible alert.
 - **iOS**: More restrictive. Background execution is limited to ~30 seconds. To guarantee the task runs, the push notification may need to be user-visible (e.g., display a message or update the app's badge).
-
----
-
-## Minimal PWA Test Plan
-
-A short guide to creating a minimal PWA to test core features (installability, offline, push notifications) on Android and iOS.
-
-### 1. Create `index.html`
-The basic user interface.
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>PWA Test</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#000000"/>
-</head>
-<body>
-  <h1>PWA Push Test</h1>
-  <button id="subscribeButton">Subscribe to Push</button>
-  <script src="/app.js"></script>
-</body>
-</html>
-```
-
-### 2. Create `manifest.json`
-This file makes the web app installable.
-```json
-{
-  "short_name": "PWA Test",
-  "name": "PWA Test App",
-  "icons": [
-    {
-      "src": "/icon.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    }
-  ],
-  "start_url": "/",
-  "display": "standalone"
-}
-```
-*(You will need to create a simple 192x192 `icon.png` file)*
-
-### 3. Create `sw.js` (Service Worker)
-Handles offline caching and incoming push notifications.
-```javascript
-// On install, cache the offline page
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open('pwa-test-cache').then(cache => {
-      return cache.add('/');
-    })
-  );
-});
-
-// On fetch, serve from cache if offline
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
-    })
-  );
-});
-
-// On push, show a notification
-self.addEventListener('push', (e) => {
-  const data = e.data.json();
-  self.registration.showNotification(data.title, {
-    body: 'This is a push notification!',
-  });
-});
-```
-
-### 4. Create `app.js` (Client-Side Logic)
-Registers the service worker and handles the push subscription process.
-```javascript
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-    console.log('Service Worker Registered');
-    document.getElementById('subscribeButton').addEventListener('click', () => {
-      subscribeToPush(reg);
-    });
-  });
-}
-
-async function subscribeToPush(registration) {
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') {
-    throw new Error('Permission not granted for Notification');
-  }
-
-  // IMPORTANT: Replace with your backend's VAPID public key
-  const vapidPublicKey = 'YOUR_VAPID_PUBLIC_KEY';
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-  });
-
-  // Send this 'subscription' object to your backend to store it
-  await fetch('/save-subscription', {
-    method: 'POST',
-    body: JSON.stringify(subscription),
-    headers: { 'Content-Type': 'application/json' },
-  });
-  console.log('Subscribed to push notifications');
-}
-
-// Utility function to convert VAPID key
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-```
-
-### 5. Backend Server (Conceptual)
-You need a simple backend (e.g., using Node.js with the `web-push` library) to:
-1.  **Generate VAPID keys**: These keys identify your server to the push services.
-2.  **Create an endpoint `/save-subscription`**: This endpoint receives the `subscription` object from the client and saves it.
-3.  **Create a trigger**: An endpoint or script that sends a push message to the saved subscription URL.
-
-### 6. Testing
-1.  **Serve over HTTPS**: PWA features require a secure context. Start a local server and use a tool like **`ngrok`** to create a public HTTPS URL (`ngrok http <your-port>`).
-2.  **Access on Device**: Open the `ngrok` HTTPS URL on your Android or iOS device.
-3.  **Install the PWA**:
-    - **Android (Chrome)**: Look for the "Install app" prompt or use the "Add to Home Screen" option in the menu.
-    - **iOS (Safari)**: Use the "Share" button and select "Add to Home Screen".
-4.  **Test Push**: Click the "Subscribe" button in the app. Then, trigger the push message from your backend. The notification should appear on your device, even if the app is closed.
-5. Close and end the app (also remove it from the background tasks). Then trigger another push message and check if it's sent correctly even from the background.
-

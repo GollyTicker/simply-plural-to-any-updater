@@ -18,8 +18,8 @@
           <div class="config-item">
             <label for="simply_plural_token">Simply Plural Token</label>
             <p class="config-description">
-              The private READ-token used by SP2Any to access your Simply Plural system to check for
-              changes. To make one, open
+              The private READ-token used by PluralSync to access your Simply Plural system to check
+              for changes. To make one, open
               <a href="https://app.apparyllis.com/" target="_blank">SimplyPlural</a>, go to Settings
               > Account > Tokens, create a READ token and copy-paste it here.
             </p>
@@ -106,18 +106,18 @@
                 <span
                   style="font-weight: bold"
                   class="copyable"
-                  @click="copyText('SP2Any', $event)"
+                  @click="copyText('PluralSync', $event)"
                   title="Click to copy"
-                  >SP2Any</span
+                  >PluralSync</span
                 >
                 user as a friend on Simply Plural and assign that friend to your existing privacy
-                buckets. SP2Any will then show any fronters which are are in privacy buckets the
-                SP2Any friend is assigned to. The above "Show" toggles still apply. (Note, that the
-                privacy settings you can configure for friends like "They can see your shared
+                buckets. PluralSync will then show any fronters which are are in privacy buckets the
+                PluralSync friend is assigned to. The above "Show" toggles still apply. (Note, that
+                the privacy settings you can configure for friends like "They can see your shared
                 members" etc are IGNORED. Only the privacy buckets are used.)
               </li>
               <li>
-                Directly choose the privacy buckets on this SP2Any Website here and any fronts
+                Directly choose the privacy buckets on this PluralSync Website here and any fronts
                 assigned to the privacy buckets selected here will be shown. The above "Show"
                 toggles still apply.
               </li>
@@ -125,7 +125,7 @@
             <p></p>
             <select v-model="config.privacy_fine_grained">
               <option value="NoFineGrained">no fine grained control (default)</option>
-              <option value="ViaFriend">via SP2Any-friend on SimplyPlural</option>
+              <option value="ViaFriend">via PluralSync-friend on SimplyPlural</option>
               <option value="ViaPrivacyBuckets">via privacy buckets configured below</option>
             </select>
           </div>
@@ -198,9 +198,9 @@
           <div class="config-item">
             <label for="enable_website">Enable Website</label>
             <p class="config-description">
-              Let SP2Any display your fronting status (avatars included) as a webpage. Others can
-              simply open the link and see the current fronters without needing to be logged in in
-              any of the other platforms.
+              Let PluralSync display your fronting status (avatars included) as a webpage. Others
+              can simply open the link and see the current fronters without needing to be logged in
+              in any of the other platforms.
             </p>
             <input id="enable_website" type="checkbox" v-model="config.enable_website" />
           </div>
@@ -266,10 +266,10 @@
             <p class="config-description">
               The platforms have limits on how long the status message can be. If the fronting
               status would be too long for the platform (due to fronters with long names or due to a
-              many simultanous fronters), then SP2Any will shorten the fronters names to a specific
-              length to fit the length. E.g. "Claire" would become "Cla" if this is set to "3". If
-              the shorted version is still to long, then SP2Any will simply show the number of
-              fronters.
+              many simultanous fronters), then PluralSync will shorten the fronters names to a
+              specific length to fit the length. E.g. "Claire" would become "Cla" if this is set to
+              "3". If the shorted version is still to long, then PluralSync will simply show the
+              number of fronters.
             </p>
             <input
               id="status_truncate_names_to"
@@ -292,7 +292,7 @@
                 >Rich Presence on Discord</a
               >.
               <br />
-              This option only works via the SP2Any-Bridge, which you need to run on the same
+              This option only works via the PluralSync-Bridge, which you need to run on the same
               computer as your discord. For that, open
               <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">this</a>, then open
               the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
@@ -301,9 +301,9 @@
               warning, that the executable is not signed or executable. Simply accept warning that
               and run it. (For small projects, it's infeasible to get this signed.)
               <br />
-              Once started, you can login to SP2Any. (You can safely ignore the "Variant" field.)
-              When you have discord running on the same computer, SP2Any will show itself as a rich
-              presence activity and display the fronting status from there.
+              Once started, you can login to PluralSync. (You can safely ignore the "Variant"
+              field.) When you have discord running on the same computer, PluralSync will show
+              itself as a rich presence activity and display the fronting status from there.
               <br />
               You may need to enable Rich Presence in Discord under the "Activity Privacy" settings.
               <br />
@@ -313,11 +313,11 @@
               />
               <br />
               The benefit of this method, is that it is Discord ToS compliant. The drawback of this
-              is that these updates only work as long as your SP2Any bridge and Discord are running
-              locally.
+              is that these updates only work as long as your PluralSync bridge and Discord are
+              running locally.
               <br />
-              Note, that the SP2Any bridge doesn't automatically update at the moment. If it doesn't
-              work then download and install the latest version and try again!
+              Note, that the PluralSync bridge doesn't automatically update at the moment. If it
+              doesn't work then download and install the latest version and try again!
             </p>
           </div>
         </div>
@@ -335,8 +335,8 @@
             <p class="config-description">
               You can also directly set the custom status on your discord account.
               <br />
-              For that, SP2Any will need a discord token. SP2Any will update the discord status for
-              you regularly.
+              For that, PluralSync will need a discord token. PluralSync will update the discord
+              status for you regularly.
               <br />
               <span class="warning"
                 >WARNING! This violates Discord Terms of Service. Use at your own risk! This option
@@ -368,7 +368,7 @@
               Shows the fronting status on VRChat in the custom status at your profile in VR and on
               the website.
               <br />
-              For that, you will need to login into VRChat such that SP2Any can set the fronting
+              For that, you will need to login into VRChat such that PluralSync can set the fronting
               status on VRChat's side.
               <br />
               <span class="warning"
@@ -400,7 +400,8 @@
           </div>
           <div class="config-item">
             <p class="config-description">
-              After entering your username and password, you can let SP2Any login into your account.
+              After entering your username and password, you can let PluralSync login into your
+              account.
             </p>
             <button @click.prevent="loginToVRChat">Login to VRChat</button>
           </div>
@@ -408,7 +409,7 @@
             <label for="vrchat_2fa_code">VRChat 2FA Code ⚠️</label>
             <p class="config-description">
               You may be asked for a Two-Factor-Authentication code. If so, enter it here and submit
-              for SP2Any to complete the login.
+              for PluralSync to complete the login.
             </p>
             <input id="vrchat_2fa_code" type="text" v-model="vrchatTwoFactor" />
             <button @click.prevent="submitVRChat2FA">Submit 2FA</button>
@@ -417,9 +418,9 @@
           <div class="config-item">
             <label for="vrchat_cookie">VRChat Cookie ⚠️</label>
             <p class="config-description">
-              This is the VRChat cookie which SP2Any retrieved from VRChat and which it uses to
+              This is the VRChat cookie which PluralSync retrieved from VRChat and which it uses to
               update your status. You will not usually need to edit this yourself. It is
-              automatically set by SP2Any.
+              automatically set by PluralSync.
             </p>
             <input
               id="vrchat_cookie"

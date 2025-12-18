@@ -15,7 +15,7 @@ metric!(
 );
 
 const TO_PLURALKIT_UPDATER_USER_AGENT: &str = concat!(
-    "SP2Any/",
+    "PluralSync/",
     env!("CARGO_PKG_VERSION"),
     " Discord: ",
     env!("USER_AGENT_DISCORD_USERNAME")

@@ -46,7 +46,7 @@ pub fn stream_updater_status_to_ws_messages_task(
                             notify_user_on_status(
                                 &app,
                                 format!(
-                                    "⚠️ Ending connection to SP2Any. Some problem happened: {err}"
+                                    "⚠️ Ending connection to PluralSync. Some problem happened: {err}"
                                 ),
                             );
                             break;
@@ -81,15 +81,15 @@ pub fn stream_ws_messages_to_rich_presence_task(
                         .inspect(|_| {
                             notify_user_on_status(
                                 &app,
-                                "Connected to SP2Any and receiving updates...",
+                                "Connected to PluralSync and receiving updates...",
                             );
                         })
                         .inspect_err(|e| {
-                            log::warn!("WS: Error processing SP2Any message: {e}");
+                            log::warn!("WS: Error processing PluralSync message: {e}");
                             notify_user_on_status(
                                 &app,
                                 format!(
-                                    "⚠️ Some problem occurred when applying updates from SP2Any: {e}"
+                                    "⚠️ Some problem occurred when applying updates from PluralSync: {e}"
                                 ),
                             );
                         });
@@ -98,19 +98,19 @@ pub fn stream_ws_messages_to_rich_presence_task(
                 Ok(x) => log::warn!("Uknown message type: {x:?}"),
                 Err(tungstenite::Error::AlreadyClosed) => {
                     log::info!("WS: AlreadyClosed. Ending.");
-                    notify_user_on_status(&app, "⚠️ Connection to SP2Any closed.");
+                    notify_user_on_status(&app, "⚠️ Connection to PluralSync closed.");
                     break;
                 }
                 Err(tungstenite::Error::ConnectionClosed) => {
                     log::info!("WS: ConnectionClosed. Ending.");
-                    notify_user_on_status(&app, "⚠️ Connection to SP2Any closed.");
+                    notify_user_on_status(&app, "⚠️ Connection to PluralSync closed.");
                     break;
                 }
                 Err(err) => {
                     log::warn!("WS: Ending due to error: {err}");
                     notify_user_on_status(
                         &app,
-                        format!("⚠️ Ending connection to SP2Any due to some problem: {err}"),
+                        format!("⚠️ Ending connection to PluralSync due to some problem: {err}"),
                     );
                     break;
                 }
@@ -118,7 +118,7 @@ pub fn stream_ws_messages_to_rich_presence_task(
         }
         notify_user_on_status(
             &app,
-            "⚠️ Connection to SP2Any ended. Will try again in a moment...".to_string(),
+            "⚠️ Connection to PluralSync ended. Will try again in a moment...".to_string(),
         );
         restart_websocket_connection_after_retry_interval(&app);
     })

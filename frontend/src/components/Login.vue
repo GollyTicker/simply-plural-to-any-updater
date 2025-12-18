@@ -13,6 +13,7 @@
       <button type="submit">Login</button>
       <button @click="register" type="button" class="register-button">Register</button>
     </form>
+    <p style="margin:1em">ℹ️ PluralSync was formerly named SP2Any. The name change is ongoing currently. ℹ️</p>
     <p v-if="status" class="status-message">{{ status }}</p>
   </div>
 </template>

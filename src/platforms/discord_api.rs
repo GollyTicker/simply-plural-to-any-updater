@@ -149,7 +149,7 @@ fn send_initial_discord_rich_presence_message(
                 "# | fronters_chan <-> WS | {user_id} | No initial fronters to send. Error: {e}"
             );
             notify(UpdaterStatus::Error(
-                "SP2Any-Server: No initial fronters to send.".into(),
+                "PluralSync-Server: No initial fronters to send.".into(),
             ));
             None
         }
@@ -178,7 +178,7 @@ fn process_message_from_fronting_channel(
                             "# | fronters_chan <-> WS | {user_id} | fronters received | serialisation_failed {e}"
                         );
                         notify(UpdaterStatus::Error(format!(
-                            "SP2Any-Server -> websocket -> SP2Any-Bridge: Server couldn't serialise fronters. Error: {e}"
+                            "PluralSync-Server -> websocket -> PluralSync-Bridge: Server couldn't serialise fronters. Error: {e}"
                         )));
                         SHOULDNT_HAPPEN_BUT_IT_DID
                             .with_label_values(&["discord_ws_rich_presence_serialise_error"])
@@ -196,7 +196,7 @@ fn process_message_from_fronting_channel(
                     "# | fronters_chan <-> WS | {user_id} | fronters received | rendering_error {err}"
                 );
                 notify(UpdaterStatus::Error(format!(
-                    "SP2Any-Server -> websocket -> SP2Any-Bridge: Server rendering error: {err}"
+                    "PluralSync-Server -> websocket -> PluralSync-Bridge: Server rendering error: {err}"
                 )));
                 SHOULDNT_HAPPEN_BUT_IT_DID
                     .with_label_values(&["discord_ws_rich_presence_render_error"])
@@ -207,7 +207,7 @@ fn process_message_from_fronting_channel(
     } else {
         log::info!("# | fronters_chan <-> WS | {user_id} | fronters_chan_closed.");
         notify(UpdaterStatus::Error(
-            "SP2Any-Server: Couldn't retrieve any fronters. Updater is likely being restarted."
+            "PluralSync-Server: Couldn't retrieve any fronters. Updater is likely being restarted."
                 .into(),
         ));
         // end of channel can sometimes happen, when asynchronously the updater is restarted
@@ -227,7 +227,8 @@ fn process_message_from_bridge(
                 "# | fronters_chan <-> WS | {user_id} | WS received | ws_stream_is_closed {close:?}"
             );
             notify(UpdaterStatus::Error(
-                "SP2Any-Bridge -> websocket -> SP2Any-Server | No connection to bridge.".to_owned(),
+                "PluralSync-Bridge -> websocket -> PluralSync-Server | No connection to bridge."
+                    .to_owned(),
             ));
             Break
         }
@@ -245,7 +246,7 @@ fn process_message_from_bridge(
                         "# | fronters_chan <-> WS | {user_id} | WS received | deserialise_err {e}"
                     );
                     notify(UpdaterStatus::Error(format!(
-                        "SP2Any-Bridge -> websocket -> SP2Any-Server | Message deserialisation error: {e}"
+                        "PluralSync-Bridge -> websocket -> PluralSync-Server | Message deserialisation error: {e}"
                     )));
                     SHOULDNT_HAPPEN_BUT_IT_DID
                         .with_label_values(&["discord_ws_deserialise_error"])
@@ -270,7 +271,7 @@ fn process_message_from_bridge(
                 "# | fronters_chan <-> WS | {user_id} | WS received | ending_due_to_error {message:?}"
             );
             notify(UpdaterStatus::Error(format!(
-                "SP2Any-Bridge -> websocket -> SP2Any-Server: Server ending due to websocket error '{message:?}'."
+                "PluralSync-Bridge -> websocket -> PluralSync-Server: Server ending due to websocket error '{message:?}'."
             )));
             Break
         } // client disconnected

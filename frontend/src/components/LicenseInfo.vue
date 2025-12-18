@@ -8,7 +8,7 @@
       <a href="https://ko-fi.com/ayake_ayake#" target="_blank">Support us 💖</a>
     </p>
     <p class="license-short">
-      SP2Any © 2025 by
+      PluralSync © 2025 by
       <a href="https://github.com/GollyTicker/" target="_blank">Ayake</a>
       licensed Copyleft
       <a

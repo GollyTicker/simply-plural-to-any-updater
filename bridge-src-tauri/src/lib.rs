@@ -75,7 +75,7 @@ async fn subscribe_to_bridge_channel_anyhow(app: tauri::AppHandle, jwt: JwtStrin
         .insert("Authorization", format!("Bearer {}", jwt.inner).parse()?);
 
     log::info!("Connecting to WebSocket at {ws_url}");
-    notify_user_on_status(&app, "Connecting to SP2Any to receive updates ...");
+    notify_user_on_status(&app, "Connecting to PluralSync to receive updates ...");
 
     // This websocket stream receives text messages of the type DiscordRichPresence and
     // sends messages of the type UpdaterStatus.
@@ -183,7 +183,7 @@ pub fn run() -> Result<()> {
     let logs_dir = local_storage::get_logs_dir()?;
 
     let autostart_plugin = tauri_plugin_autostart::Builder::new()
-        .app_name("SP2Any-Bridge")
+        .app_name("PluralSync-Bridge")
         .build();
 
     let rich_presence_channel: FireAndForgetChannel<ServerToBridgeSseMessage> =

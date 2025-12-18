@@ -51,7 +51,7 @@ pub fn sp2any_server_updaters(discord_status_message: bool) -> Vec<Platform> {
 }
 
 impl Platform {
-    /// Returns true, if the updating of this target is managed not by the `SP2Any` server.
+    /// Returns true, if the updating of this target is managed not by the `PluralSync` server.
     #[must_use]
     pub const fn foreign_managed(&self) -> bool {
         match self {
