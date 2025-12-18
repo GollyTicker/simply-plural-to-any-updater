@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import router from '../router'
-import type { JwtString } from '../sp2any.bindings'
+import type { JwtString } from '../pluralsync.bindings'
 import { listen } from '@tauri-apps/api/event'
 import * as tauriAutoStartPlugin from '@tauri-apps/plugin-autostart'
 

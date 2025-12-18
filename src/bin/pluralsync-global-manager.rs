@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde::Deserialize;
 use serde_json::{self};
-use sp2any::{plurality, setup};
+use pluralsync::{plurality, setup};
 use std::env;
 use tokio_tungstenite::tungstenite;
 
@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     setup::logging_init();
 
     #[allow(clippy::unwrap_used)]
-    let token = env::var("GLOBAL_SP2ANY_SIMPLY_PLURAL_READ_WRITE_ADMIN_TOKEN")?;
+    let token = env::var("GLOBAL_PLURALSYNC_SIMPLY_PLURAL_READ_WRITE_ADMIN_TOKEN")?;
 
     log::info!("Accept all friend requests before starting loop.");
     accept_all_friend_requests(&token).await?;

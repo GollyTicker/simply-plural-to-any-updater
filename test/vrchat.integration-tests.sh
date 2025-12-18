@@ -84,7 +84,7 @@ start_updater() {
 
     setup_test_user
 
-    await sp2any-api "Waiting for next update trigger..."
+    await pluralsync-api "Waiting for next update trigger..."
 
     echo "Started Updater."
 }

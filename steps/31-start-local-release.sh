@@ -6,13 +6,13 @@ export DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE=false
 ENABLE_DISCORD_STATUS_MESSAGE=false
 
 main() {
-    mkdir -p target/release_builds/sp2any-frontend
-    tar -xzf target/release_builds/sp2any-frontend.tar.gz -C target/release_builds/sp2any-frontend/
+    mkdir -p target/release_builds/pluralsync-frontend
+    tar -xzf target/release_builds/pluralsync-frontend.tar.gz -C target/release_builds/pluralsync-frontend/
 
     start_backend
     
     echo "Showing logs... Abort with ^C to stop backend."
-    docker logs -f sp2any-api
+    docker logs -f pluralsync-api
 }
 
 export BASE_URL="http://localhost:8080"

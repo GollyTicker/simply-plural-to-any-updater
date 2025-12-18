@@ -4,8 +4,8 @@ use argon2::{
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 
+use pluralsync_base::users::{JwtString, UserProvidedPassword};
 use serde::{Deserialize, Serialize};
-use sp2any_base::users::{JwtString, UserProvidedPassword};
 use sqlx::FromRow;
 
 use crate::{database, users::jwt};

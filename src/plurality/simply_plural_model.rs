@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde::Deserializer;
 use tokio_tungstenite::tungstenite;
 
-pub const GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID: &str =
+pub const GLOBAL_PLURALSYNC_ON_SIMPLY_PLURAL_USER_ID: &str =
     "eb06960e5b7fb576923f0e909947c0ce8ca46dcbe61ee5af2681f8f59404df5d";
 
 pub const SIMPLY_PLURAL_VRCHAT_STATUS_NAME_FIELD_NAME: &str = "VRChat Status Name";
@@ -210,7 +210,7 @@ pub fn relevantly_changed_based_on_simply_plural_websocket_event(
     https://docs.apparyllis.com/docs/getting-started/collections
 
     collections we MUST NOT ignore:
-      friends, pendingFriendRequests: when our SP2Any gets friends or changes there
+      friends, pendingFriendRequests: when our PluralSync gets friends or changes there
       frontStatuses: even if we don't display it currently, but maybe in future we will
       frontHistory: obviously
       members: obviously

@@ -83,22 +83,22 @@ main() {
 
 check_logs_contain() {
     echo "check_logs_contain '$1'"
-    docker logs sp2any-api 2>&1 | grep -q "$1"
+    docker logs pluralsync-api 2>&1 | grep -q "$1"
 }
 
 check_updater_loop_continues() {
     echo "check_updater_loop_continues"
-    docker logs sp2any-api 2>&1 | grep -q "Waiting for next update trigger..."
+    docker logs pluralsync-api 2>&1 | grep -q "Waiting for next update trigger..."
 }
 
 check_updater_has_no_errors() {
     echo "check_updater_has_no_errors"
-    [[ "$( docker logs sp2any-api 2>&1 | grep -i "Error" | wc -l )" == "0" ]]
+    [[ "$( docker logs pluralsync-api 2>&1 | grep -i "Error" | wc -l )" == "0" ]]
 }
 
 check_updater_failure() {
     echo "check_updater_failure"
-    [[ "$( docker logs sp2any-api 2>&1 | grep -i "Error" | wc -l )" != "0" ]]
+    [[ "$( docker logs pluralsync-api 2>&1 | grep -i "Error" | wc -l )" != "0" ]]
 }
 
 check_updater() {
@@ -113,7 +113,7 @@ check_missing() {
     MESSAGE="$1"
     echo "Check missing: '$MESSAGE'"
     set +e
-    N_LINES="$( docker logs sp2any-api 2>&1 | grep "$MESSAGE" | wc -l )"
+    N_LINES="$( docker logs pluralsync-api 2>&1 | grep "$MESSAGE" | wc -l )"
     set -e
     [[ "$N_LINES" == "0" ]]
 }
@@ -165,7 +165,7 @@ start_updater() {
 
     setup_test_user
 
-    await sp2any-api "client authentication sent."
+    await pluralsync-api "client authentication sent."
     
     sleep 3s
 

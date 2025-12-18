@@ -1,1 +1,0 @@
-../../frontend/src/sp2any.bindings.ts

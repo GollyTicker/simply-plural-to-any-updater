@@ -6,11 +6,11 @@ use discord_rich_presence::{
     activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
 };
 use futures::never;
-use serde::Deserialize;
-use sp2any_base::{
+use pluralsync_base::{
     for_discord_bridge::{DiscordRichPresence, FireAndForgetChannel, ServerToBridgeSseMessage},
     updater::UpdaterStatus,
 };
+use serde::Deserialize;
 use tokio::time::sleep;
 
 use crate::notify_user_on_status;
@@ -18,7 +18,7 @@ use crate::notify_user_on_status;
 // note. tell users they may need to activate rich presence sharing in their activity privacy settings. they can also customize it per server.
 
 #[allow(clippy::unreadable_literal)]
-const DISCORD_SP2ANY_BOT_APPLICATION_ID: u64 = 1408232222682517575;
+const DISCORD_PLURALSYNC_BOT_APPLICATION_ID: u64 = 1408232222682517575;
 
 pub async fn discord_ipc_loop(
     app: &tauri::AppHandle,
@@ -191,7 +191,7 @@ fn clear_activity(client: &mut DiscordIpcClient) -> Result<()> {
 }
 
 fn connect_to_discord_ipc() -> Result<DiscordIpcClient> {
-    let mut client = DiscordIpcClient::new(&DISCORD_SP2ANY_BOT_APPLICATION_ID.to_string());
+    let mut client = DiscordIpcClient::new(&DISCORD_PLURALSYNC_BOT_APPLICATION_ID.to_string());
     log::info!("Connecting to Discord IPC Client...");
     let ready: ReadyResponse = serde_json::from_value(client.connect()?)?;
     let user = ready.data.user;

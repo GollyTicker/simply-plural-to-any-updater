@@ -1,11 +1,11 @@
 [package]
-name = "sp2any"
+name = "pluralsync"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.90.0"
 
 [[bin]]
-name = "sp2any"
+name = "pluralsync"
 path = "src/main.rs"
 
 [[bin]]
@@ -13,11 +13,11 @@ name = "ts-bindings"
 path = "src/bin/ts-bindings.rs"
 
 [[bin]]
-name = "sp2any-global-manager"
-path = "src/bin/sp2any-global-manager.rs"
+name = "pluralsync-global-manager"
+path = "src/bin/pluralsync-global-manager.rs"
 
 [dependencies]
-sp2any-base = { path = "base-src" }
+pluralsync-base = { path = "base-src" }
 chrono = { version = "*", features = ["serde"] }
 either = "*"
 anyhow = "*"

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import router from '../router'
-import type { JwtString } from '../sp2any.bindings'
+import type { JwtString } from '../pluralsync.bindings'
 
 export function renderStartPage() {
   document.querySelector<HTMLDivElement>('#app')!.innerHTML = `

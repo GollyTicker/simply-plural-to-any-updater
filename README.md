@@ -8,7 +8,7 @@ A cloud service where users can automatically sync their plural systems' frontin
 between various system managers and social platforms such as [SimplyPLural](https://apparyllis.com/), [PluralKit](https://pluralkit.me/), [VRChat](https://hello.vrchat.com/), [Discord](https://discord.com) or their own website. Users of system managers (plural systems, DID/OSDD systems, etc.) benefit from this as it makes it easier for them to communicate who's fronting while only
 needing to update their fronting on Simply Plural.
 
-A public test version can be found online at [public-test.sp2any.ayake.net](https://public-test.sp2any.ayake.net). (*Use this at your own risk.*)
+A public test version can be found online at [public-test.pluralsync.ayake.net](https://public-test.pluralsync.ayake.net). (*Use this at your own risk.*)
 
 Currently the following updates are supported:
 * SimplyPlural to VRChat Status
@@ -42,4 +42,4 @@ as well as `VRCHAT_USERNAME`, `VRCHAT_PASSWORD` and `VRCHAT_COOKIE` of the VRC t
 
 To create a release, make a new tag (e.g. `v2.10`) and run `./steps/32-publish-release.sh`.
 
-Check dependencies bloat via `cargo bloat --release --bin sp2any`.
+Check dependencies bloat via `cargo bloat --release --bin pluralsync`.

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use sp2any::{
+use pluralsync::{
     database::Decrypted,
     platforms::{
         TwoFactorAuthCode, TwoFactorAuthMethod, TwoFactorCodeRequiredResponse, VRChatCredentials,
@@ -9,14 +9,14 @@ use sp2any::{
     updater::Platform,
     users::PrivacyFineGrained,
 };
-use sp2any_base::{
-    meta::{CANONICAL_SP2ANY_BASE_URL, SP2ANY_GITHUB_REPOSITORY_RELEASES_URL, SP2AnyVariantInfo},
+use pluralsync_base::{
+    meta::{CANONICAL_PLURALSYNC_BASE_URL, PLURALSYNC_GITHUB_REPOSITORY_RELEASES_URL, PluralSyncVariantInfo},
     users::{Email, JwtString, UserLoginCredentials, UserProvidedPassword},
 };
 use specta::ts::{ExportConfiguration, export};
 use std::fs;
 
-const DESTINATION: &str = "./frontend/src/sp2any.bindings.ts";
+const DESTINATION: &str = "./frontend/src/pluralsync.bindings.ts";
 
 fn main() -> Result<()> {
     println!("Exporting to {DESTINATION}...");
@@ -26,9 +26,9 @@ fn main() -> Result<()> {
         export::<UserProvidedPassword>(conf)?,
         export::<UserLoginCredentials>(conf)?,
         export::<Decrypted>(conf)?,
-        export::<SP2AnyVariantInfo>(conf)?,
-        format!("export const CANONICAL_SP2ANY_BASE_URL: string = \"{CANONICAL_SP2ANY_BASE_URL}\""),
-        format!("export const SP2ANY_GITHUB_REPOSITORY_RELEASES_URL: string = \"{SP2ANY_GITHUB_REPOSITORY_RELEASES_URL}\""),
+        export::<PluralSyncVariantInfo>(conf)?,
+        format!("export const CANONICAL_PLURALSYNC_BASE_URL: string = \"{CANONICAL_PLURALSYNC_BASE_URL}\""),
+        format!("export const PLURALSYNC_GITHUB_REPOSITORY_RELEASES_URL: string = \"{PLURALSYNC_GITHUB_REPOSITORY_RELEASES_URL}\""),
 "export type UserConfigDbEntries = {
     website_system_name?: string;
     website_url_name?: string;

@@ -115,7 +115,7 @@ button:focus-visible {
 #login-form #variant-container {
   width: 100%;
 
-  #sp2any-base-url-input,
+  #pluralsync-base-url-input,
   span {
     font-size: 0.7em;
     padding: 0em;
@@ -126,7 +126,7 @@ button:focus-visible {
     color: gray;
   }
 
-  #sp2any-base-url-input {
+  #pluralsync-base-url-input {
     width: 75%;
   }
 }

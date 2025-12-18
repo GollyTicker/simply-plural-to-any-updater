@@ -9,7 +9,7 @@
     "lint": "eslint src --fix",
     "preview": "vite preview",
     "e2e:note": "YOU MUST BUILD bridge-src-tauri BEFORE invoking the below e2e test. YOU MUST START the backend in the tests folder as well.",
-    "e2e": "export SP2ANY_BASE_URL=http://localhost:8080 && export SP2ANY_DATA_DIR=\"$(realpath \"$PWD/../test/tmp\")\" && rm -rv \"$SP2ANY_DATA_DIR\"; wdio run ./wdio.conf.js"
+    "e2e": "export PLURALSYNC_BASE_URL=http://localhost:8080 && export PLURALSYNC_DATA_DIR=\"$(realpath \"$PWD/../test/tmp\")\" && rm -rv \"$PLURALSYNC_DATA_DIR\"; wdio run ./wdio.conf.js"
   },
   "devDependencies": {
     "@tauri-apps/api": "^2.9.0",

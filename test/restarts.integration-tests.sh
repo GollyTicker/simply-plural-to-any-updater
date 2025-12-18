@@ -37,12 +37,12 @@ main() {
 }
 
 get_updater_loop_count() {
-    docker logs sp2any-api 2>&1 | grep "Waiting for next update trigger..." | wc -l
+    docker logs pluralsync-api 2>&1 | grep "Waiting for next update trigger..." | wc -l
 }
 
 check_updater_loop_continues() {
     echo "check_updater_loop_continues"
-    docker logs sp2any-api 2>&1 | grep -q "Waiting for next update trigger..."
+    docker logs pluralsync-api 2>&1 | grep -q "Waiting for next update trigger..."
 }
 
 export BASE_URL="http://localhost:8080"
@@ -53,7 +53,7 @@ start_updater() {
 
     setup_test_user
 
-    await sp2any-api "Waiting for next update trigger..."
+    await pluralsync-api "Waiting for next update trigger..."
 
     echo "Started startup-test."
 }

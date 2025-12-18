@@ -28,14 +28,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import LicenseInfo from './components/LicenseInfo.vue'
-import { sp2any_api } from './sp2any_api'
-import type { SP2AnyVariantInfo } from './sp2any.bindings'
+import { pluralsync_api } from './pluralsync_api'
+import type { PluralSyncVariantInfo } from './pluralsync.bindings'
 import { loggedIn } from './jwt'
 
-const variantInfo = ref<SP2AnyVariantInfo | null>(null)
+const variantInfo = ref<PluralSyncVariantInfo | null>(null)
 
 onMounted(async () => {
-  variantInfo.value = await sp2any_api.get_variant_info()
+  variantInfo.value = await pluralsync_api.get_variant_info()
 })
 </script>
 

@@ -2147,6 +2147,62 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
+name = "pluralsync"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "argon2",
+ "base64",
+ "chrono",
+ "dotenvy",
+ "either",
+ "encoding_rs",
+ "env_logger",
+ "futures",
+ "html-escape",
+ "jsonwebtoken",
+ "log",
+ "once_cell",
+ "pluralsync-base",
+ "prometheus 0.14.0",
+ "rand 0.9.2",
+ "reqwest",
+ "reqwest_cookie_store",
+ "rocket",
+ "rocket_cors",
+ "rocket_prometheus",
+ "rocket_ws",
+ "serde",
+ "serde_json",
+ "sha2",
+ "specta 1.0.5",
+ "specta-typescript",
+ "sqlx",
+ "strum",
+ "strum_macros",
+ "tokio",
+ "tokio-cron-scheduler",
+ "tokio-tungstenite 0.28.0",
+ "vrchatapi",
+]
+
+[[package]]
+name = "pluralsync-base"
+version = "0.1.0"
+dependencies = [
+ "async-scoped",
+ "chrono",
+ "env_logger",
+ "log",
+ "serde",
+ "specta 1.0.5",
+ "sqlx",
+ "strum",
+ "strum_macros",
+ "tokio",
+]
+
+[[package]]
 name = "portable-atomic"
 version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3043,62 +3099,6 @@ checksum = "17129e116933cf371d018bb80ae557e889637989d8638274fb25622827b03881"
 dependencies = [
  "libc",
  "windows-sys 0.60.2",
-]
-
-[[package]]
-name = "sp2any"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "argon2",
- "base64",
- "chrono",
- "dotenvy",
- "either",
- "encoding_rs",
- "env_logger",
- "futures",
- "html-escape",
- "jsonwebtoken",
- "log",
- "once_cell",
- "prometheus 0.14.0",
- "rand 0.9.2",
- "reqwest",
- "reqwest_cookie_store",
- "rocket",
- "rocket_cors",
- "rocket_prometheus",
- "rocket_ws",
- "serde",
- "serde_json",
- "sha2",
- "sp2any-base",
- "specta 1.0.5",
- "specta-typescript",
- "sqlx",
- "strum",
- "strum_macros",
- "tokio",
- "tokio-cron-scheduler",
- "tokio-tungstenite 0.28.0",
- "vrchatapi",
-]
-
-[[package]]
-name = "sp2any-base"
-version = "0.1.0"
-dependencies = [
- "async-scoped",
- "chrono",
- "env_logger",
- "log",
- "serde",
- "specta 1.0.5",
- "sqlx",
- "strum",
- "strum_macros",
- "tokio",
 ]
 
 [[package]]

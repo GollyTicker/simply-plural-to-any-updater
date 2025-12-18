@@ -1,5 +1,5 @@
 [package]
-name = "sp2any-base"
+name = "pluralsync-base"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.90.0"

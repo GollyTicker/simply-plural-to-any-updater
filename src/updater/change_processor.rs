@@ -1,6 +1,6 @@
-use sp2any_base::clock;
-use sp2any_base::communication::LatestReceiver;
-use sp2any_base::updater::UpdaterStatus;
+use pluralsync_base::clock;
+use pluralsync_base::communication::LatestReceiver;
+use pluralsync_base::updater::UpdaterStatus;
 use std::collections::HashMap;
 
 use crate::updater::platforms::{Platform, Updater};
@@ -29,7 +29,7 @@ pub async fn run_listener_for_changes(
     let mut fronter_receiver = fronter_receiver;
 
     let mut updaters: UserUpdaters =
-        platforms::sp2any_server_updaters(shared_updaters.discord_status_message_available)
+        platforms::pluralsync_server_updaters(shared_updaters.discord_status_message_available)
             .iter()
             .map(|platform| (platform.to_owned(), Updater::new(platform)))
             .collect();

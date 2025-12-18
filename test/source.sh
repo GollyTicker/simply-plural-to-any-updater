@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export SP2ANY_STAGE=local
+export PLURALSYNC_STAGE=local
 
 export SECONDS_BETWEEN_UPDATES=10
 export WEBSITE_SYSTEM_NAME=ayake-test

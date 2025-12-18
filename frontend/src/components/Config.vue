@@ -294,8 +294,9 @@
               <br />
               This option only works via the PluralSync-Bridge, which you need to run on the same
               computer as your discord. For that, open
-              <a target="_blank" :href="SP2ANY_GITHUB_REPOSITORY_RELEASES_URL">this</a>, then open
-              the first "Assets" section to see and download the "SP2Any.Bridge" for your platform.
+              <a target="_blank" :href="PLURALSYNC_GITHUB_REPOSITORY_RELEASES_URL">this</a>, then
+              open the first "Assets" section to see and download the "PluralSync.Bridge" for your
+              platform.
               <br />
               Then start it on the computer where Discord Desktop is running. You might get a
               warning, that the executable is not signed or executable. Simply accept warning that
@@ -445,9 +446,9 @@ import {
   type VRChatCredentials,
   type VRChatCredentialsWithTwoFactorAuth,
   type TwoFactorAuthMethod,
-  SP2ANY_GITHUB_REPOSITORY_RELEASES_URL,
-} from '@/sp2any.bindings'
-import { detailed_error_string, http, sp2any_api } from '@/sp2any_api'
+  PLURALSYNC_GITHUB_REPOSITORY_RELEASES_URL,
+} from '@/pluralsync.bindings'
+import { detailed_error_string, http, pluralsync_api } from '@/pluralsync_api'
 import { get_privacy_buckets, type PrivacyBucket } from '@/simply_plural_api'
 
 const baseUrl = http.defaults.baseURL!
@@ -488,7 +489,7 @@ async function loginToVRChat() {
       username: config.value.vrchat_username!.secret,
       password: config.value.vrchat_password!.secret,
     }
-    const result = await sp2any_api.vrchat_request_2fa(creds)
+    const result = await pluralsync_api.vrchat_request_2fa(creds)
     if ('Left' in result) {
       config.value.vrchat_cookie = { secret: result.Left.cookie }
       vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL
@@ -515,7 +516,7 @@ async function submitVRChat2FA() {
       tmp_cookie: vrchatTmpCookie.value,
       method: vrchatTwoFactorMethod.value!,
     }
-    const result = await sp2any_api.vrchat_resolve_2fa(creds_with_tfa)
+    const result = await pluralsync_api.vrchat_resolve_2fa(creds_with_tfa)
     config.value.vrchat_cookie = { secret: result.cookie }
     vrchatLoginStatus.value = VRCHAT_LOGIN_SUCCESSFUL
   } catch (err) {
@@ -539,7 +540,7 @@ function copyText(text: string, event: MouseEvent) {
 
 async function fetchConfig() {
   try {
-    config.value = await sp2any_api.get_config()
+    config.value = await pluralsync_api.get_config()
     console.log('Received user config: ', config.value)
   } catch (e) {
     console.warn(e)
@@ -548,7 +549,7 @@ async function fetchConfig() {
 
 async function fetchDefaults() {
   try {
-    defaults.value = await sp2any_api.get_defaults()
+    defaults.value = await pluralsync_api.get_defaults()
     console.log('Received default config: ', defaults.value)
   } catch (e) {
     console.warn(e)
@@ -567,7 +568,7 @@ async function saveConfigAndRestart() {
       }
     }
 
-    await sp2any_api.set_config_and_restart(config.value)
+    await pluralsync_api.set_config_and_restart(config.value)
     status.value = 'Config saved successfully and restarted updaters!'
   } catch (err) {
     console.warn(err)

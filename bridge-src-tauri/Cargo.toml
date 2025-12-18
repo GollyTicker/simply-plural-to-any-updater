@@ -1,18 +1,18 @@
 [package]
-name = "sp2any-bridge"
+name = "pluralsync-bridge"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.90.0"
 
 [lib]
-name = "sp2any_bridge"
+name = "pluralsync_bridge"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "*", features = [] }
 
 [dependencies]
-sp2any-base = { path = "../base-src" }
+pluralsync-base = { path = "../base-src" }
 serde_json = "*"
 serde = { version = "*", default-features = false, features = ["derive"] }
 log = "*"

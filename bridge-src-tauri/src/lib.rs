@@ -4,11 +4,12 @@ mod streaming;
 
 use anyhow::{Result, anyhow};
 use futures::stream::StreamExt;
-use sp2any_base::for_discord_bridge::{
-    FireAndForgetChannel, JwtString, SP2AnyVariantInfo, ServerToBridgeSseMessage, UpdaterStatus,
-    UserLoginCredentials, blocking_abort_and_clear_tasks, fire_and_forget_channel, license,
+use pluralsync_base::for_discord_bridge::{
+    FireAndForgetChannel, JwtString, PluralSyncVariantInfo, ServerToBridgeSseMessage,
+    UpdaterStatus, UserLoginCredentials, blocking_abort_and_clear_tasks, fire_and_forget_channel,
+    license,
 };
-use sp2any_base::meta;
+use pluralsync_base::meta;
 use std::env;
 use std::sync::Arc;
 use tauri::Emitter;
@@ -19,17 +20,17 @@ use tokio_tungstenite::{connect_async, tungstenite::client::IntoClientRequest};
 const MEGABYTES: u128 = 10 ^ 6;
 
 #[tauri::command]
-async fn fetch_base_url_and_variant_info() -> Result<(String, SP2AnyVariantInfo), String> {
+async fn fetch_base_url_and_variant_info() -> Result<(String, PluralSyncVariantInfo), String> {
     let result = fetch_base_url_and_variant_info_anyhow()
         .await
         .map_err(|e| e.to_string())?;
     Ok(result)
 }
 
-async fn fetch_base_url_and_variant_info_anyhow() -> Result<(String, SP2AnyVariantInfo)> {
+async fn fetch_base_url_and_variant_info_anyhow() -> Result<(String, PluralSyncVariantInfo)> {
     let base_url = local_storage::get_base_url()?;
     let client = reqwest::Client::new();
-    let variant_info_url = format!("{}{}", base_url, "/api/meta/sp2any-variant-info");
+    let variant_info_url = format!("{}{}", base_url, "/api/meta/pluralsync-variant-info");
     let variant_info = client
         .get(&variant_info_url)
         .send()
@@ -150,7 +151,7 @@ async fn login_anyhow(creds: UserLoginCredentials) -> Result<JwtString> {
 
 #[tauri::command]
 fn get_bridge_version() -> String {
-    meta::SP2ANY_VERSION.to_string()
+    meta::PLURALSYNC_VERSION.to_string()
 }
 
 #[tauri::command]

@@ -5,13 +5,13 @@ use crate::users::auth;
 use crate::users::jwt;
 use crate::users::model::UserId;
 use anyhow::anyhow;
+use pluralsync_base::users::Email;
+use pluralsync_base::users::JwtString;
+use pluralsync_base::users::UserLoginCredentials;
 use rocket::http;
 use rocket::{State, serde::json::Json};
 use serde::Deserialize;
 use serde::Serialize;
-use sp2any_base::users::Email;
-use sp2any_base::users::JwtString;
-use sp2any_base::users::UserLoginCredentials;
 use sqlx::PgPool;
 
 #[post("/api/user/register", data = "<credentials>")]

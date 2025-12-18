@@ -27,7 +27,7 @@ main() {
     start_backend
     
     echo "Showing logs... Abort with ^C to stop backend."
-    docker logs -f sp2any-api
+    docker logs -f pluralsync-api
 }
 
 export BASE_URL="http://localhost:8080"
@@ -38,7 +38,7 @@ start_backend() {
 
     setup_test_user
 
-    await sp2any-api "Waiting for next update trigger..."
+    await pluralsync-api "Waiting for next update trigger..."
 
     echo "Started Backend."
 }

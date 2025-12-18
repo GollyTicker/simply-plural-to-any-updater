@@ -3,19 +3,19 @@
 set -euo pipefail
 
 source docker/source.sh
-export SP2ANY_STAGE=local
+export PLURALSYNC_STAGE=local
 export FRONTEND_DIST=./../frontend/dist
-export PATH_TO_SP2ANY_API_EXEC=../target/debug/sp2any
-export PATH_TO_SP2ANY_GLOBAL_MANAGER_EXEC=../target/debug/sp2any-global-manager
+export PATH_TO_PLURALSYNC_API_EXEC=../target/debug/pluralsync
+export PATH_TO_PLURALSYNC_GLOBAL_MANAGER_EXEC=../target/debug/pluralsync-global-manager
 
 ./docker/stop.sh local || true
 
 docker compose -f docker/docker.compose.yml pull
-docker compose -f docker/docker.compose.yml up sp2any-db -d
+docker compose -f docker/docker.compose.yml up pluralsync-db -d
 
-await sp2any-db "listening on IPv4 address"
+await pluralsync-db "listening on IPv4 address"
 
-export DATABASE_URL="postgres://postgres:postgres@localhost:5432/sp2any"
+export DATABASE_URL="postgres://postgres:postgres@localhost:5432/pluralsync"
 
 ( cd docker && cargo sqlx migrate run )
 

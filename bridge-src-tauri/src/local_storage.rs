@@ -1,7 +1,7 @@
 use anyhow::{Result, anyhow};
 use directories::ProjectDirs;
+use pluralsync_base::for_discord_bridge;
 use serde::{Deserialize, Serialize};
-use sp2any_base::for_discord_bridge;
 use std::path::PathBuf;
 use std::{env, fs};
 
@@ -13,8 +13,8 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            base_url: env::var("SP2ANY_BASE_URL")
-                .unwrap_or_else(|_| for_discord_bridge::CANONICAL_SP2ANY_BASE_URL.to_owned()),
+            base_url: env::var("PLURALSYNC_BASE_URL")
+                .unwrap_or_else(|_| for_discord_bridge::CANONICAL_PLURALSYNC_BASE_URL.to_owned()),
         }
     }
 }
@@ -58,11 +58,11 @@ pub fn get_logs_dir() -> Result<PathBuf> {
 }
 
 fn get_data_dir() -> Result<PathBuf> {
-    let proj_dirs = ProjectDirs::from("io", "sp2any", "sp2any.bridge")
+    let proj_dirs = ProjectDirs::from("io", "pluralsync", "pluralsync.bridge")
         .ok_or_else(|| anyhow!("get_data_dir: Failed to get project directories"))
         .map(|p| p.data_local_dir().to_path_buf());
 
-    let data_dir = env::var("SP2ANY_DATA_DIR")
+    let data_dir = env::var("PLURALSYNC_DATA_DIR")
         .map(PathBuf::from)
         .or(proj_dirs)?;
 

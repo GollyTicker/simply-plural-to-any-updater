@@ -6,7 +6,7 @@ use crate::{
     int_counter_metric, int_gauge_metric,
     plurality::{
         CustomField, CustomFront, Friend, FrontEntry, Fronter,
-        GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID, Member,
+        GLOBAL_PLURALSYNC_ON_SIMPLY_PLURAL_USER_ID, Member,
         SIMPLY_PLURAL_VRCHAT_STATUS_NAME_FIELD_NAME,
     },
     users::{self, PrivacyFineGrained},
@@ -135,7 +135,7 @@ async fn filter_frontables_by_fine_grained_privacy(
     let allowed_buckets = match config.privacy_fine_grained {
         PrivacyFineGrained::NoFineGrained => return Ok(all_frontables),
         PrivacyFineGrained::ViaFriend => {
-            simply_plural_http_request_get_sp2any_assigned_buckets(config, system_id).await?
+            simply_plural_http_request_get_pluralsync_assigned_buckets(config, system_id).await?
         }
         PrivacyFineGrained::ViaPrivacyBuckets => config
             .privacy_fine_grained_buckets
@@ -314,17 +314,17 @@ async fn simply_plural_http_get_custom_fronts(
     Ok(result)
 }
 
-async fn simply_plural_http_request_get_sp2any_assigned_buckets(
+async fn simply_plural_http_request_get_pluralsync_assigned_buckets(
     config: &users::UserConfigForUpdater,
     system_id: &str,
 ) -> Result<HashSet<String>> {
     log::info!(
-        "# | simply_plural_http_request_get_sp2any_assigned_buckets | {}",
+        "# | simply_plural_http_request_get_pluralsync_assigned_buckets | {}",
         config.user_id
     );
     let friend_url = format!(
         "{}/friend/{}/{}",
-        &config.simply_plural_base_url, system_id, GLOBAL_SP2ANY_ON_SIMPLY_PLURAL_USER_ID
+        &config.simply_plural_base_url, system_id, GLOBAL_PLURALSYNC_ON_SIMPLY_PLURAL_USER_ID
     );
     let response = config
         .client
@@ -338,7 +338,7 @@ async fn simply_plural_http_request_get_sp2any_assigned_buckets(
 
     let friend: Friend = serde_json::from_str(&response).inspect_err(|e| {
         log::warn!(
-            "# | simply_plural_http_request_get_sp2any_assigned_buckets | {} | {} | input: {}",
+            "# | simply_plural_http_request_get_pluralsync_assigned_buckets | {} | {} | input: {}",
             config.user_id,
             e,
             response.chars().take(500).collect::<String>()

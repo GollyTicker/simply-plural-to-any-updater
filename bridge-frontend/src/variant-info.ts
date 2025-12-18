@@ -1,9 +1,9 @@
 import { invoke } from '@tauri-apps/api/core'
-import { type SP2AnyVariantInfo } from './sp2any.bindings'
+import { type PluralSyncVariantInfo } from './pluralsync.bindings'
 
-export async function fetchAndRenderVariantInfo(): Promise<[string, SP2AnyVariantInfo]> {
+export async function fetchAndRenderVariantInfo(): Promise<[string, PluralSyncVariantInfo]> {
   console.log('fetch_base_url_and_variant_info ...')
-  let result = await invoke<[string, SP2AnyVariantInfo]>('fetch_base_url_and_variant_info')
+  let result = await invoke<[string, PluralSyncVariantInfo]>('fetch_base_url_and_variant_info')
   console.log('fetch_base_url_and_variant_info.0:', result[0])
   console.log('fetch_base_url_and_variant_info.1:', result[1])
 

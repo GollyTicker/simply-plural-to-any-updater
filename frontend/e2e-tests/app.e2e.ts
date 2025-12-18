@@ -63,7 +63,7 @@ describe('PluralSync registration logic', () => {
     const test_email = `test-${Date.now()}@example.com`;
 
     it('should allow a new user to register', async () => {
-        await browser.url(env.SP2ANY_BASE_URL!);
+        await browser.url(env.PLURALSYNC_BASE_URL!);
         await register(test_email);
         await registrationSucceeded();
     });
@@ -80,7 +80,7 @@ describe('PluralSync registration logic', () => {
     });
 
     it('should not allow registering with an existing email', async () => {
-        await browser.url(env.SP2ANY_BASE_URL!);
+        await browser.url(env.PLURALSYNC_BASE_URL!);
         // This is the email of the default user, which already exists
         await register(TEST_EMAIL);
         await registrationFailed();
@@ -90,7 +90,7 @@ describe('PluralSync registration logic', () => {
 
 describe('PluralSync login logic', () => {
     it('should be intially not logged in', async () => {
-        await browser.url(env.SP2ANY_BASE_URL!);
+        await browser.url(env.PLURALSYNC_BASE_URL!);
         await notLoggedIn()
     })
 
@@ -120,7 +120,7 @@ describe('PluralSync login logic', () => {
 
 describe('PluralSync updater status and config save and restarts', () => {
     it('should show the correct updater status', async () => {
-        await browser.url(env.SP2ANY_BASE_URL!);
+        await browser.url(env.PLURALSYNC_BASE_URL!);
         await login()
         await loggedInAndOnStatusPage()
 

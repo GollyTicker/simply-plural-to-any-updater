@@ -2,6 +2,7 @@ use crate::users::model::UserId;
 use anyhow::{Result, anyhow};
 use chrono::Duration;
 use jsonwebtoken::{EncodingKey, Header, encode};
+use pluralsync_base::{clock, users::JwtString};
 use rocket::{
     Request, State,
     http::Status,
@@ -9,7 +10,6 @@ use rocket::{
     response,
 };
 use serde::{Deserialize, Serialize};
-use sp2any_base::{clock, users::JwtString};
 
 #[derive(Clone)]
 pub struct ApplicationJwtSecret {

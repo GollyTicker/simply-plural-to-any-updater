@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import router from '../router'
-import { CANONICAL_SP2ANY_BASE_URL, type UserLoginCredentials } from '../sp2any.bindings'
+import { CANONICAL_PLURALSYNC_BASE_URL, type UserLoginCredentials } from '../pluralsync.bindings'
 import { fetchAndRenderVariantInfo } from '../variant-info'
 
 export async function renderLoginPage() {
@@ -13,7 +13,7 @@ export async function renderLoginPage() {
         <input type="password" id="password" placeholder="Password" required />
         <div id="variant-container">
           <span>Variant</span>
-          <input type="text" id="sp2any-base-url-input" placeholder="${CANONICAL_SP2ANY_BASE_URL}" />
+          <input type="text" id="pluralsync-base-url-input" placeholder="${CANONICAL_PLURALSYNC_BASE_URL}" />
         </div>
         <button type="submit">Login</button>
       </form>
@@ -22,17 +22,19 @@ export async function renderLoginPage() {
 
   const loginForm = document.querySelector<HTMLFormElement>('#login-form')!
   const loginStatus = document.querySelector<HTMLDivElement>('#login-status')!
-  const sp2anyBaseUrlInput = document.querySelector<HTMLInputElement>('#sp2any-base-url-input')!
+  const pluralsyncBaseUrlInput = document.querySelector<HTMLInputElement>(
+    '#pluralsync-base-url-input',
+  )!
 
   let [baseUrl, _] = await fetchAndRenderVariantInfo()
-  sp2anyBaseUrlInput.value = baseUrl
+  pluralsyncBaseUrlInput.value = baseUrl
 
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault()
 
     const email = document.querySelector<HTMLInputElement>('#email')!.value
     const password = document.querySelector<HTMLInputElement>('#password')!.value
-    const baseUrl = sp2anyBaseUrlInput.value
+    const baseUrl = pluralsyncBaseUrlInput.value
 
     loginStatus.textContent = 'Logging in ...'
 

@@ -1,6 +1,6 @@
 use anyhow::{Result, anyhow};
+use pluralsync_base::users::Email;
 use sha2::{Digest, Sha256};
-use sp2any_base::users::Email;
 use sqlx::{FromRow, PgPool};
 
 use crate::{

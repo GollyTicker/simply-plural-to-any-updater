@@ -3,9 +3,9 @@
 set -euo pipefail
 
 export TAURI_APP_PATH="bridge-src-tauri"
-export SP2ANY_BASE_URL="http://localhost:8080"
+export PLURALSYNC_BASE_URL="http://localhost:8080"
 
-echo "SP2ANY_BASE_URL: $SP2ANY_BASE_URL"
+echo "PLURALSYNC_BASE_URL: $PLURALSYNC_BASE_URL"
 echo "IF you want to send requsts against a backend,"
 echo "ensure that the backend is running via source secrets + ./test/start-backend-for-bridge-frontend.sh"
 

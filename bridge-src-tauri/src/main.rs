@@ -4,5 +4,5 @@
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    sp2any_bridge::run()
+    pluralsync_bridge::run()
 }

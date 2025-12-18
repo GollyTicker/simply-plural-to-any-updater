@@ -1,6 +1,6 @@
 import router from '@/router'
 import { ref } from 'vue'
-import type { JwtString } from './sp2any.bindings'
+import type { JwtString } from './pluralsync.bindings'
 
 export const loggedIn = ref<boolean>(false)
 

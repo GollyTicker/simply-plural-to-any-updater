@@ -24,8 +24,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
-import type { GenericFrontingStatus, UpdaterStatus, UserUpdatersStatuses } from '@/sp2any.bindings'
-import { sp2any_api } from '@/sp2any_api'
+import type {
+  GenericFrontingStatus,
+  UpdaterStatus,
+  UserUpdatersStatuses,
+} from '@/pluralsync.bindings'
+import { pluralsync_api } from '@/pluralsync_api'
 
 const updaters: Ref<UserUpdatersStatuses> = ref({})
 const fronting_status: Ref<GenericFrontingStatus | undefined> = ref(undefined)
@@ -61,7 +65,7 @@ function statusInfo(status: UpdaterStatus): string {
 
 const fetchUpdatersState = async () => {
   try {
-    updaters.value = await sp2any_api.get_updater_status()
+    updaters.value = await pluralsync_api.get_updater_status()
     console.log('get_updater_status: ', updaters.value)
   } catch (e) {
     console.warn(e)
@@ -70,7 +74,7 @@ const fetchUpdatersState = async () => {
 
 const fetchFrontingStatus = async () => {
   try {
-    fronting_status.value = await sp2any_api.get_fronting_status()
+    fronting_status.value = await pluralsync_api.get_fronting_status()
     console.log('get_fronting_status: ', fronting_status.value)
   } catch (e) {
     console.warn(e)

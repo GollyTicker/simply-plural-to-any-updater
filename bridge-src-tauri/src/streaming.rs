@@ -1,9 +1,9 @@
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, stream::StreamExt};
-use sp2any_base::for_discord_bridge::{
+use pluralsync_base::for_discord_bridge::{
     BridgeToServerSseMessage, FireAndForgetChannel, ServerToBridgeSseMessage,
 };
-use sp2any_base::updater::UpdaterStatus;
+use pluralsync_base::updater::UpdaterStatus;
 use tauri::Manager;
 use tauri::async_runtime::JoinHandle;
 use tokio::net::TcpStream;

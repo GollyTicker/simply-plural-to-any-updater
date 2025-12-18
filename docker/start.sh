@@ -2,25 +2,25 @@
 
 set -euo pipefail
 
-export SP2ANY_STAGE="$1"
-source "docker/$SP2ANY_STAGE.env"
+export PLURALSYNC_STAGE="$1"
+source "docker/$PLURALSYNC_STAGE.env"
 
 source docker/source.sh
 
-./docker/stop.sh "$SP2ANY_STAGE"
+./docker/stop.sh "$PLURALSYNC_STAGE"
 
 COMPOSE="docker compose -f docker/docker.compose.yml"
 
 $COMPOSE build --pull
 
-$COMPOSE up -d sp2any-db
+$COMPOSE up -d pluralsync-db
 
-await sp2any-db "listening on IPv4 address"
+await pluralsync-db "listening on IPv4 address"
 
 $COMPOSE up -d
 
-await sp2any-api "Rocket has launched from"
+await pluralsync-api "Rocket has launched from"
 
-await sp2any-entrypoint "start worker processes"
+await pluralsync-entrypoint "start worker processes"
 
-await sp2any-global-manager "Authenticated."
+await pluralsync-global-manager "Authenticated."

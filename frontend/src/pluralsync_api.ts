@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import type {
-  SP2AnyVariantInfo,
+  PluralSyncVariantInfo,
   JwtString,
   UserConfigDbEntries,
   UserLoginCredentials,
@@ -10,12 +10,12 @@ import type {
   VRChatCredentialsWithTwoFactorAuth,
   VRChatAuthResponse,
   GenericFrontingStatus,
-} from './sp2any.bindings'
+} from './pluralsync.bindings'
 import { getJwt, logoutAndBackToStart, setJwt } from './jwt'
 import router from './router'
 
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_SP2ANY_BASE_URL || '' /* use relate url by default */,
+  baseURL: import.meta.env.VITE_PLURALSYNC_BASE_URL || '' /* use relate url by default */,
 })
 
 export function detailed_error_string(error: any): string {
@@ -36,7 +36,7 @@ http.interceptors.response.use(
 )
 
 // Also handles the storage of the JwtString
-export const sp2any_api = {
+export const pluralsync_api = {
   login: async function (creds: UserLoginCredentials): Promise<JwtString> {
     const jwtString = await http.post<JwtString>('/api/user/login', creds)
     setJwt(jwtString.data)
@@ -96,8 +96,8 @@ export const sp2any_api = {
     )
     return response.data
   },
-  get_variant_info: async function (): Promise<SP2AnyVariantInfo> {
-    const response = await http.get<SP2AnyVariantInfo>('/api/meta/sp2any-variant-info')
+  get_variant_info: async function (): Promise<PluralSyncVariantInfo> {
+    const response = await http.get<PluralSyncVariantInfo>('/api/meta/pluralsync-variant-info')
     return response.data
   },
 }

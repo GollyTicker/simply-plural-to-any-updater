@@ -13,7 +13,9 @@
       <button type="submit">Login</button>
       <button @click="register" type="button" class="register-button">Register</button>
     </form>
-    <p style="margin:1em">ℹ️ PluralSync was formerly named SP2Any. The name change is ongoing currently. ℹ️</p>
+    <p style="margin: 1em">
+      ℹ️ PluralSync was formerly named SP2Any. The name change is ongoing currently. ℹ️
+    </p>
     <p v-if="status" class="status-message">{{ status }}</p>
   </div>
 </template>
@@ -23,8 +25,8 @@ defineProps({})
 
 import { ref, type Ref } from 'vue'
 import router from '@/router'
-import type { UserLoginCredentials } from '@/sp2any.bindings'
-import { detailed_error_string, sp2any_api } from '@/sp2any_api'
+import type { UserLoginCredentials } from '@/pluralsync.bindings'
+import { detailed_error_string, pluralsync_api } from '@/pluralsync_api'
 
 const email: Ref<string> = ref('')
 const password: Ref<string> = ref('')
@@ -41,7 +43,7 @@ const login = async () => {
   } as UserLoginCredentials
 
   try {
-    await sp2any_api.login(creds)
+    await pluralsync_api.login(creds)
     console.log('Login successful!')
     status.value = ''
     router.push('/status')
@@ -63,7 +65,7 @@ const register = async () => {
 
   try {
     status.value = 'Sending registration request...'
-    await sp2any_api.register(creds)
+    await pluralsync_api.register(creds)
     status.value = 'Registration successful! You can now log in.'
   } catch (err: any) {
     status.value = 'Registration failed: ' + detailed_error_string(err)

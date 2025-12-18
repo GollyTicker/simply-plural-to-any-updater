@@ -33,7 +33,7 @@
 * DONE: use websocket subscription to simply plural and only get the fronters + system, when it actually changes
   * DONE: and also make the discord websocket thing, that an update is sent immediately once the websocket is created
   * DONE: this also resolves the bottleneck of allowing users to set a 1s update duration
-* sp2any-bridge
+* pluralsync-bridge
   * auto-update
   * DONE: auto-start on system start
 * do not clean stuff by default in vrchat. make that configureable
@@ -75,7 +75,7 @@
   * bidrectional sync of privacy bucket membership and "show in pluralsync" setting
     > If I search for myself, and toggle the "show as fronting" button in SP2A, it autoadds me to the privacy bucket in SP.
     > And if I add myself to the PB in SP, it toggles me as "show as fronting"
-  * DONE: add pluralsync user to config explanations and to the sp2any-deployments as a global singular
+  * DONE: add pluralsync user to config explanations and to the pluralsync-deployments as a global singular
   * DONE: testing of privacy features
 * DONE: websocket connection restarts
 * DONE: better error messages which the users can also understand and which handle most common error paths
@@ -112,7 +112,7 @@ This way we can get even more early testers so that we can then move to the app 
 * BUG: when discord rich presence is disabled and the bridge is started, it connects and shows up as "running" though it doesn't show any
   rich presence in discord. this might be confusing. and also, there happens some related errors in the bridge logs which should be investigated
 * add status not only for updaters but also for SP itself.
-* DONE: remove `0.1.0` from sp2any bridge executable
+* DONE: remove `0.1.0` from pluralsync bridge executable
 * make sure, that during production, only my own domains are allowed and not localhost or so.
 * DONE: restart updaters once in a while, just to get temporary issues out of the way (e.g. vrchat someimes just doesn't work after a re-deployment)
 * DONE: make website view such that it doesn't eagery fetch data from simply plural every time but instead uses the latest values from a channel

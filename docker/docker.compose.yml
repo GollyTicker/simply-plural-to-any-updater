@@ -1,26 +1,26 @@
 services:
 
-  sp2any-entrypoint:
-    container_name: sp2any-entrypoint
+  pluralsync-entrypoint:
+    container_name: pluralsync-entrypoint
     image: nginx:1-alpine
     volumes:
       - ./template.nginx.conf:/etc/nginx/templates/nginx.conf.template
       - ./${FRONTEND_DIST}:/usr/share/nginx/html
     env_file:
-      - ./${SP2ANY_STAGE}.env
+      - ./${PLURALSYNC_STAGE}.env
     network_mode: host
     # ports:
     #   - ${NGINX_PORT}:${NGINX_PORT}
 
-  sp2any-api:
-    container_name: sp2any-api
+  pluralsync-api:
+    container_name: pluralsync-api
     build:
       dockerfile: docker/rust-binary.Dockerfile
       context: ..
       args:
-        PATH_TO_EXEC: ${PATH_TO_SP2ANY_API_EXEC}
+        PATH_TO_EXEC: ${PATH_TO_PLURALSYNC_API_EXEC}
     env_file:
-      - ./${SP2ANY_STAGE}.env
+      - ./${PLURALSYNC_STAGE}.env
     environment:
       DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE: "${DISCORD_STATUS_MESSAGE_UPDATER_AVAILABLE-false}"
       ROCKET_ADDRESS: "0.0.0.0"
@@ -29,34 +29,34 @@ services:
     # ports:
     #   - 8000:8000
 
-  sp2any-db:
+  pluralsync-db:
     # NOTE: db-migrations need to be run explicitly after startup. search for `sqlx migrate` or `sqlx::migrate!`
     image: postgres:17-alpine
-    container_name: sp2any-db
+    container_name: pluralsync-db
     env_file:
-      - ./${SP2ANY_STAGE}.env
+      - ./${PLURALSYNC_STAGE}.env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: sp2any
+      POSTGRES_DB: pluralsync
     volumes:
-      - sp2any-data:/var/lib/postgresql/data
+      - pluralsync-data:/var/lib/postgresql/data
     restart: "on-failure:2"
     network_mode: host
     # ports:
     #   - 5432:5432
 
 
-  sp2any-global-manager:
-    container_name: sp2any-global-manager
+  pluralsync-global-manager:
+    container_name: pluralsync-global-manager
     build:
       dockerfile: docker/rust-binary.Dockerfile
       context: ..
       args:
-        PATH_TO_EXEC: ${PATH_TO_SP2ANY_GLOBAL_MANAGER_EXEC}
+        PATH_TO_EXEC: ${PATH_TO_PLURALSYNC_GLOBAL_MANAGER_EXEC}
     env_file:
-      - ./${SP2ANY_STAGE}.env
+      - ./${PLURALSYNC_STAGE}.env
     network_mode: host
 
 volumes:
-  sp2any-data:
-    name: sp2any-data
+  pluralsync-data:
+    name: pluralsync-data

@@ -1,6 +1,6 @@
 use anyhow::Result;
+use pluralsync_base::updater::UpdaterStatus;
 use serde::Serialize;
-use sp2any_base::updater::UpdaterStatus;
 use specta;
 use strum_macros;
 
@@ -38,13 +38,13 @@ pub fn available_updaters(discord_status_message: bool) -> Vec<Platform> {
 }
 
 #[must_use]
-pub fn sp2any_server_updaters(discord_status_message: bool) -> Vec<Platform> {
+pub fn pluralsync_server_updaters(discord_status_message: bool) -> Vec<Platform> {
     let mut platforms = available_updaters(discord_status_message);
 
     platforms.retain(|p| !p.foreign_managed());
 
     for p in platforms.iter().by_ref() {
-        log::info!("# | sp2any_server_updaters | available (managed) {p}");
+        log::info!("# | pluralsync_server_updaters | available (managed) {p}");
     }
 
     platforms

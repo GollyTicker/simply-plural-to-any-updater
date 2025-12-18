@@ -58,8 +58,8 @@ metric!(
 
 metric!(
     rocket_prometheus::prometheus::IntGaugeVec,
-    SP2ANY_USER_CONFIG_FEATURE,
-    "sp2any_user_config_feature",
+    PLURALSYNC_USER_CONFIG_FEATURE,
+    "pluralsync_user_config_feature",
     &["feature", "status"]
 );
 
@@ -89,7 +89,7 @@ pub static PROM_METRICS: sync::LazyLock<rocket_prometheus::PrometheusMetrics> =
             updater::UPDATER_PROCESS_UNEXPECTED_STOP_TOTAL,
             platforms::PLURALKIT_API_REQUESTS_TOTAL,
             platforms::PLURALKIT_API_RATELIMIT_REMAINING,
-            SP2ANY_USER_CONFIG_FEATURE,
+            PLURALSYNC_USER_CONFIG_FEATURE,
             SHOULDNT_HAPPEN_BUT_IT_DID
         );
 
@@ -127,7 +127,7 @@ pub async fn collect_user_metrics(
     }
 
     for ((feature, status), count) in feature_counts {
-        SP2ANY_USER_CONFIG_FEATURE
+        PLURALSYNC_USER_CONFIG_FEATURE
             .with_label_values(&[&feature, &status])
             .set(count);
     }

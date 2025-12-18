@@ -7,7 +7,7 @@ A cloud service where users can automatically sync their plural systems' frontin
 between various system managers and social platforms such as [SimplyPLural](https://apparyllis.com/), [PluralKit](https://pluralkit.me/), [VRChat](https://hello.vrchat.com/), [Discord](https://discord.com) or their own website. Users of system managers (plural systems, DID/OSDD systems, etc.) benefit from this as it makes it easier for them to communicate who's fronting while only
 needing to update their fronting on Simply Plural.
 
-A public test version can be found online at [public-test.sp2any.ayake.net](https://public-test.sp2any.ayake.net). (*Use this at your own risk.*)
+A public test version can be found online at [public-test.pluralsync.ayake.net](https://public-test.pluralsync.ayake.net). (*Use this at your own risk.*)
 
 Currently the following updates are supported:
 * SimplyPlural to VRChat Status
@@ -31,7 +31,7 @@ Only do the tasks described when explicitly requested to.
 
 ## Architecture
 
-### Backend (`sp2any`)
+### Backend (`pluralsync`)
 
 *   **Language:** Rust
 *   **Framework:** [Rocket](https://rocket.rs/)
@@ -52,14 +52,14 @@ Only do the tasks described when explicitly requested to.
     *   Provides the main user interface for the web application.
     *   Communicates with the Rust backend via HTTP requests (using `axios`) and WebSockets.
 
-### Desktop Application (`sp2any-bridge`)
+### Desktop Application (`pluralsync-bridge`)
 
 *   **Framework:** [Tauri](https://tauri.app/) (Rust backend, web-based frontend)
 *   **Backend (`bridge-src-tauri`):**
     *   Written in Rust.
     *   Integrates with the operating system for features like autostart.
     *   Includes Discord Rich Presence integration.
-    *   Communicates with the main `sp2any` backend.
+    *   Communicates with the main `pluralsync` backend.
 *   **Frontend (`bridge-frontend`):**
     *   A web-based UI built with TypeScript and Vite.
     *   Uses the Tauri API to interact with the Rust backend part of the desktop application.
@@ -69,4 +69,4 @@ Only do the tasks described when explicitly requested to.
 *   **Language:** Rust
 *   **Purpose:**
     *   A shared library containing common data structures, types, and utilities.
-    *   This crate is used as a dependency by both the main backend (`sp2any`) and the Tauri backend (`sp2any-bridge`), promoting code reuse and consistency.
+    *   This crate is used as a dependency by both the main backend (`pluralsync`) and the Tauri backend (`pluralsync-bridge`), promoting code reuse and consistency.

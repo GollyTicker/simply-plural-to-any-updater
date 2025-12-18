@@ -11,7 +11,7 @@ async function login(password?: string, baseUrl?: string) {
     await $('#email').setValue(TEST_EMAIL)
     await $('#password').setValue(password ?? TEST_PASSWORD)
     if (baseUrl) {
-        await $('#sp2any-base-url-input').setValue(baseUrl)
+        await $('#pluralsync-base-url-input').setValue(baseUrl)
     }
 
     await $('button[type="submit"]').click()
@@ -25,7 +25,7 @@ async function loggedInAndConnected() {
     await expect($('#bridge-status')).toHaveText("Connected to PluralSync and receiving updates...")
 }
 
-describe('sp2any-bridge login flow', () => {
+describe('pluralsync-bridge login flow', () => {
     it('should be intially not logged in', async () => {
         await notLoggedIn()
     })
@@ -66,7 +66,7 @@ describe('variants and base-url configuration', () => {
     })
 
     it('should allow changing the base url and succeed login', async () => {
-        await login(TEST_PASSWORD, process.env.SP2ANY_BASE_URL!)
+        await login(TEST_PASSWORD, process.env.PLURALSYNC_BASE_URL!)
         await loggedInAndConnected()
         await expect($('#variant-info')).toHaveText('@local')
         await logout()

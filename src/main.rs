@@ -1,14 +1,14 @@
 use anyhow::Result;
 use anyhow::anyhow;
 
+use pluralsync::meta_api;
+use pluralsync::metrics;
+use pluralsync::platforms;
+use pluralsync::setup;
+use pluralsync::updater;
+use pluralsync::users;
+use pluralsync_base::license;
 use rocket::routes;
-use sp2any::meta_api;
-use sp2any::metrics;
-use sp2any::platforms;
-use sp2any::setup;
-use sp2any::updater;
-use sp2any::users;
-use sp2any_base::license;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -72,7 +72,7 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
         .manage(setup.application_user_secrets)
         .manage(setup.client)
         .manage(setup.shared_updaters)
-        .manage(setup.sp2any_variant_info)
+        .manage(setup.pluralsync_variant_info)
         .attach(metrics::PROM_METRICS.clone())
         .attach(setup.cors_policy)
         .mount(
@@ -90,7 +90,7 @@ async fn run_webserver(setup: setup::ApplicationSetup) -> Result<()> {
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_request,
                 platforms::vrchat_api::post_api_user_platform_vrchat_auth_2fa_resolve,
                 platforms::discord_api::get_api_user_platform_discord_bridge_events,
-                meta_api::get_api_meta_sp2any_variant,
+                meta_api::get_api_meta_pluralsync_variant,
             ],
         )
         .mount("/metrics", metrics::PROM_METRICS.clone())

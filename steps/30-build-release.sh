@@ -27,44 +27,44 @@ add_rust_targets() {
 
 build_binaries() {
     for target in "${TARGETS[@]}"; do
-        echo "🛠️ sp2any-bridge $target"
+        echo "🛠️ pluralsync-bridge $target"
         ./steps/22-bridge-frontend-tauri-release.sh --target "$target"
         BUILD_OUT_PATH="bridge-src-tauri/target/$target/release/bundle"
         if [[ "$target" == *"windows"* ]]; then
-            cp -v "$BUILD_OUT_PATH"/*/*.exe "$OUT_DIR/SP2Any-Bridge-Windows-Setup.exe"
+            cp -v "$BUILD_OUT_PATH"/*/*.exe "$OUT_DIR/PluralSync-Bridge-Windows-Setup.exe"
         else
-            cp -v "$BUILD_OUT_PATH"/*/*.rpm "$OUT_DIR/SP2Any-Bridge-Linux.rpm"
-            cp -v "$BUILD_OUT_PATH"/*/*.deb "$OUT_DIR/SP2Any-Bridge-Linux.deb"
-            cp -v "$BUILD_OUT_PATH"/*/*.AppImage "$OUT_DIR/SP2Any-Bridge-Linux.AppImage"
+            cp -v "$BUILD_OUT_PATH"/*/*.rpm "$OUT_DIR/PluralSync-Bridge-Linux.rpm"
+            cp -v "$BUILD_OUT_PATH"/*/*.deb "$OUT_DIR/PluralSync-Bridge-Linux.deb"
+            cp -v "$BUILD_OUT_PATH"/*/*.AppImage "$OUT_DIR/PluralSync-Bridge-Linux.AppImage"
         fi
-        echo "✅ sp2any-bridge $target"
+        echo "✅ pluralsync-bridge $target"
 
         echo ""
     done
 
 
-    echo "🛠️ sp2any-global-manager $LINUX_TARGET"
-    ./steps/12-backend-cargo-build.sh --release --bin sp2any-global-manager --target "$LINUX_TARGET"
-    src_path="target/$LINUX_TARGET/release/sp2any-global-manager"
-    dest_path="${OUT_DIR}/sp2any-global-manager"
+    echo "🛠️ pluralsync-global-manager $LINUX_TARGET"
+    ./steps/12-backend-cargo-build.sh --release --bin pluralsync-global-manager --target "$LINUX_TARGET"
+    src_path="target/$LINUX_TARGET/release/pluralsync-global-manager"
+    dest_path="${OUT_DIR}/pluralsync-global-manager"
     cp -v "$src_path" "$dest_path"
-    echo "✅ sp2any-global-manager $target"
+    echo "✅ pluralsync-global-manager $target"
 
     echo ""
 
-    echo "🛠️ sp2any-api $LINUX_TARGET"
+    echo "🛠️ pluralsync-api $LINUX_TARGET"
     ./steps/12-backend-cargo-build.sh --release --target "$LINUX_TARGET"
-    src_path="target/$LINUX_TARGET/release/sp2any"
-    dest_path="${OUT_DIR}/sp2any-api"
+    src_path="target/$LINUX_TARGET/release/pluralsync"
+    dest_path="${OUT_DIR}/pluralsync-api"
     cp -v "$src_path" "$dest_path"
-    echo "✅ sp2any-api $target"
+    echo "✅ pluralsync-api $target"
 
     echo ""
 
-    echo "🛠️ sp2any-frontend $LINUX_TARGET"
+    echo "🛠️ pluralsync-frontend $LINUX_TARGET"
     ./steps/17-frontend-npm-build.sh
-    tar -czvf "$OUT_DIR/sp2any-frontend.tar.gz" -C frontend/dist .
-    echo "✅ sp2any-brontend $target"
+    tar -czvf "$OUT_DIR/pluralsync-frontend.tar.gz" -C frontend/dist .
+    echo "✅ pluralsync-brontend $target"
 }
 
 
