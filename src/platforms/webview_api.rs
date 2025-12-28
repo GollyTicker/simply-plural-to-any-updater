@@ -117,7 +117,7 @@ fn generate_html(website_system_name: &str, fronts: &[plurality::Fronter]) -> St
             format!(
                 "<div><img src=\"{}\" /><p>{}</p></div>",
                 html_escape::encode_double_quoted_attribute(&m.avatar_url),
-                html_escape::encode_text(&m.name)
+                html_escape::encode_text(&m.get_preffered_name(name_config))
             )
         })
         .collect::<Vec<String>>()

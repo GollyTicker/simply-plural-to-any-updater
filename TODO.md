@@ -29,6 +29,7 @@ For members without PluralKit id, the fallback is simply the existing SimplyPlur
     b. In `src/plurality/fronting_status.rs`, pass the `UserConfigForUpdater` down to `collect_clean_fronter_names`.
     c. In `collect_clean_fronter_names`, replace the call to `f.preferred_vrchat_status_name()` with a call to the new `f.name(&config.use_pluralkit_name)`. The existing VRChat name cleaning logic will be applied to the result of this new method.
 7.  **Frontend UI (Config):** In `frontend/src/components/Config.vue`, replace the previous UI with a dropdown or radio button group to manage the `use_pluralkit_name` setting.
+8.  **Testing:** Write unit and integration tests for the new PluralKit name override feature.
 
 
 # Information

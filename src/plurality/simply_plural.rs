@@ -1,15 +1,14 @@
-use std::collections::HashSet;
-
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     int_counter_metric, int_gauge_metric,
     plurality::{
-        CustomField, CustomFront, Friend, FrontEntry, Fronter,
+        pluralkit, CustomField, CustomFront, Friend, FrontEntry, Fronter,
         GLOBAL_PLURALSYNC_ON_SIMPLY_PLURAL_USER_ID, Member,
         SIMPLY_PLURAL_VRCHAT_STATUS_NAME_FIELD_NAME,
     },
-    users::{self, PrivacyFineGrained},
+    users::{self, UsePluralKitName, PrivacyFineGrained},
 };
 
 int_counter_metric!(SIMPLY_PLURAL_FETCH_FRONTS_TOTAL_COUNTER);
@@ -79,6 +78,12 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
     vrcsn_field_id: Option<String>,
     config: &users::UserConfigForUpdater,
 ) -> Result<Vec<Fronter>> {
+    let pluralkit_members = if config.use_pluralkit_name != UsePluralKitName::NoOverride {
+        pluralkit::get_pluralkit_members(config).await.unwrap_or_default()
+    } else {
+        HashMap::new()
+    };
+
     let all_members: Vec<Member> = simply_plural_http_get_members(config, system_id).await?;
 
     let active_members_count = all_members.iter().filter(|m| !m.content.archived).count() as i64;
@@ -109,13 +114,15 @@ async fn get_members_and_custom_fronters_by_privacy_rules(
 
     let all_frontables: Vec<Fronter> = privacy_filtered_members
         .into_iter()
-        .map(|m| {
-            let mut enriched_member = m;
-            enriched_member
-                .content
-                .vrcsn_field_id
-                .clone_from(&vrcsn_field_id);
-            enriched_member
+        .map(|mut m| {
+            if let Some(pk_id) = &m.content.pluralkit_id {
+                if let Some(pk_member) = pluralkit_members.get(pk_id) {
+                    m.content.pluralkit_name = Some(pk_member.name.clone());
+                    m.content.pluralkit_display_name = pk_member.display_name.clone();
+                }
+            }
+            m.content.vrcsn_field_id.clone_from(&vrcsn_field_id);
+            m
         })
         .map(Fronter::from)
         .chain(all_custom_fronts.into_iter().map(Fronter::from))

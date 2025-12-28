@@ -190,6 +190,19 @@
               @input="setSecret('pluralkit_token', $event)"
             />
           </div>
+          <div class="config-item">
+            <label for="use_pluralkit_name">Use PluralKit Name instead</label>
+            <p class="config-description">
+              Use the Name / Display Name from PluralKit, if it exists.
+            </p>
+            <select v-model="config.use_pluralkit_name">
+              <option value="NoOverride">Use Name from SimplyPlural (default)</option>
+              <option value="UsePluralKitName">Use PluralKit Member Name instead</option>
+              <option value="UsePluralKitDisplayName">
+                Use PluralKit Display Name instead (fallback to PluralKit Name)
+              </option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="config-section">

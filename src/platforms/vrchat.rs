@@ -91,7 +91,7 @@ async fn update_to_vrchat(
         truncate_names_to_length_if_status_too_long: config.status_truncate_names_to,
     };
 
-    let status_string = plurality::format_fronting_status(&fronting_format, fronts);
+    let status_string = plurality::format_fronting_status(&fronting_format, fronts, config);
 
     set_vrchat_status(initialized_updater, &config.user_id, status_string.as_str()).await
 }

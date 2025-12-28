@@ -2,8 +2,12 @@ use std::string::ToString;
 
 use anyhow::Result;
 use serde::Deserialize;
-use serde::Deserializer;
 use tokio_tungstenite::tungstenite;
+
+use crate::{
+    plurality::deserialize_non_empty_string_as_option,
+    plurality::parse_epoch_millis_to_datetime_utc, users,
+};
 
 pub const GLOBAL_PLURALSYNC_ON_SIMPLY_PLURAL_USER_ID: &str =
     "eb06960e5b7fb576923f0e909947c0ce8ca46dcbe61ee5af2681f8f59404df5d";
@@ -29,28 +33,6 @@ pub struct FrontEntryContent {
     pub start_time: chrono::DateTime<chrono::Utc>,
 }
 
-fn parse_epoch_millis_to_datetime_utc<'de, D>(
-    d: D,
-) -> Result<chrono::DateTime<chrono::Utc>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let epoch_millis = i64::deserialize(d)?;
-    chrono::DateTime::from_timestamp_millis(epoch_millis)
-        .ok_or_else(|| serde::de::Error::custom("Datime<Utc> from timestamp failed"))
-}
-
-fn deserialize_non_empty_string_as_option<'de, D>(
-    deserializer: D,
-) -> Result<Option<String>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let s: String = String::deserialize(deserializer)?;
-    let non_empty_str_option = if s.is_empty() { None } else { Some(s) };
-    Ok(non_empty_str_option)
-}
-
 #[derive(Debug, Clone)]
 pub struct Fronter {
     pub fronter_id: String,
@@ -58,14 +40,27 @@ pub struct Fronter {
     pub avatar_url: String,
     pub vrchat_status_name: Option<String>,
     pub pluralkit_id: Option<String>,
+    pub pluralkit_name: Option<String>,
+    pub pluralkit_display_name: Option<String>,
     pub start_time: Option<chrono::DateTime<chrono::Utc>>,
     pub privacy_buckets: Vec<String>,
 }
 
 impl Fronter {
     #[must_use]
-    pub fn preferred_vrchat_status_name(&self) -> &str {
-        self.vrchat_status_name.as_ref().unwrap_or(&self.name)
+    pub fn get_preffered_name(&self, name_config: &users::UsePluralKitName) -> &str {
+        let fallback_name = self.vrchat_status_name.as_ref().unwrap_or(&self.name);
+        match name_config {
+            users::UsePluralKitName::NoOverride => &self.name,
+            users::UsePluralKitName::UsePluralKitName => {
+                self.pluralkit_name.as_deref().unwrap_or(fallback_name)
+            }
+            users::UsePluralKitName::UsePluralKitDisplayName => self
+                .pluralkit_display_name
+                .as_deref()
+                .or_else(|| self.pluralkit_name.as_deref())
+                .unwrap_or(fallback_name),
+        }
     }
 }
 
@@ -97,6 +92,8 @@ impl From<CustomFront> for Fronter {
             avatar_url: cf.content.avatar_url,
             vrchat_status_name: None,
             pluralkit_id: None,
+            pluralkit_name: None,
+            pluralkit_display_name: None,
             start_time: None,
             privacy_buckets: cf.content.privacy_buckets,
         }
@@ -145,6 +142,12 @@ pub struct MemberContent {
     // this will be populated later after deserialisation
     #[serde(default)]
     pub vrcsn_field_id: Option<String>,
+
+    // this will be populated later from pluralkit
+    #[serde(default)]
+    pub pluralkit_name: Option<String>,
+    #[serde(default)]
+    pub pluralkit_display_name: Option<String>,
 }
 
 impl From<Member> for Fronter {
@@ -163,6 +166,8 @@ impl From<Member> for Fronter {
             avatar_url: m.content.avatar_url,
             vrchat_status_name,
             pluralkit_id: m.content.pluralkit_id,
+            pluralkit_name: m.content.pluralkit_name,
+            pluralkit_display_name: m.content.pluralkit_display_name,
             start_time: None,
             privacy_buckets: m.content.privacy_buckets,
         }

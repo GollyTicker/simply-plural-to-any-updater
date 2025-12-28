@@ -15,6 +15,18 @@ use specta;
     Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default, sqlx::Type, specta::Type,
 )]
 #[specta(export)]
+#[sqlx(type_name = "use_pluralkit_name_enum")]
+pub enum UsePluralKitName {
+    #[default]
+    NoOverride,
+    UsePluralKitName,
+    UsePluralKitDisplayName,
+}
+
+#[derive(
+    Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default, sqlx::Type, specta::Type,
+)]
+#[specta(export)]
 #[sqlx(type_name = "privacy_fine_grained_enum")]
 pub enum PrivacyFineGrained {
     #[default]
@@ -62,6 +74,7 @@ where
     pub vrchat_password: Option<Secret>,
     pub vrchat_cookie: Option<Secret>,
     pub pluralkit_token: Option<Secret>,
+    pub use_pluralkit_name: UsePluralKitName,
 }
 
 impl<S: SecretType> UserConfigDbEntries<S> {
@@ -105,6 +118,7 @@ impl<S: SecretType> UserConfigDbEntries<S> {
             vrchat_password: self.vrchat_password.clone().or(defaults.vrchat_password),
             vrchat_cookie: self.vrchat_cookie.clone().or(defaults.vrchat_cookie),
             pluralkit_token: self.pluralkit_token.clone().or(defaults.pluralkit_token),
+            use_pluralkit_name: self.use_pluralkit_name,
             valid_constraints: self.valid_constraints.clone(), // Constraints are not defaulted
         }
     }
@@ -136,6 +150,7 @@ impl<S: SecretType> Default for UserConfigDbEntries<S> {
             vrchat_password: None,
             vrchat_cookie: None,
             pluralkit_token: None,
+            use_pluralkit_name: UsePluralKitName::default(),
         }
     }
 }
@@ -170,6 +185,13 @@ pub fn metrics_config_values(user_config: &UserConfigDbEntries<Encrypted>) -> Ve
             format!(
                 "privacy_fine_grained_{:?}",
                 user_config.privacy_fine_grained
+            ),
+            true,
+        ),
+        (
+            format!(
+                "use_pluralkit_name_{:?}",
+                user_config.use_pluralkit_name
             ),
             true,
         ),
@@ -229,6 +251,7 @@ pub struct UserConfigForUpdater {
     pub vrchat_password: database::Decrypted,
     pub vrchat_cookie: database::Decrypted,
     pub pluralkit_token: database::Decrypted,
+    pub use_pluralkit_name: UsePluralKitName,
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug, Default)]
@@ -276,6 +299,7 @@ where
     let enable_vrchat = local_config_with_defaults.enable_vrchat;
     let enable_website = local_config_with_defaults.enable_website;
     let enable_to_pluralkit = local_config_with_defaults.enable_to_pluralkit;
+    let use_pluralkit_name = local_config_with_defaults.use_pluralkit_name;
 
     let config = UserConfigForUpdater {
         user_id: user_id.clone(),
@@ -303,6 +327,7 @@ where
         enable_discord_status_message,
         enable_vrchat,
         enable_to_pluralkit,
+        use_pluralkit_name,
         website_url_name: config_value_if!(
             enable_website,
             local_config_with_defaults,
@@ -408,6 +433,7 @@ mod tests {
             vrchat_cookie: None,
             valid_constraints: None,
             pluralkit_token: None,
+            use_pluralkit_name: UsePluralKitName::default(),
         };
 
         let (config_for_updater, _) =
@@ -456,6 +482,7 @@ mod tests {
                 secret: "pk_token_123".to_string(),
             }),
             valid_constraints: None,
+            use_pluralkit_name: UsePluralKitName::UsePluralKitDisplayName,
         };
 
         let json_string = serde_json::to_string_pretty(&config).unwrap();
@@ -490,7 +517,8 @@ mod tests {
   "vrchat_cookie": null,
   "pluralkit_token": {
     "secret": "pk_token_123"
-  }
+  },
+  "use_pluralkit_name": "UsePluralKitDisplayName"
 }"#;
 
         assert_eq!(json_string, expected_json);

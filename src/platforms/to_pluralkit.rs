@@ -14,12 +14,7 @@ metric!(
     &["user_id", "scope"]
 );
 
-const TO_PLURALKIT_UPDATER_USER_AGENT: &str = concat!(
-    "PluralSync/",
-    env!("CARGO_PKG_VERSION"),
-    " Discord: ",
-    env!("USER_AGENT_DISCORD_USERNAME")
-);
+
 
 pub struct ToPluralKitUpdater {
     pub last_operation_error: Option<String>,
@@ -68,7 +63,7 @@ async fn update_to_pluralkit(
         .get("https://api.pluralkit.me/v2/systems/@me/switches?limit=1")
         .header("Authorization", &config.pluralkit_token.secret)
         .header("Content-Type", "application/json")
-        .header("User-Agent", TO_PLURALKIT_UPDATER_USER_AGENT)
+        .header("User-Agent", plurality::PLURALKIT_USER_AGENT)
         .send()
         .await?
         .error_for_status()?
@@ -123,7 +118,7 @@ async fn update_to_pluralkit(
         .post("https://api.pluralkit.me/v2/systems/@me/switches")
         .header("Authorization", &config.pluralkit_token.secret)
         .header("Content-Type", "application/json")
-        .header("User-Agent", TO_PLURALKIT_UPDATER_USER_AGENT)
+        .header("User-Agent", plurality::PLURALKIT_USER_AGENT)
         .json(&PluralKitSwitch {
             members: new_switch_members.clone(),
         })

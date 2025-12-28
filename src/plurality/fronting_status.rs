@@ -1,4 +1,9 @@
-use crate::{metric, metrics::SHOULDNT_HAPPEN_BUT_IT_DID, plurality::Fronter};
+use crate::{
+    metric,
+    metrics::SHOULDNT_HAPPEN_BUT_IT_DID,
+    plurality::Fronter,
+    users::{self, UserConfigForUpdater},
+};
 
 use encoding_rs::ISO_8859_15;
 
@@ -26,8 +31,12 @@ pub enum CleanForPlatform {
 }
 
 #[must_use]
-pub fn format_fronting_status(fronting_format: &FrontingFormat, fronts: &[Fronter]) -> String {
-    let cleaned_fronter_names = collect_clean_fronter_names(fronting_format, fronts);
+pub fn format_fronting_status(
+    fronting_format: &FrontingFormat,
+    fronts: &[Fronter],
+    config: &users::UserConfigForUpdater, // todo. refactor. integrate the pluralkit thing into the fronting format
+) -> String {
+    let cleaned_fronter_names = collect_clean_fronter_names(fronting_format, fronts, config);
     log::debug!("# | format_fronting_status | cleaned to '{cleaned_fronter_names:?}'");
 
     let status_strings =
@@ -49,18 +58,22 @@ pub fn format_fronting_status(fronting_format: &FrontingFormat, fronts: &[Fronte
 fn collect_clean_fronter_names(
     fronting_format: &FrontingFormat,
     fronts: &[Fronter],
+    config: &UserConfigForUpdater,
 ) -> Vec<String> {
     if fronts.is_empty() {
         vec![fronting_format.status_if_no_fronters.clone()] // Use configured string if no fronters
     } else {
         fronts
             .iter()
-            .map(|f| match fronting_format.cleaning {
-                CleanForPlatform::NoClean => f.preferred_vrchat_status_name().to_owned(),
-                CleanForPlatform::VRChat => f
-                    .vrchat_status_name
-                    .clone()
-                    .unwrap_or_else(|| clean_name_for_vrchat_status(&f.name)),
+            .map(|f| {
+                let preferred_name = f.get_preffered_name(&config.use_pluralkit_name);
+                match fronting_format.cleaning {
+                    CleanForPlatform::NoClean => preferred_name.to_owned(),
+                    CleanForPlatform::VRChat => f
+                        .vrchat_status_name // use vrchat name without changes, if provided
+                        .clone()
+                        .unwrap_or_else(|| clean_name_for_vrchat_status(preferred_name)),
+                }
             })
             .collect()
     }

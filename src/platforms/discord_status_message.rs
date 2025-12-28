@@ -55,7 +55,7 @@ async fn update_to_discord(
         truncate_names_to_length_if_status_too_long: config.status_truncate_names_to,
     };
 
-    let status_string = plurality::format_fronting_status(&fronting_format, fronts);
+    let status_string = plurality::format_fronting_status(&fronting_format, fronts, config);
 
     set_discord_status(config, status_string).await?;
 

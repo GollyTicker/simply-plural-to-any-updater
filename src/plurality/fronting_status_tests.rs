@@ -1,5 +1,11 @@
-use crate::plurality::{
+use crate::{
+    plurality::{
     CleanForPlatform, Fronter, FrontingFormat, VRCHAT_MAX_ALLOWED_STATUS_LENGTH,
+    },
+    users::{UsePluralKitName, UserConfigForUpdater},
+};
+
+use super::{
     clean_name_for_vrchat_status, format_fronting_status, string_unicode_codepoints_length,
 };
 
@@ -18,20 +24,56 @@ fn mock_formatter_for_tests(
     }
 }
 
-// Helper function to create mock MemberContent
-fn mock_member_content(name: &str, vrchat_status_name: &str) -> Fronter {
+fn create_test_user_config(use_pluralkit_name: UsePluralKitName) -> UserConfigForUpdater {
+    UserConfigForUpdater {
+        user_id: crate::users::UserId {
+            inner: sqlx::types::Uuid::new_v4(),
+        },
+        show_members_non_archived: true,
+        show_members_archived: false,
+        respect_front_notifications_disabled: true,
+        privacy_fine_grained: crate::users::PrivacyFineGrained::NoFineGrained,
+        privacy_fine_grained_buckets: None,
+        client: reqwest::Client::new(),
+        simply_plural_base_url: Default::default(),
+        discord_base_url: Default::default(),
+        status_prefix: Default::default(),
+        status_no_fronts: Default::default(),
+        status_truncate_names_to: 0,
+        show_custom_fronts: false,
+        enable_website: false,
+        enable_discord: false,
+        enable_discord_status_message: false,
+        enable_vrchat: false,
+        enable_to_pluralkit: false,
+        website_url_name: Default::default(),
+        website_system_name: Default::default(),
+        simply_plural_token: Default::default(),
+        discord_status_message_token: Default::default(),
+        vrchat_username: Default::default(),
+        vrchat_password: Default::default(),
+        vrchat_cookie: Default::default(),
+        pluralkit_token: Default::default(),
+        use_pluralkit_name,
+    }
+}
+
+// Helper function to create mock Fronter
+fn mock_fronter(
+    name: &str,
+    pk_name: Option<&str>,
+    pk_display_name: Option<&str>,
+) -> Fronter {
     Fronter {
         fronter_id: String::new(),
         name: name.to_string(),
         avatar_url: String::new(),
-        vrchat_status_name: if vrchat_status_name.is_empty() {
-            None
-        } else {
-            Some(vrchat_status_name.to_owned())
-        },
+        vrchat_status_name: None,
+        pluralkit_id: Some("pk_id".to_string()),
+        pluralkit_name: pk_name.map(|s| s.to_string()),
+        pluralkit_display_name: pk_display_name.map(|s| s.to_string()),
         start_time: None,
         privacy_buckets: vec![],
-        pluralkit_id: None,
     }
 }
 
